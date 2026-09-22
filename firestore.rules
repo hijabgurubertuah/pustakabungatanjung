@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Pengaturan Sistem & Logo Sekolah
+    match /settings/{settingId} {
+      allow read, write: if true;
+    }
+
+    // Katalog Arsip Buku
+    match /books/{bookId} {
+      allow read, write: if true;
+    }
+
+    // Data Anggota / Siswa
+    match /students/{studentId} {
+      allow read, write: if true;
+    }
+
+    // Transaksi Pinjam & Kembali
+    match /transactions/{transactionId} {
+      allow read, write: if true;
+    }
+
+    // Presensi Kunjungan Pengunjung
+    match /visits/{visitId} {
+      allow read, write: if true;
+    }
+
+    // Akun Administrator Petugas
+    match /admins/{adminId} {
+      allow read, write: if true;
+    }
+
+    // Metadata Sinkronisasi Delta & Status Cache
+    match /meta/{metaId} {
+      allow read, write: if true;
+    }
+  }
+}

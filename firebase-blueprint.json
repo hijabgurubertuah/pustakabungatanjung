@@ -1,0 +1,138 @@
+{
+  "entities": {
+    "settings": {
+      "title": "Settings",
+      "description": "Library global configuration including logo URL and Apps Script integration",
+      "type": "object",
+      "properties": {
+        "appName": { "type": "string" },
+        "schoolName": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "appsScriptUrl": { "type": "string" },
+        "driveFolderId": { "type": "string" },
+        "welcomeTitle": { "type": "string" },
+        "welcomeSubtitle": { "type": "string" },
+        "welcomeQuote": { "type": "string" },
+        "welcomeMotto": { "type": "string" },
+        "welcomeCopyright": { "type": "string" },
+        "welcomeButtonText": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["appName", "schoolName"]
+    },
+    "book": {
+      "title": "Book",
+      "description": "Library catalog books",
+      "type": "object",
+      "properties": {
+        "barcode": { "type": "string" },
+        "title": { "type": "string" },
+        "author": { "type": "string" },
+        "publisher": { "type": "string" },
+        "category": { "type": "string" },
+        "publishYear": { "type": "number" },
+        "entryYear": { "type": "number" },
+        "totalCopies": { "type": "number" },
+        "availableCopies": { "type": "number" },
+        "condition": { "type": "string" },
+        "coverUrl": { "type": "string" },
+        "shelfLocation": { "type": "string" },
+        "synopsis": { "type": "string" }
+      },
+      "required": ["barcode", "title", "author", "category", "totalCopies", "availableCopies"]
+    },
+    "student": {
+      "title": "Student",
+      "description": "Student membership records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nisn": { "type": "string" },
+        "name": { "type": "string" },
+        "classGrade": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "barcode": { "type": "string" },
+        "visitCount": { "type": "number" },
+        "activeLoanCount": { "type": "number" }
+      },
+      "required": ["id", "nisn", "name", "classGrade", "barcode"]
+    },
+    "transaction": {
+      "title": "Transaction",
+      "description": "Circulation borrow and return records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "studentClass": { "type": "string" },
+        "bookId": { "type": "string" },
+        "bookTitle": { "type": "string" },
+        "bookBarcode": { "type": "string" },
+        "bookCoverUrl": { "type": "string" },
+        "borrowDate": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "returnDate": { "type": "string" },
+        "borrowAdminName": { "type": "string" },
+        "returnAdminName": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "studentId", "studentName", "bookId", "bookTitle", "borrowDate", "dueDate", "status"]
+    },
+    "visit": {
+      "title": "Visit",
+      "description": "Daily student attendance visits",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "classGrade": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "purpose": { "type": "string" }
+      },
+      "required": ["id", "studentId", "studentName", "timestamp", "purpose"]
+    },
+    "admin": {
+      "title": "Admin",
+      "description": "Admin accounts with role management",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "password": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" }
+      },
+      "required": ["id", "username", "name", "role"]
+    }
+  },
+  "firestore": {
+    "/settings/{settingId}": {
+      "schema": "settings",
+      "description": "Configuration including logo and Google Drive integration"
+    },
+    "/books/{bookId}": {
+      "schema": "book",
+      "description": "Library book catalog"
+    },
+    "/students/{studentId}": {
+      "schema": "student",
+      "description": "Student membership profiles"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "transaction",
+      "description": "Borrow and return circulation records"
+    },
+    "/visits/{visitId}": {
+      "schema": "visit",
+      "description": "Library visitor logs"
+    },
+    "/admins/{adminId}": {
+      "schema": "admin",
+      "description": "Staff and administrator accounts"
+    }
+  }
+}

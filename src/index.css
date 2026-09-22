@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-heading: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  body {
+    font-family: var(--font-sans);
+    color: #1e293b;
+    background-color: #f8fafc;
+  }
+}
+
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+/* Custom scrollbars for tables and cards */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+@media print {
+  body {
+    background: white !important;
+  }
+  header, nav, #toast-container, button {
+    display: none !important;
+  }
+}
+
+/* ========================================================================= */
+/* HTML5-QRCODE SCANNER FIXES: FULL-WIDTH RESPONSIVE CAMERA VIEW */
+/* ========================================================================= */
+#reader-container,
+[id^="scanner-"],
+[id^="reader-"] {
+  position: relative !important;
+  width: 100% !important;
+  min-height: 220px !important;
+  height: 260px !important;
+  max-height: 280px !important;
+  border: none !important;
+  background-color: #0f172a !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+}
+
+#reader-container *,
+[id^="scanner-"] *,
+[id^="reader-"] * {
+  box-sizing: border-box !important;
+}
+
+#reader-container > div,
+[id^="scanner-"] > div,
+[id^="reader-"] > div,
+#reader-container__scan_region,
+[id$="__scan_region"] {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  display: block !important;
+  position: relative !important;
+  top: 0 !important;
+  left: 0 !important;
+  transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+#reader-container video,
+[id^="scanner-"] video,
+[id^="reader-"] video {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0.75rem !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+}
+
+/* Hide any duplicate subsequent video elements */
+#reader-container video ~ video,
+[id^="scanner-"] video ~ video,
+[id^="reader-"] video ~ video {
+  display: none !important;
+}
+
+/* Strictly hide duplicate canvas, shaded overlays, and internal library artifacts */
+#reader-container canvas,
+[id^="scanner-"] canvas,
+[id^="reader-"] canvas,
+#qr-canvas,
+#qr-shaded-region,
+#reader-container img,
+[id^="scanner-"] img,
+[id^="reader-"] img,
+#reader-container select,
+#reader-container button {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+  pointer-events: none !important;
+}
+

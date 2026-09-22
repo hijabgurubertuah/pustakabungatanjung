@@ -1,0 +1,10 @@
+{
+  "name": "Perpustakaan Bunga Tanjung",
+  "description": "Aplikasi manajemen arsip buku, transaksi pinjam-kembali barcode scanner kamera, kartu anggota digital, pendataan pengunjung, dan statistik Perpustakaan Bunga Tanjung SMP Negeri 1 Bengkalis.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
