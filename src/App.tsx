@@ -4,6 +4,7 @@ import { ToastContainer } from './components/common/ToastContainer';
 import { PortalSiswa } from './components/siswa/PortalSiswa';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { HalamanUtama } from './components/home/HalamanUtama';
+import { OfflineIndicator } from './components/common/OfflineIndicator';
 
 const MainApp: React.FC = () => {
   const { currentUser } = useLibrary();
@@ -52,6 +53,9 @@ const MainApp: React.FC = () => {
 
       {/* Toast Notification Layer */}
       <ToastContainer />
+
+      {/* Offline Status Indicator */}
+      <OfflineIndicator />
     </div>
   );
 };

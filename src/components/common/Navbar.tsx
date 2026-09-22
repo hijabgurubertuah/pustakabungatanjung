@@ -2,6 +2,7 @@ import React from 'react';
 import { useLibrary } from '../../context/LibraryContext';
 import { BookOpen, ShieldCheck, UserCheck, LogOut, Home } from 'lucide-react';
 import { SMPN1Logo } from './SMPN1Logo';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface NavbarProps {
   currentRoute: 'beranda' | 'umum' | 'admin';
@@ -45,6 +46,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Route Switcher & Current User Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* PWA In-App Install Button */}
+            <PWAInstallButton />
+
             {/* Direct Switch between /beranda, /umum & /admin */}
             <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
               <button

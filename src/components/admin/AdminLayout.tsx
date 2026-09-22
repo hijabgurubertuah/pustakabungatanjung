@@ -91,7 +91,7 @@ export const AdminLayout: React.FC = () => {
   const CurrentIcon = currentItem.icon;
 
   return (
-    <div className="relative max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
+    <div className="relative max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
       {/* ========================================================================= */}
       {/* MOBILE HAMBURGER BUTTON (Tinggi 120px x Lebar 30px di Kiri Tengah Layar HP) */}
       {/* ========================================================================= */}
@@ -271,42 +271,124 @@ export const AdminLayout: React.FC = () => {
       </AnimatePresence>
 
       {/* ========================================================================= */}
-      {/* DESKTOP HORIZONTAL TAB NAVIGATION (Visible on md: and above)               */}
+      {/* MAIN CONTAINER WITH PERSISTENT DESKTOP SIDEBAR + CONTENT AREA             */}
       {/* ========================================================================= */}
-      <div className="hidden md:flex bg-white rounded-2xl border border-slate-200 shadow-xs p-1.5 items-center gap-1 overflow-x-auto">
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 whitespace-nowrap transition-all ${
-                isActive
-                  ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      <div className="flex flex-col md:flex-row gap-6 items-start">
+        {/* DESKTOP SIDEBAR NAV (Visible on md: and above) */}
+        <aside className="hidden md:flex flex-col w-64 lg:w-72 shrink-0 bg-white rounded-2xl border border-slate-200 shadow-xs p-4 space-y-4 self-start sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto">
+          {/* Header / Brand */}
+          <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt="Logo"
+                className="w-9 h-9 rounded-xl object-contain bg-white border border-slate-200 p-0.5 shadow-2xs shrink-0"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs shrink-0 font-bold">
+                <BookOpen className="w-5 h-5" />
+              </div>
+            )}
+            <div className="min-w-0">
+              <h2 className="text-sm font-extrabold text-slate-900 leading-tight font-heading truncate">
+                Bunga Tanjung
+              </h2>
+              <p className="text-[11px] text-slate-500 font-medium truncate">Panel Admin Perpustakaan</p>
+            </div>
+          </div>
 
-      {/* Main Tab Content */}
-      <main>
-        {activeTab === 'dashboard' && <DashboardStats />}
-        {activeTab === 'database' && <DatabaseUsage />}
-        {activeTab === 'buku' && <KelolaBuku />}
-        {activeTab === 'pinjam-kembali' && <PinjamKembali />}
-        {activeTab === 'kartu-siswa' && <KelolaKartuSiswa />}
-        {activeTab === 'pengunjung' && <PendataanPengunjung />}
-        {activeTab === 'halaman-utama' && <PengaturanHalamanUtama />}
-        {activeTab === 'sinkronisasi' && <SinkronisasiDrive />}
-        {activeTab === 'akun' && isSuperadmin && <KelolaAkunAdmin />}
-        {activeTab === 'ekspor-impor' && <EksporImpor />}
-      </main>
+          {/* Admin User Profile Badge */}
+          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-black shadow-xs shrink-0">
+                {currentUser?.adminData?.name.charAt(0) || 'P'}
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-slate-800 truncate leading-tight">
+                  {currentUser?.adminData?.name || 'Petugas'}
+                </div>
+                <div className="text-[10px] text-indigo-600 font-semibold capitalize truncate">
+                  {currentUser?.role === 'superadmin' ? 'Super Admin' : 'Admin Sirkulasi'}
+                </div>
+              </div>
+            </div>
+            <span className="px-2 py-0.5 bg-emerald-100/80 text-emerald-700 text-[10px] font-bold rounded-md border border-emerald-200/60 shrink-0">
+              Online
+            </span>
+          </div>
+
+          {/* Navigation Links List */}
+          <nav className="space-y-1">
+            <div className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              Menu Pengaturan
+            </div>
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-indigo-600 text-white font-bold shadow-sm shadow-indigo-600/25'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs truncate">{item.label}</div>
+                      <div
+                        className={`text-[10px] truncate ${
+                          isActive ? 'text-indigo-100' : 'text-slate-400'
+                        }`}
+                      >
+                        {item.desc}
+                      </div>
+                    </div>
+                  </div>
+
+                  {isActive && <ChevronRight className="w-4 h-4 shrink-0 text-white/80" />}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Footer Logout Button */}
+          <div className="pt-3 border-t border-slate-100 mt-auto space-y-2">
+            <button
+              type="button"
+              onClick={logout}
+              className="w-full py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold flex items-center justify-center gap-2 border border-rose-200 transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Keluar Panel Admin</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* MAIN TAB CONTENT AREA */}
+        <main className="flex-1 min-w-0 w-full">
+          {activeTab === 'dashboard' && <DashboardStats />}
+          {activeTab === 'database' && <DatabaseUsage />}
+          {activeTab === 'buku' && <KelolaBuku />}
+          {activeTab === 'pinjam-kembali' && <PinjamKembali />}
+          {activeTab === 'kartu-siswa' && <KelolaKartuSiswa />}
+          {activeTab === 'pengunjung' && <PendataanPengunjung />}
+          {activeTab === 'halaman-utama' && <PengaturanHalamanUtama />}
+          {activeTab === 'sinkronisasi' && <SinkronisasiDrive />}
+          {activeTab === 'akun' && isSuperadmin && <KelolaAkunAdmin />}
+          {activeTab === 'ekspor-impor' && <EksporImpor />}
+        </main>
+      </div>
     </div>
   );
 };

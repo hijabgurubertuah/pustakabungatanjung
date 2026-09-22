@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLibrary } from '../../context/LibraryContext';
 import { SMPN1Logo } from '../common/SMPN1Logo';
 import { BarcodeScannerModal } from '../common/BarcodeScannerModal';
+import { PWAInstallButton } from '../common/PWAInstallButton';
 import { getWelcomeTheme } from '../../utils/welcomeTheme';
 import { motion } from 'motion/react';
 import {
@@ -135,6 +136,11 @@ export const HalamanUtama: React.FC<HalamanUtamaProps> = ({
 
   return (
     <div className={`min-h-screen ${theme.bgClass} flex flex-col justify-between items-center py-6 px-4 ${theme.selectionClass} relative overflow-hidden font-sans transition-colors duration-500`}>
+      {/* Top Floating PWA Install Badge */}
+      <div className="absolute top-4 right-4 z-20">
+        <PWAInstallButton />
+      </div>
+
       {/* Top Ambient Glow Light */}
       <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 ${theme.topGlowClass} rounded-full blur-3xl pointer-events-none`} />
 
