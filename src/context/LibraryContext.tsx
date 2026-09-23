@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import { Book, Student, AdminUser, LoanTransaction, VisitorLog, UserRole, LibrarySettings } from '../types';
 import { INITIAL_ADMINS, INITIAL_BOOKS, INITIAL_STUDENTS, INITIAL_TRANSACTIONS, INITIAL_VISITS } from '../data/initialData';
 import { db, testFirestoreConnection } from '../lib/firebase';
-import { doc, getDoc, setDoc, collection, getDocs, deleteDoc, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, deleteDoc, writeBatch, onSnapshot } from 'firebase/firestore';
 
 export interface ToastMessage {
   id: string;
@@ -725,6 +725,72 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
   }, []);
 
+  // Realtime Firestore Listener on settings/general
+  // Ensures any changes to Apps Script Exec URL, Drive Folder ID, Logo, or Theme
+  // are immediately received across all open browsers and devices without refreshing
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+    let isInitialMount = true;
+
+    try {
+      unsubscribe = onSnapshot(
+        doc(db, 'settings', 'general'),
+        (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            let remoteScriptUrlChanged = false;
+
+            if (data.appsScriptUrl !== undefined) {
+              setAppsScriptUrl((prev) => {
+                if (!isInitialMount && prev !== data.appsScriptUrl && data.appsScriptUrl) {
+                  remoteScriptUrlChanged = true;
+                }
+                return data.appsScriptUrl || '';
+              });
+            }
+            if (data.driveFolderId !== undefined) {
+              setDriveFolderId(data.driveFolderId || '');
+            }
+            if (data.logoUrl !== undefined) {
+              setLogoUrl(data.logoUrl || '');
+            }
+            if (data.welcomeTitle !== undefined) setWelcomeTitle(data.welcomeTitle);
+            if (data.welcomeSubtitle !== undefined) setWelcomeSubtitle(data.welcomeSubtitle);
+            if (data.welcomeQuote !== undefined) setWelcomeQuote(data.welcomeQuote);
+            if (data.welcomeMotto !== undefined) setWelcomeMotto(data.welcomeMotto);
+            if (data.welcomeCopyright !== undefined) setWelcomeCopyright(data.welcomeCopyright);
+            if (data.welcomeButtonText !== undefined) setWelcomeButtonText(data.welcomeButtonText);
+            if (data.welcomeBgTheme !== undefined) setWelcomeBgTheme(data.welcomeBgTheme);
+            if (data.welcomeBgColor !== undefined) setWelcomeBgColor(data.welcomeBgColor);
+
+            setIsFirebaseConnected(true);
+
+            // Notify user on other devices if settings changed remotely after initial mount
+            if (!isInitialMount && remoteScriptUrlChanged) {
+              showToast(
+                'info',
+                'Tautan Apps Script Diperbarui Realtime',
+                'Tautan Web App Google Apps Script telah disinkronkan secara realtime dari perangkat lain.'
+              );
+            }
+          }
+          isInitialMount = false;
+        },
+        (error) => {
+          console.warn('Realtime settings subscription offline/error:', error);
+        }
+      );
+    } catch (err) {
+      console.warn('Error setting up settings realtime listener:', err);
+    }
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, []);
+
   // Save Settings to LocalStorage whenever updated
   useEffect(() => {
     try {
@@ -1339,6 +1405,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const updateLogo = async (newLogoUrl: string): Promise<boolean> => {
     setLogoUrl(newLogoUrl);
     try {
+      const now = new Date().toISOString();
       const settingsRef = doc(db, 'settings', 'general');
       await setDoc(
         settingsRef,
@@ -1346,11 +1413,15 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
           appName: 'Sistem Perpustakaan Digital Bunga Tanjung',
           schoolName: 'SMP Negeri 1 Bengkalis',
           logoUrl: newLogoUrl,
-          updatedAt: new Date().toISOString(),
+          updatedAt: now,
         },
         { merge: true }
       );
-      showToast('success', 'Logo Diperbarui', 'Logo perpustakaan berhasil disimpan ke Firebase & diterapkan ke seluruh sistem');
+      await setDoc(doc(db, 'meta', 'sync_state'), { settingsUpdated: now }, { merge: true });
+      recordFirestoreOp('write', 2);
+      setSyncMeta((prev) => ({ ...prev, settingsUpdated: now, lastCheckedAt: now }));
+      setIsFirebaseConnected(true);
+      showToast('success', 'Logo Diperbarui ke Cloud', 'Logo perpustakaan berhasil disimpan ke Firebase & diterapkan realtime');
       return true;
     } catch (err: any) {
       console.warn('Gagal menyimpan logo ke Firebase:', err);
@@ -1366,17 +1437,22 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setDriveFolderId(folderId);
     }
     try {
+      const now = new Date().toISOString();
       const settingsRef = doc(db, 'settings', 'general');
       await setDoc(
         settingsRef,
         {
           appsScriptUrl: url,
-          driveFolderId: folderId || '',
-          updatedAt: new Date().toISOString(),
+          driveFolderId: folderId !== undefined ? folderId : driveFolderId,
+          updatedAt: now,
         },
         { merge: true }
       );
-      showToast('success', 'Pengaturan Disimpan', 'Konfigurasi Google Apps Script & Drive berhasil disimpan ke Firebase');
+      await setDoc(doc(db, 'meta', 'sync_state'), { settingsUpdated: now }, { merge: true });
+      recordFirestoreOp('write', 2);
+      setSyncMeta((prev) => ({ ...prev, settingsUpdated: now, lastCheckedAt: now }));
+      setIsFirebaseConnected(true);
+      showToast('success', 'Tersimpan ke Firebase (Realtime)', 'Tautan Apps Script (exec) & Folder ID berhasil disimpan ke Cloud dan aktif di semua perangkat');
       return true;
     } catch (err) {
       showToast('info', 'Tersimpan Lokal', 'Konfigurasi tersimpan di browser lokal');
@@ -1407,15 +1483,20 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (newSettings.logoUrl !== undefined) setLogoUrl(newSettings.logoUrl);
 
     try {
+      const now = new Date().toISOString();
       const settingsRef = doc(db, 'settings', 'general');
       await setDoc(
         settingsRef,
         {
           ...newSettings,
-          updatedAt: new Date().toISOString(),
+          updatedAt: now,
         },
         { merge: true }
       );
+      await setDoc(doc(db, 'meta', 'sync_state'), { settingsUpdated: now }, { merge: true });
+      recordFirestoreOp('write', 2);
+      setSyncMeta((prev) => ({ ...prev, settingsUpdated: now, lastCheckedAt: now }));
+      setIsFirebaseConnected(true);
       showToast('success', 'Tampilan Halaman Utama Disimpan', 'Konfigurasi beranda berhasil disimpan');
       return true;
     } catch (err: any) {

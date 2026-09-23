@@ -41,6 +41,7 @@ export const SinkronisasiDrive: React.FC = () => {
     updateLogo,
     updateAppsScriptSettings,
     syncAllToFirebase,
+    syncCollectionToFirebase,
     isFirebaseConnected,
     lastSyncedAt,
     books,
@@ -61,7 +62,17 @@ export const SinkronisasiDrive: React.FC = () => {
   const [scriptUrlInput, setScriptUrlInput] = useState(appsScriptUrl);
   const [folderIdInput, setFolderIdInput] = useState(driveFolderId);
   const [isTestingScript, setIsTestingScript] = useState(false);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [scriptTestResult, setScriptTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  // Synchronize inputs when appsScriptUrl / driveFolderId updates in realtime from other devices
+  React.useEffect(() => {
+    setScriptUrlInput(appsScriptUrl);
+  }, [appsScriptUrl]);
+
+  React.useEffect(() => {
+    setFolderIdInput(driveFolderId);
+  }, [driveFolderId]);
 
   // State Code Copy
   const [copiedCode, setCopiedCode] = useState(false);
@@ -175,9 +186,21 @@ export const SinkronisasiDrive: React.FC = () => {
     }
   };
 
-  // Save Script Settings
+  // Save Script Settings to Firebase (Realtime across devices)
   const handleSaveSettings = async () => {
-    await updateAppsScriptSettings(scriptUrlInput.trim(), folderIdInput.trim());
+    if (!scriptUrlInput.trim()) {
+      showToast('warning', 'URL Kosong', 'Harap masukkan URL Web App Google Apps Script');
+      return;
+    }
+    setIsSavingSettings(true);
+    try {
+      const ok = await updateAppsScriptSettings(scriptUrlInput.trim(), folderIdInput.trim());
+      if (ok) {
+        await syncCollectionToFirebase('settings');
+      }
+    } finally {
+      setIsSavingSettings(false);
+    }
   };
 
   // Copy Code to Clipboard
@@ -341,6 +364,40 @@ export const SinkronisasiDrive: React.FC = () => {
             <span>Kode Apps Script</span>
           </button>
         </div>
+      </div>
+
+      {/* Realtime & Quota Notice Banner */}
+      <div className="bg-emerald-50 border border-emerald-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-emerald-900 shadow-2xs">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl shrink-0">
+            <UploadCloud className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="font-bold text-emerald-950 flex items-center gap-1.5 flex-wrap">
+              <span>Sinkronisasi Realtime Google Apps Script & Cloud Firestore</span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200/70 text-emerald-800">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                Realtime Aktif
+              </span>
+            </div>
+            <p className="text-emerald-700 text-[11px] mt-0.5">
+              Tautan Web App Apps Script (exec) atau ID Folder yang disimpan di sini otomatis tersinkronkan ke Firebase dan langsung terbaca di browser/perangkat lain secara realtime.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleSaveSettings}
+          disabled={isSavingSettings}
+          className="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shrink-0 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+        >
+          {isSavingSettings ? (
+            <RefreshCw className="w-4 h-4 animate-spin" />
+          ) : (
+            <UploadCloud className="w-4 h-4" />
+          )}
+          <span>Simpan ke Firebase</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -696,10 +753,16 @@ export const SinkronisasiDrive: React.FC = () => {
                 </button>
                 <button
                   onClick={handleSaveSettings}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all"
+                  disabled={isSavingSettings}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                  title="Simpan URL deploy Apps Script & ID Folder ke Cloud Firestore secara realtime"
                 >
-                  <Check className="w-3.5 h-3.5" />
-                  <span>Simpan Konfigurasi</span>
+                  {isSavingSettings ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <UploadCloud className="w-3.5 h-3.5" />
+                  )}
+                  <span>Simpan ke Firebase (Realtime)</span>
                 </button>
               </div>
             </div>
