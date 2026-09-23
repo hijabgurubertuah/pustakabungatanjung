@@ -23,9 +23,14 @@ import {
   QrCode,
   CheckCircle2,
   CloudUpload,
+  FileSpreadsheet,
+  Plus,
+  Info,
 } from 'lucide-react';
 
 export const KelolaAkunAdmin: React.FC = () => {
+  // View Mode State
+  const [viewMode, setViewMode] = useState<'cards' | 'spreadsheet'>('spreadsheet');
   const {
     admins,
     addAdmin,
@@ -35,8 +40,17 @@ export const KelolaAkunAdmin: React.FC = () => {
     currentUser,
     logoUrl,
     syncAllToFirebase,
+    syncCollectionToFirebase,
     showToast,
   } = useLibrary();
+
+  const [isSavingToFirebase, setIsSavingToFirebase] = useState(false);
+
+  const handleSyncAdmins = async () => {
+    setIsSavingToFirebase(true);
+    await syncCollectionToFirebase('admins');
+    setIsSavingToFirebase(false);
+  };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState<AdminUser | null>(null);
@@ -149,17 +163,44 @@ export const KelolaAkunAdmin: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {/* Mode Switcher */}
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+            <button
+              type="button"
+              onClick={() => setViewMode('cards')}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition ${
+                viewMode === 'cards'
+                  ? 'bg-white text-slate-800 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <IdCard className="w-3.5 h-3.5" />
+              <span>Kartu</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('spreadsheet')}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition ${
+                viewMode === 'spreadsheet'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>Sel Spreadsheet</span>
+            </button>
+          </div>
+
           {/* Sync to Firebase Button */}
           <button
             type="button"
-            onClick={async () => {
-              await syncAllToFirebase();
-            }}
-            className="px-3 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors border border-sky-200 cursor-pointer shadow-xs"
-            title="Simpan seluruh data admin & sistem ke Cloud Firebase Firestore"
+            onClick={handleSyncAdmins}
+            disabled={isSavingToFirebase}
+            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+            title="Kirim dan simpan data akun admin ke Cloud Firebase Firestore"
           >
-            <CloudUpload className="w-4 h-4 text-sky-600" />
-            <span>Simpan ke Firebase</span>
+            <CloudUpload className="w-4 h-4 text-white" />
+            <span>{isSavingToFirebase ? 'Menyimpan...' : 'Simpan ke Firebase'}</span>
           </button>
 
           {/* Print All Admin Cards Button */}
@@ -184,8 +225,174 @@ export const KelolaAkunAdmin: React.FC = () => {
         </div>
       </div>
 
-      {/* Admin Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Quota Notice Banner */}
+      <div className="bg-amber-50 border border-amber-200/80 rounded-xl p-3 flex items-center justify-between gap-3 text-xs text-amber-800">
+        <div className="flex items-center gap-2 min-w-0">
+          <Info className="w-4 h-4 text-amber-600 shrink-0" />
+          <span className="truncate">
+            <strong>Hemat Kuota Tulis Firebase:</strong> Pengeditan akun admin tersimpan otomatis di lokal. Tekan tombol <strong>"Simpan ke Firebase"</strong> untuk menyinkronkan data ke Cloud.
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={handleSyncAdmins}
+          disabled={isSavingToFirebase}
+          className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] shrink-0 transition-colors cursor-pointer"
+        >
+          Simpan Cloud
+        </button>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* TAMPILAN SPREADSHEET ADMIN (EXCEL/GOOGLE SHEETS GRID VIEW)               */}
+      {/* ========================================================================= */}
+      {viewMode === 'spreadsheet' ? (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          {/* Header toolbar Excel */}
+          <div className="bg-slate-100 border-b border-slate-200 p-2.5 flex items-center justify-between text-xs gap-2">
+            <div className="flex items-center gap-2 text-slate-700 font-semibold">
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+              <span>Mode Sel Spreadsheet Akun Petugas (Edit Langsung)</span>
+              <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-md border border-emerald-200">
+                {admins.length} Baris Petugas
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={openAddModal}
+                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg flex items-center gap-1 cursor-pointer transition shadow-2xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Tambah Baris</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse font-sans text-xs">
+              <thead>
+                {/* Column Headers (A, B, C, D...) */}
+                <tr className="bg-slate-200/80 text-slate-600 text-[11px] font-mono border-b border-slate-300">
+                  <th className="w-10 p-1.5 text-center border-r border-slate-300 bg-slate-300/60 font-bold">#</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[140px]">A: Username</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[180px]">B: Nama Lengkap</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[140px]">C: NIP / ID Petugas</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[180px]">D: Email</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[120px]">E: Hak Akses Role</th>
+                  <th className="p-1.5 text-center min-w-[120px]">F: Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {admins.map((adm, index) => (
+                  <tr key={adm.id} className="hover:bg-indigo-50/30 transition-colors">
+                    {/* Row Number */}
+                    <td className="p-1.5 text-center font-mono text-[11px] font-bold bg-slate-100 text-slate-500 border-r border-slate-200 select-none">
+                      {index + 1}
+                    </td>
+
+                    {/* Username Cell */}
+                    <td className="p-0 border-r border-slate-200">
+                      <input
+                        type="text"
+                        value={adm.username}
+                        onChange={(e) => updateAdmin(adm.id, { username: e.target.value })}
+                        className="w-full h-full px-2 py-1.5 bg-transparent font-mono font-bold text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs"
+                      />
+                    </td>
+
+                    {/* Nama Cell */}
+                    <td className="p-0 border-r border-slate-200">
+                      <input
+                        type="text"
+                        value={adm.name}
+                        onChange={(e) => updateAdmin(adm.id, { name: e.target.value })}
+                        className="w-full h-full px-2 py-1.5 bg-transparent font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs"
+                      />
+                    </td>
+
+                    {/* NIP/ID Cell */}
+                    <td className="p-0 border-r border-slate-200">
+                      <input
+                        type="text"
+                        value={adm.nipOrId || ''}
+                        placeholder="NIP / ID..."
+                        onChange={(e) => updateAdmin(adm.id, { nipOrId: e.target.value })}
+                        className="w-full h-full px-2 py-1.5 bg-transparent font-mono text-slate-700 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs"
+                      />
+                    </td>
+
+                    {/* Email Cell */}
+                    <td className="p-0 border-r border-slate-200">
+                      <input
+                        type="email"
+                        value={adm.email || ''}
+                        placeholder="email@..."
+                        onChange={(e) => updateAdmin(adm.id, { email: e.target.value })}
+                        className="w-full h-full px-2 py-1.5 bg-transparent text-slate-700 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs"
+                      />
+                    </td>
+
+                    {/* Role Cell */}
+                    <td className="p-0 border-r border-slate-200">
+                      <select
+                        value={adm.role}
+                        onChange={(e) => updateAdmin(adm.id, { role: e.target.value as 'superadmin' | 'admin' })}
+                        className="w-full h-full px-2 py-1.5 bg-transparent font-bold text-indigo-700 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs"
+                      >
+                        <option value="admin">Admin Perpustakaan</option>
+                        <option value="superadmin">Superadmin Utama</option>
+                      </select>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="p-1.5 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCardAdmin(adm)}
+                          className="p-1 text-indigo-600 hover:bg-indigo-100 rounded cursor-pointer"
+                          title="Cetak Kartu Petugas"
+                        >
+                          <IdCard className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setResetModalAdmin(adm)}
+                          className="p-1 text-amber-600 hover:bg-amber-100 rounded cursor-pointer"
+                          title="Reset Password"
+                        >
+                          <KeyRound className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(adm)}
+                          className="p-1 text-slate-500 hover:bg-slate-200 rounded cursor-pointer"
+                          title="Ubah Lengkap"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        {adm.id !== currentUser?.adminData?.id && (
+                          <button
+                            type="button"
+                            onClick={() => deleteAdmin(adm.id)}
+                            className="p-1 text-rose-500 hover:bg-rose-100 rounded cursor-pointer"
+                            title="Hapus Account"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        /* Admin Cards Grid */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {admins.map((admin) => (
           <div
             key={admin.id}
@@ -279,6 +486,7 @@ export const KelolaAkunAdmin: React.FC = () => {
           </div>
         ))}
       </div>
+      )}
 
       {/* ========================================================================= */}
       {/* SINGLE PRINTABLE ADMIN CARD MODAL                                         */}

@@ -15,6 +15,8 @@ import {
   Filter,
   AlertCircle,
   Sparkles,
+  FileSpreadsheet,
+  Download,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -133,6 +135,54 @@ export const PinjamKembali: React.FC = () => {
 
     return matchQ && matchStatus;
   });
+
+  // Export Transactions to CSV Spreadsheet
+  const handleExportTrxCSV = () => {
+    if (filteredTransactions.length === 0) {
+      showToast('error', 'Kosong', 'Tidak ada data transaksi untuk diekspor');
+      return;
+    }
+    const headers = [
+      'No',
+      'ID Transaksi',
+      'Judul Buku',
+      'Barcode Buku',
+      'Peminjam',
+      'NISN Peminjam',
+      'Kelas',
+      'Tanggal Pinjam',
+      'Jatuh Tempo',
+      'Tanggal Kembali',
+      'Petugas Pinjam',
+      'Petugas Terima',
+      'Status',
+    ];
+    const rows = filteredTransactions.map((trx, i) => [
+      i + 1,
+      `"${trx.id}"`,
+      `"${(trx.bookTitle || '').replace(/"/g, '""')}"`,
+      `"${trx.bookBarcode || ''}"`,
+      `"${(trx.studentName || '').replace(/"/g, '""')}"`,
+      `"${trx.studentNisn || ''}"`,
+      `"${trx.studentClass || ''}"`,
+      `"${trx.borrowDate || ''}"`,
+      `"${trx.dueDate || ''}"`,
+      `"${trx.returnDate || ''}"`,
+      `"${(trx.borrowAdminName || '').replace(/"/g, '""')}"`,
+      `"${(trx.returnAdminName || '').replace(/"/g, '""')}"`,
+      `"${trx.status || ''}"`,
+    ].join(','));
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sirkulasi_transaksi_smpn1_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('success', 'Berhasil', 'Data transaksi sirkulasi berhasil diekspor ke CSV');
+  };
 
   return (
     <div className="space-y-4">
@@ -451,87 +501,114 @@ export const PinjamKembali: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 3 / RIWAYAT TRANSAKSI TABEL */}
+      {/* TAB 3 / RIWAYAT TRANSAKSI TABEL SPREADSHEET */}
       {(activeTab === 'riwayat' || activeTab === 'pinjam' || activeTab === 'kembali') && (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-          {/* Header & Filters */}
-          <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchFilter}
-                onChange={(e) => setSearchFilter(e.target.value)}
-                placeholder="Cari transaksi, buku, siswa, atau admin..."
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
-              />
+          {/* Header & Excel Toolbar */}
+          <div className="p-3 bg-slate-100 border-b border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2">
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+              <h4 className="text-xs font-bold text-slate-800 font-heading">Sel Spreadsheet Transaksi Sirkulasi</h4>
+              <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded border border-emerald-200">
+                {filteredTransactions.length} Transaksi
+              </span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative w-44 sm:w-56">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchFilter}
+                  onChange={(e) => setSearchFilter(e.target.value)}
+                  placeholder="Cari transaksi / buku / siswa..."
+                  className="w-full pl-8 pr-2.5 py-1 bg-white border border-slate-300 rounded-lg text-xs focus:outline-none"
+                />
+              </div>
+
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none"
+                className="px-2.5 py-1 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none"
               >
                 <option value="Semua">Semua Status</option>
                 <option value="Dipinjam">Dipinjam</option>
                 <option value="Terlambat">Terlambat</option>
                 <option value="Kembali">Kembali</option>
               </select>
+
+              <button
+                type="button"
+                onClick={handleExportTrxCSV}
+                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg flex items-center gap-1 cursor-pointer transition shadow-2xs"
+                title="Ekspor Rekap Sirkulasi ke File Excel CSV"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Ekspor CSV</span>
+              </button>
             </div>
           </div>
 
           {/* Table */}
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="w-full text-left border-collapse font-sans text-xs">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-semibold">
-                  <th className="py-3 px-4">No. Transaksi & Buku</th>
-                  <th className="py-3 px-4">Peminjam</th>
-                  <th className="py-3 px-4">Tgl Pinjam / Tempo</th>
-                  <th className="py-3 px-4">Petugas Pinjam</th>
-                  <th className="py-3 px-4">Petugas Terima</th>
-                  <th className="py-3 px-4 text-center">Status</th>
-                  <th className="py-3 px-4 text-right">Aksi</th>
+                <tr className="bg-slate-200/90 text-slate-700 text-[11px] font-mono border-b border-slate-300">
+                  <th className="w-10 p-1.5 text-center border-r border-slate-300 bg-slate-300/60 font-bold">#</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[180px]">A: Judul & Barcode Buku</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[150px]">B: Peminjam (Siswa)</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[130px]">C: Pinjam / Tempo</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[120px]">D: Petugas Pinjam</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[120px]">E: Petugas Terima</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 text-center min-w-[90px]">F: Status</th>
+                  <th className="p-1.5 text-center min-w-[100px]">G: Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-200 bg-white">
                 {filteredTransactions.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400">
-                      Tidak ada data transaksi ditemukan
+                    <td colSpan={8} className="py-8 text-center text-slate-400">
+                      Tidak ada data transaksi ditemukan dalam sel spreadsheet.
                     </td>
                   </tr>
                 ) : (
-                  filteredTransactions.map((trx) => (
-                    <tr key={trx.id} className="hover:bg-slate-50/50">
-                      <td className="py-3 px-4">
+                  filteredTransactions.map((trx, index) => (
+                    <tr key={trx.id} className="hover:bg-indigo-50/30 transition-colors">
+                      {/* Row Num */}
+                      <td className="p-1.5 text-center font-mono text-[11px] font-bold bg-slate-100 text-slate-500 border-r border-slate-200 select-none">
+                        {index + 1}
+                      </td>
+
+                      {/* Buku */}
+                      <td className="p-2 border-r border-slate-200">
                         <div className="font-bold text-slate-900 line-clamp-1">{trx.bookTitle}</div>
-                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">
-                          {trx.id} • Barcode: {trx.bookBarcode}
+                        <div className="text-[10px] text-slate-500 font-mono">
+                          ID: {trx.id} • BC: {trx.bookBarcode}
                         </div>
                       </td>
 
-                      <td className="py-3 px-4">
-                        <div className="font-semibold text-slate-800">{trx.studentName}</div>
-                        <div className="text-[10px] text-slate-500">
-                          {trx.studentClass} • {trx.studentNisn}
+                      {/* Peminjam */}
+                      <td className="p-2 border-r border-slate-200">
+                        <div className="font-bold text-slate-800">{trx.studentName}</div>
+                        <div className="text-[10px] text-indigo-600 font-semibold">
+                          {trx.studentClass} • NISN: {trx.studentNisn}
                         </div>
                       </td>
 
-                      <td className="py-3 px-4 text-slate-600">
+                      {/* Tanggal */}
+                      <td className="p-2 border-r border-slate-200 font-mono text-[11px] text-slate-600">
                         <div>Pinjam: {trx.borrowDate}</div>
                         <div
-                          className={`text-[11px] font-semibold ${
+                          className={`text-[10px] font-bold ${
                             trx.status === 'Terlambat'
-                              ? 'text-rose-600 font-bold'
+                              ? 'text-rose-600'
                               : 'text-slate-500'
                           }`}
                         >
                           Tempo:{' '}
                           {trx.dueDate === 'Ditentukan Nanti' ? (
-                            <span className="inline-block px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 font-bold border border-amber-200 text-[10px]">
-                              Ditentukan Nanti
+                            <span className="inline-block px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200 text-[10px]">
+                              TBD
                             </span>
                           ) : (
                             trx.dueDate
@@ -539,23 +616,26 @@ export const PinjamKembali: React.FC = () => {
                         </div>
                       </td>
 
-                      <td className="py-3 px-4 text-slate-600">
-                        <span className="font-medium text-slate-800">{trx.borrowAdminName}</span>
+                      {/* Admin Pinjam */}
+                      <td className="p-2 border-r border-slate-200 text-slate-700">
+                        <span className="font-semibold text-slate-800">{trx.borrowAdminName}</span>
                       </td>
 
-                      <td className="py-3 px-4 text-slate-600">
+                      {/* Admin Terima */}
+                      <td className="p-2 border-r border-slate-200 text-slate-700">
                         {trx.returnAdminName ? (
-                          <span className="font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          <span className="font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 text-[10px]">
                             {trx.returnAdminName}
                           </span>
                         ) : (
-                          <span className="text-slate-300">-</span>
+                          <span className="text-slate-300 font-mono">-</span>
                         )}
                       </td>
 
-                      <td className="py-3 px-4 text-center">
+                      {/* Status */}
+                      <td className="p-1.5 border-r border-slate-200 text-center">
                         <span
-                          className={`px-2.5 py-1 text-[10px] font-bold rounded-md border ${
+                          className={`px-2 py-0.5 text-[10px] font-bold rounded border ${
                             trx.status === 'Kembali'
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                               : trx.status === 'Terlambat'
@@ -567,16 +647,17 @@ export const PinjamKembali: React.FC = () => {
                         </span>
                       </td>
 
-                      <td className="py-3 px-4 text-right">
+                      {/* Aksi */}
+                      <td className="p-1.5 text-center">
                         {trx.status !== 'Kembali' ? (
                           <button
                             onClick={() => handleDirectReturn(trx.id)}
-                            className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-bold transition-colors"
+                            className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-bold cursor-pointer transition shadow-2xs"
                           >
                             Kembalikan
                           </button>
                         ) : (
-                          <span className="text-[11px] text-slate-400">Selesai</span>
+                          <span className="text-[10px] font-bold text-slate-400">Selesai</span>
                         )}
                       </td>
                     </tr>

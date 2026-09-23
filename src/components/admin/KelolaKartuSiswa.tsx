@@ -27,16 +27,26 @@ import {
   Share2,
   CheckCircle2,
   AlertCircle,
+  Info,
 } from 'lucide-react';
 
 const CLASSES = ['Semua Kelas', 'VII-A', 'VII-B', 'VIII-A', 'VIII-B', 'IX-A', 'IX-B', 'IX-C'];
 
 export const KelolaKartuSiswa: React.FC = () => {
-  const { students, addStudent, updateStudent, deleteStudent, showToast, logoUrl, appsScriptUrl, driveFolderId } = useLibrary();
+  const { students, addStudent, updateStudent, deleteStudent, showToast, logoUrl, appsScriptUrl, driveFolderId, syncCollectionToFirebase } = useLibrary();
 
-  // Search & Filter
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isSavingToFirebase, setIsSavingToFirebase] = useState(false);
+
+  const handleSyncStudents = async () => {
+    setIsSavingToFirebase(true);
+    await syncCollectionToFirebase('students');
+    setIsSavingToFirebase(false);
+  };
+
+  // View Mode: 'cards' | 'spreadsheet'
+  const [viewMode, setViewMode] = useState<'cards' | 'spreadsheet'>('spreadsheet');
   const [selectedClass, setSelectedClass] = useState('Semua Kelas');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -200,8 +210,36 @@ export const KelolaKartuSiswa: React.FC = () => {
           />
         </div>
 
-        {/* Filter & Actions */}
+        {/* View Mode Switcher & Filter & Actions */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Mode Switcher */}
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+            <button
+              type="button"
+              onClick={() => setViewMode('cards')}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition ${
+                viewMode === 'cards'
+                  ? 'bg-white text-slate-800 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <IdCard className="w-3.5 h-3.5" />
+              <span>Kartu</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('spreadsheet')}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition ${
+                viewMode === 'spreadsheet'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>Sel Spreadsheet</span>
+            </button>
+          </div>
+
           <select
             value={selectedClass}
             onChange={(e) => setSelectedClass(e.target.value)}
@@ -251,6 +289,21 @@ export const KelolaKartuSiswa: React.FC = () => {
           </button>
 
           <button
+            type="button"
+            onClick={handleSyncStudents}
+            disabled={isSavingToFirebase}
+            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs shrink-0 cursor-pointer disabled:opacity-50"
+            title="Kirim dan simpan data anggota siswa ke Cloud Firestore"
+          >
+            {isSavingToFirebase ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <UploadCloud className="w-4 h-4" />
+            )}
+            <span>Simpan ke Firebase</span>
+          </button>
+
+          <button
             onClick={openAddModal}
             className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs shrink-0 cursor-pointer"
           >
@@ -260,8 +313,212 @@ export const KelolaKartuSiswa: React.FC = () => {
         </div>
       </div>
 
-      {/* Student Cards List / Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Quota Notice Banner */}
+      <div className="bg-amber-50 border border-amber-200/80 rounded-xl p-3 flex items-center justify-between gap-3 text-xs text-amber-800">
+        <div className="flex items-center gap-2 min-w-0">
+          <Info className="w-4 h-4 text-amber-600 shrink-0" />
+          <span className="truncate">
+            <strong>Hemat Kuota Tulis Firebase:</strong> Pengeditan data/sel tersimpan otomatis di perangkat lokal. Tekan tombol <strong>"Simpan ke Firebase"</strong> untuk menyinkronkan data ke Cloud.
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={handleSyncStudents}
+          disabled={isSavingToFirebase}
+          className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] shrink-0 transition-colors cursor-pointer"
+        >
+          Simpan Cloud
+        </button>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* TAMPILAN SPREADSHEET (EXCEL/GOOGLE SHEETS GRID VIEW)                     */}
+      {/* ========================================================================= */}
+      {viewMode === 'spreadsheet' ? (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          {/* Header toolbar Excel */}
+          <div className="bg-slate-100 border-b border-slate-200 p-2.5 flex items-center justify-between text-xs gap-2">
+            <div className="flex items-center gap-2 text-slate-700 font-semibold">
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+              <span>Mode Sel Spreadsheet (Edit Langsung)</span>
+              <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-md border border-emerald-200">
+                {filteredStudents.length} Baris Siswa
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={openAddModal}
+                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg flex items-center gap-1 cursor-pointer transition shadow-2xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Tambah Baris</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse font-sans text-xs">
+              <thead>
+                {/* Letters Header Row (A, B, C, D...) */}
+                <tr className="bg-slate-200/80 text-slate-600 text-[11px] font-mono border-b border-slate-300">
+                  <th className="w-10 p-1.5 text-center border-r border-slate-300 bg-slate-300/60 font-bold">#</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[130px]">A: NISN</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[180px]">B: Nama Lengkap</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[100px]">C: Kelas</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[80px]">D: JK</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[120px]">E: Tempat Lahir</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[110px]">F: Tgl Lahir</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[120px]">G: No. HP</th>
+                  <th className="p-1.5 border-r border-slate-300 font-bold text-slate-700 min-w-[150px]">H: Email</th>
+                  <th className="p-1.5 text-center min-w-[100px]">I: Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {filteredStudents.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="p-8 text-center text-slate-400">
+                      Belum ada data siswa dalam kisi spreadsheet ini.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredStudents.map((s, index) => (
+                    <tr key={s.id} className="hover:bg-indigo-50/30 transition-colors">
+                      {/* Row Number Column */}
+                      <td className="p-1.5 text-center font-mono text-[11px] font-bold bg-slate-100 text-slate-500 border-r border-slate-200 select-none">
+                        {index + 1}
+                      </td>
+
+                      {/* NISN Cell */}
+                      <td className="p-0 border-r border-slate-200">
+                        <input
+                          type="text"
+                          value={s.nisn}
+                          onChange={(e) => updateStudent(s.id, { nisn: e.target.value })}
+                          className="w-full h-full px-2 py-1.5 bg-transparent font-mono focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none text-slate-900 border-none rounded-none text-xs"
+                        />
+                      </td>
+
+                      {/* Nama Cell */}
+                      <td className="p-0 border-r border-slate-200">
+                        <input
+                          type="text"
+                          value={s.name}
+                          onChange={(e) => updateStudent(s.id, { name: e.target.value })}
+                          className="w-full h-full px-2 py-1.5 bg-transparent font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs"
+                        />
+                      </td>
+
+                      {/* Kelas Cell */}
+                      <td className="p-0 border-r border-slate-200">
+                        <select
+                          value={s.classGrade}
+                          onChange={(e) => updateStudent(s.id, { classGrade: e.target.value })}
+                          className="w-full h-full px-2 py-1.5 bg-transparent font-semibold text-indigo-700 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs"
+                        >
+                          {CLASSES.filter((c) => c !== 'Semua Kelas').map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+
+                      {/* Jenis Kelamin Cell */}
+                      <td className="p-0 border-r border-slate-200">
+                        <select
+                          value={s.gender || 'L'}
+                          onChange={(e) => updateStudent(s.id, { gender: e.target.value as 'L' | 'P' })}
+                          className="w-full h-full px-2 py-1.5 bg-transparent text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs"
+                        >
+                          <option value="L">L</option>
+                          <option value="P">P</option>
+                        </select>
+                      </td>
+
+                      {/* POB Cell */}
+                      <td className="p-0 border-r border-slate-200">
+                        <input
+                          type="text"
+                          value={s.pob || ''}
+                          placeholder="Tempat lahir..."
+                          onChange={(e) => updateStudent(s.id, { pob: e.target.value })}
+                          className="w-full h-full px-2 py-1.5 bg-transparent text-slate-700 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs"
+                        />
+                      </td>
+
+                      {/* DOB Cell */}
+                      <td className="p-0 border-r border-slate-200">
+                        <input
+                          type="text"
+                          value={s.dob || ''}
+                          placeholder="YYYY-MM-DD"
+                          onChange={(e) => updateStudent(s.id, { dob: e.target.value })}
+                          className="w-full h-full px-2 py-1.5 bg-transparent text-slate-700 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs font-mono"
+                        />
+                      </td>
+
+                      {/* Phone Cell */}
+                      <td className="p-0 border-r border-slate-200">
+                        <input
+                          type="text"
+                          value={s.phone || ''}
+                          placeholder="08..."
+                          onChange={(e) => updateStudent(s.id, { phone: e.target.value })}
+                          className="w-full h-full px-2 py-1.5 bg-transparent text-slate-700 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs font-mono"
+                        />
+                      </td>
+
+                      {/* Email Cell */}
+                      <td className="p-0 border-r border-slate-200">
+                        <input
+                          type="email"
+                          value={s.email || ''}
+                          placeholder="email@..."
+                          onChange={(e) => updateStudent(s.id, { email: e.target.value })}
+                          className="w-full h-full px-2 py-1.5 bg-transparent text-slate-700 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs"
+                        />
+                      </td>
+
+                      {/* Actions */}
+                      <td className="p-1.5 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setPreviewCard(s)}
+                            className="p-1 text-indigo-600 hover:bg-indigo-100 rounded cursor-pointer"
+                            title="Kartu Siswa"
+                          >
+                            <IdCard className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(s)}
+                            className="p-1 text-slate-500 hover:bg-slate-200 rounded cursor-pointer"
+                            title="Ubah Lengkap"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteStudent(s.id)}
+                            className="p-1 text-rose-500 hover:bg-rose-100 rounded cursor-pointer"
+                            title="Hapus Row"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        /* Student Cards List / Grid */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredStudents.map((student) => (
           <div
             key={student.id}
@@ -318,6 +575,7 @@ export const KelolaKartuSiswa: React.FC = () => {
           </div>
         ))}
       </div>
+      )}
 
       {/* Add / Edit Student Modal */}
       {isModalOpen && (

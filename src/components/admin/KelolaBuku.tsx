@@ -1,10 +1,17 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useLibrary } from '../../context/LibraryContext';
 import { Book, BookCondition } from '../../types';
 import { BarcodeDisplay } from '../common/BarcodeDisplay';
 import { CameraPhotoModal } from '../common/CameraPhotoModal';
 import { compressImageFile } from '../../lib/imageUtils';
 import { uploadImageToDrive } from '../../lib/driveAppsScript';
+import {
+  downloadBookTemplateCSV,
+  exportBooksToCSVFile,
+  parseBookCSV,
+  fetchGoogleSheetsCSV,
+  ParsedBookRow,
+} from '../../lib/csvHelper';
 import {
   Plus,
   Search,
@@ -24,6 +31,21 @@ import {
   Camera,
   HardDrive,
   Loader2,
+  FileSpreadsheet,
+  Grid,
+  Table,
+  Download,
+  Upload,
+  RefreshCw,
+  ExternalLink,
+  Copy,
+  Save,
+  CheckCircle2,
+  AlertTriangle,
+  Link,
+  Layers,
+  ArrowRight,
+  FileText,
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -41,7 +63,15 @@ const CATEGORIES = [
 const CONDITIONS: BookCondition[] = ['Sangat Baik', 'Baik', 'Rusak Sedang', 'Rusak Parah'];
 
 export const KelolaBuku: React.FC = () => {
-  const { books, addBook, updateBook, deleteBook, showToast, appsScriptUrl, driveFolderId } = useLibrary();
+  const { books, addBook, updateBook, deleteBook, showToast, appsScriptUrl, driveFolderId, syncCollectionToFirebase } = useLibrary();
+
+  const [isSavingToFirebase, setIsSavingToFirebase] = useState(false);
+
+  const handleSyncBooks = async () => {
+    setIsSavingToFirebase(true);
+    await syncCollectionToFirebase('books');
+    setIsSavingToFirebase(false);
+  };
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -56,7 +86,204 @@ export const KelolaBuku: React.FC = () => {
   const [detailBook, setDetailBook] = useState<Book | null>(null);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
 
-  // Form State
+  // View Mode: 'table' or 'spreadsheet'
+  const [viewMode, setViewMode] = useState<'table' | 'spreadsheet'>('spreadsheet');
+
+  // Import Modal & Google Sheets Modal state
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showGoogleSheetsModal, setShowGoogleSheetsModal] = useState(false);
+  const [rawImportText, setRawImportText] = useState('');
+  const [importSource, setImportSource] = useState<'file' | 'text'>('file');
+  const [googleSheetsUrl, setGoogleSheetsUrl] = useState(() => {
+    return localStorage.getItem('google_sheets_csv_url_buku') || '';
+  });
+  const [isSyncingSheets, setIsSyncingSheets] = useState(false);
+  const [parsedImportRows, setParsedImportRows] = useState<ParsedBookRow[]>([]);
+
+  // Parse CSV text on change
+  const handleParseImportCSVText = (text: string) => {
+    setRawImportText(text);
+    if (!text.trim()) {
+      setParsedImportRows([]);
+      return;
+    }
+    const parsed = parseBookCSV(text, books);
+    setParsedImportRows(parsed);
+  };
+
+  const handleFileUploadCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        if (content) {
+          handleParseImportCSVText(content);
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const handleExecuteImport = () => {
+    const validRows = parsedImportRows.filter((r) => r.isValid);
+    if (validRows.length === 0) {
+      showToast('error', 'Tidak Ada Data Valid', 'Pastikan data CSV memiliki judul buku yang valid.');
+      return;
+    }
+
+    let addedCount = 0;
+    let updatedCount = 0;
+
+    validRows.forEach((row) => {
+      const existing = books.find(
+        (b) => b.barcode.toLowerCase().trim() === row.barcode.toLowerCase().trim()
+      );
+
+      if (existing) {
+        updateBook(existing.id, {
+          title: row.title,
+          author: row.author,
+          publisher: row.publisher,
+          category: row.category,
+          publishYear: row.publishYear,
+          entryYear: row.entryYear,
+          totalCopies: row.totalCopies,
+          condition: row.condition,
+          shelfLocation: row.shelfLocation,
+          synopsis: row.synopsis,
+          coverUrl: row.coverUrl || existing.coverUrl,
+        });
+        updatedCount++;
+      } else {
+        addBook({
+          barcode: row.barcode,
+          title: row.title,
+          author: row.author,
+          publisher: row.publisher,
+          category: row.category,
+          publishYear: row.publishYear,
+          entryYear: row.entryYear,
+          totalCopies: row.totalCopies,
+          condition: row.condition,
+          shelfLocation: row.shelfLocation,
+          synopsis: row.synopsis,
+          coverUrl: row.coverUrl,
+        });
+        addedCount++;
+      }
+    });
+
+    showToast(
+      'success',
+      'Impor Berhasil',
+      `Berhasil memperbarui ${updatedCount} buku dan menambahkan ${addedCount} buku baru.`
+    );
+
+    setShowImportModal(false);
+    setRawImportText('');
+    setParsedImportRows([]);
+  };
+
+  const handleSyncGoogleSheetsCSV = async (urlToSync?: string) => {
+    const targetUrl = (urlToSync || googleSheetsUrl).trim();
+    if (!targetUrl) {
+      showToast('error', 'Link Kosong', 'Masukkan Tautan CSV Google Sheets terlebih dahulu');
+      return;
+    }
+
+    setIsSyncingSheets(true);
+    try {
+      localStorage.setItem('google_sheets_csv_url_buku', targetUrl);
+      setGoogleSheetsUrl(targetUrl);
+
+      const csvContent = await fetchGoogleSheetsCSV(targetUrl);
+      const parsed = parseBookCSV(csvContent, books);
+      const validRows = parsed.filter((r) => r.isValid);
+
+      if (validRows.length === 0) {
+        showToast('warning', 'Data Tidak Ditemukan', 'Link CSV tidak mengembalikan baris buku yang valid.');
+        return;
+      }
+
+      let addedCount = 0;
+      let updatedCount = 0;
+
+      validRows.forEach((row) => {
+        const existing = books.find(
+          (b) => b.barcode.toLowerCase().trim() === row.barcode.toLowerCase().trim()
+        );
+
+        if (existing) {
+          updateBook(existing.id, {
+            title: row.title,
+            author: row.author,
+            publisher: row.publisher,
+            category: row.category,
+            publishYear: row.publishYear,
+            entryYear: row.entryYear,
+            totalCopies: row.totalCopies,
+            condition: row.condition,
+            shelfLocation: row.shelfLocation,
+            synopsis: row.synopsis,
+            coverUrl: row.coverUrl || existing.coverUrl,
+          });
+          updatedCount++;
+        } else {
+          addBook({
+            barcode: row.barcode,
+            title: row.title,
+            author: row.author,
+            publisher: row.publisher,
+            category: row.category,
+            publishYear: row.publishYear,
+            entryYear: row.entryYear,
+            totalCopies: row.totalCopies,
+            condition: row.condition,
+            shelfLocation: row.shelfLocation,
+            synopsis: row.synopsis,
+            coverUrl: row.coverUrl,
+          });
+          addedCount++;
+        }
+      });
+
+      showToast(
+        'success',
+        'Sinkronisasi Google Sheets Berhasil',
+        `Memproses ${parsed.length} baris CSV. ${updatedCount} buku diperbarui & ${addedCount} buku baru ditambahkan.`
+      );
+      setShowGoogleSheetsModal(false);
+    } catch (err: any) {
+      showToast(
+        'error',
+        'Gagal Sinkronasi',
+        err.message || 'Gagal mengambil data dari Google Sheets CSV. Pastikan link dipublikasikan sebagai CSV.'
+      );
+    } finally {
+      setIsSyncingSheets(false);
+    }
+  };
+
+  // Add a new empty row directly in Spreadsheet view
+  const handleAddNewGridRow = () => {
+    const randomBarcode = '978' + Math.floor(1000000000 + Math.random() * 9000000000);
+    addBook({
+      barcode: randomBarcode,
+      title: 'Buku Baru (Klik untuk Mengubah)',
+      author: 'Nama Pengarang',
+      publisher: 'Nama Penerbit',
+      category: 'Buku Pelajaran',
+      publishYear: new Date().getFullYear(),
+      entryYear: new Date().getFullYear(),
+      totalCopies: 5,
+      condition: 'Baik',
+      shelfLocation: 'Rak A1',
+      synopsis: '',
+      coverUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80',
+    });
+    showToast('info', 'Baris Baru Ditambahkan', 'Baris buku baru ditambahkan pada tabel sel spreadsheet.');
+  };
   const [formData, setFormData] = useState({
     barcode: '',
     title: '',
@@ -238,18 +465,124 @@ export const KelolaBuku: React.FC = () => {
             />
           </div>
 
-          {/* Add Book Button (Fits within mobile screen width, no horizontal spill) */}
+          {/* Action Buttons: Add Book & Sync to Firebase */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleSyncBooks}
+              disabled={isSavingToFirebase}
+              className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-xs shrink-0 cursor-pointer disabled:opacity-50"
+              title="Kirim dan simpan seluruh perubahan data buku ke Cloud Firestore"
+            >
+              {isSavingToFirebase ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <UploadCloud className="w-4 h-4" />
+              )}
+              <span>Simpan ke Firebase</span>
+            </button>
+
+            <button
+              onClick={openAddModal}
+              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-xs shrink-0 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Tambah Buku</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Quota Notice Banner */}
+        <div className="bg-amber-50 border border-amber-200/80 rounded-xl p-3 flex items-center justify-between gap-3 text-xs text-amber-800">
+          <div className="flex items-center gap-2 min-w-0">
+            <Info className="w-4 h-4 text-amber-600 shrink-0" />
+            <span className="truncate">
+              <strong>Hemat Kuota Tulis Firebase:</strong> Pengeditan buku/sel tersimpan otomatis di perangkat lokal. Tekan tombol <strong>"Simpan ke Firebase"</strong> untuk menyinkronkan data ke Cloud.
+            </span>
+          </div>
           <button
-            onClick={openAddModal}
-            className="w-full sm:w-auto px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-xs shrink-0 cursor-pointer"
+            type="button"
+            onClick={handleSyncBooks}
+            disabled={isSavingToFirebase}
+            className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] shrink-0 transition-colors cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
-            <span>Tambah Buku</span>
+            Simpan Cloud
           </button>
         </div>
 
-        {/* Row 2: Filters Category & Condition */}
-        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 pt-1 border-t border-slate-100 sm:border-0 sm:pt-0">
+        {/* Row 2: View Switcher (Tabel vs Spreadsheet Grid) & Import/Export/Sheets Actions */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+          {/* View Mode Toggle */}
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setViewMode('table')}
+              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+                viewMode === 'table'
+                  ? 'bg-white text-indigo-700 shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Table className="w-3.5 h-3.5" />
+              <span>Tampilan Tabel</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('spreadsheet')}
+              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+                viewMode === 'spreadsheet'
+                  ? 'bg-emerald-600 text-white shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>Sel Spreadsheet</span>
+            </button>
+          </div>
+
+          {/* Quick Import / Export & Google Sheets Actions */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => exportBooksToCSVFile(filteredBooks)}
+              className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium flex items-center gap-1.5 transition cursor-pointer border border-slate-200"
+              title="Ekspor Seluruh / Filter Data Buku ke File CSV"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <span>Ekspor CSV</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setRawImportText('');
+                setParsedImportRows([]);
+                setShowImportModal(true);
+              }}
+              className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium flex items-center gap-1.5 transition cursor-pointer border border-slate-200"
+              title="Impor Data Buku dari File CSV / Excel atau Salinan Teks"
+            >
+              <Upload className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Impor CSV</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowGoogleSheetsModal(true)}
+              className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border border-emerald-200"
+              title="Hubungkan & Sinkronkan Data dari Link CSV Google Spreadsheet"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Link Google Sheets</span>
+              {googleSheetsUrl && (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Tersambung ke Google Sheets CSV" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Row 3: Filters Category & Condition */}
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 pt-2 border-t border-slate-100">
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
@@ -282,10 +615,245 @@ export const KelolaBuku: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
+      {/* 0. TAMPILAN SPREADSHEET GRID (SEL-SEL EDITABLE SPREADSHEET)               */}
+      {/* ========================================================================= */}
+      {viewMode === 'spreadsheet' && (
+        <div className="bg-white rounded-2xl border border-slate-300 shadow-sm overflow-hidden animate-in fade-in duration-200">
+          {/* Spreadsheet Header Bar */}
+          <div className="bg-slate-900 text-white px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-800">
+            <div className="flex items-center gap-2">
+              <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
+              <div>
+                <h3 className="text-xs font-bold tracking-wide">Tampilan Sel Spreadsheet</h3>
+                <p className="text-[10px] text-slate-400">Edit data buku langsung pada sel tabel. Perubahan otomatis tersimpan ke database.</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleAddNewGridRow}
+                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Tambah Baris</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => exportBooksToCSVFile(filteredBooks)}
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl flex items-center gap-1.5 transition cursor-pointer border border-slate-700"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-400" />
+                <span>Unduh CSV</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Spreadsheet Grid Table */}
+          <div className="overflow-x-auto max-h-[650px] overflow-y-auto">
+            <table className="w-full text-left border-collapse text-xs font-mono select-none">
+              <thead className="sticky top-0 z-20 bg-slate-100 text-slate-600 border-b border-slate-300 font-bold">
+                {/* Letter Header Row */}
+                <tr className="bg-slate-200 text-[10px] text-slate-500 text-center">
+                  <th className="p-1 border border-slate-300 w-10 bg-slate-300">fx</th>
+                  <th className="p-1 border border-slate-300">A</th>
+                  <th className="p-1 border border-slate-300">B</th>
+                  <th className="p-1 border border-slate-300">C</th>
+                  <th className="p-1 border border-slate-300">D</th>
+                  <th className="p-1 border border-slate-300">E</th>
+                  <th className="p-1 border border-slate-300">F</th>
+                  <th className="p-1 border border-slate-300">G</th>
+                  <th className="p-1 border border-slate-300">H</th>
+                  <th className="p-1 border border-slate-300">I</th>
+                  <th className="p-1 border border-slate-300">J</th>
+                  <th className="p-1 border border-slate-300 w-12">Aksi</th>
+                </tr>
+                {/* Title Header Row */}
+                <tr className="text-xs">
+                  <th className="py-2 px-2 border border-slate-300 text-center bg-slate-200 w-10 text-slate-700 font-bold">#</th>
+                  <th className="py-2 px-2 border border-slate-300 min-w-[130px]">Barcode</th>
+                  <th className="py-2 px-2 border border-slate-300 min-w-[220px]">Judul Buku</th>
+                  <th className="py-2 px-2 border border-slate-300 min-w-[150px]">Pengarang</th>
+                  <th className="py-2 px-2 border border-slate-300 min-w-[150px]">Penerbit</th>
+                  <th className="py-2 px-2 border border-slate-300 min-w-[150px]">Kategori</th>
+                  <th className="py-2 px-2 border border-slate-300 w-24 text-center">Thn Terbit</th>
+                  <th className="py-2 px-2 border border-slate-300 w-24 text-center">Thn Masuk</th>
+                  <th className="py-2 px-2 border border-slate-300 w-20 text-center">Eksemplar</th>
+                  <th className="py-2 px-2 border border-slate-300 min-w-[120px]">Lokasi Rak</th>
+                  <th className="py-2 px-2 border border-slate-300 min-w-[130px]">Kondisi</th>
+                  <th className="py-2 px-2 border border-slate-300 text-center w-12 bg-slate-200">Hapus</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 bg-white">
+                {filteredBooks.length === 0 ? (
+                  <tr>
+                    <td colSpan={12} className="py-12 text-center text-slate-400 font-sans">
+                      Belum ada data buku. Klik tombol "Tambah Baris" di atas untuk menambahkan buku.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredBooks.map((book, idx) => (
+                    <tr key={`grid-book-${book.id}`} className="hover:bg-indigo-50/20 transition-colors">
+                      {/* Row Index */}
+                      <td className="p-1 text-center font-bold text-slate-400 bg-slate-100 border border-slate-300 text-[11px] select-none">
+                        {idx + 1}
+                      </td>
+
+                      {/* Barcode */}
+                      <td className="p-0 border border-slate-300">
+                        <input
+                          type="text"
+                          value={book.barcode}
+                          onChange={(e) => updateBook(book.id, { barcode: e.target.value })}
+                          className="w-full h-full px-2 py-1.5 font-mono text-xs text-slate-800 bg-transparent focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                        />
+                      </td>
+
+                      {/* Judul Buku */}
+                      <td className="p-0 border border-slate-300 font-sans font-medium">
+                        <input
+                          type="text"
+                          value={book.title}
+                          onChange={(e) => updateBook(book.id, { title: e.target.value })}
+                          className="w-full h-full px-2 py-1.5 text-xs text-slate-900 font-bold bg-transparent focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                        />
+                      </td>
+
+                      {/* Pengarang */}
+                      <td className="p-0 border border-slate-300 font-sans">
+                        <input
+                          type="text"
+                          value={book.author}
+                          onChange={(e) => updateBook(book.id, { author: e.target.value })}
+                          className="w-full h-full px-2 py-1.5 text-xs text-slate-700 bg-transparent focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                        />
+                      </td>
+
+                      {/* Penerbit */}
+                      <td className="p-0 border border-slate-300 font-sans">
+                        <input
+                          type="text"
+                          value={book.publisher}
+                          onChange={(e) => updateBook(book.id, { publisher: e.target.value })}
+                          className="w-full h-full px-2 py-1.5 text-xs text-slate-700 bg-transparent focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                        />
+                      </td>
+
+                      {/* Kategori */}
+                      <td className="p-0 border border-slate-300 font-sans">
+                        <select
+                          value={book.category}
+                          onChange={(e) => updateBook(book.id, { category: e.target.value })}
+                          className="w-full h-full px-2 py-1.5 text-xs text-slate-700 bg-transparent focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer"
+                        >
+                          {CATEGORIES.filter((c) => c !== 'Semua Kategori').map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+
+                      {/* Tahun Terbit */}
+                      <td className="p-0 border border-slate-300 text-center">
+                        <input
+                          type="number"
+                          value={book.publishYear}
+                          onChange={(e) => updateBook(book.id, { publishYear: Number(e.target.value) })}
+                          className="w-full h-full px-1 py-1.5 text-center text-xs text-slate-700 bg-transparent focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                        />
+                      </td>
+
+                      {/* Tahun Masuk */}
+                      <td className="p-0 border border-slate-300 text-center">
+                        <input
+                          type="number"
+                          value={book.entryYear}
+                          onChange={(e) => updateBook(book.id, { entryYear: Number(e.target.value) })}
+                          className="w-full h-full px-1 py-1.5 text-center text-xs text-slate-700 bg-transparent focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                        />
+                      </td>
+
+                      {/* Total Copies */}
+                      <td className="p-0 border border-slate-300 text-center font-bold">
+                        <input
+                          type="number"
+                          value={book.totalCopies}
+                          onChange={(e) => updateBook(book.id, { totalCopies: Math.max(1, Number(e.target.value)) })}
+                          className="w-full h-full px-1 py-1.5 text-center text-xs text-indigo-700 font-bold bg-transparent focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                        />
+                      </td>
+
+                      {/* Lokasi Rak */}
+                      <td className="p-0 border border-slate-300 font-sans">
+                        <input
+                          type="text"
+                          value={book.shelfLocation || ''}
+                          onChange={(e) => updateBook(book.id, { shelfLocation: e.target.value })}
+                          className="w-full h-full px-2 py-1.5 text-xs text-slate-700 bg-transparent focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                          placeholder="Rak A1"
+                        />
+                      </td>
+
+                      {/* Kondisi Fisik */}
+                      <td className="p-0 border border-slate-300 font-sans">
+                        <select
+                          value={book.condition}
+                          onChange={(e) => updateBook(book.id, { condition: e.target.value as BookCondition })}
+                          className="w-full h-full px-2 py-1.5 text-xs text-slate-700 bg-transparent focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer"
+                        >
+                          {CONDITIONS.map((cond) => (
+                            <option key={cond} value={cond}>
+                              {cond}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+
+                      {/* Delete Action */}
+                      <td className="p-1 border border-slate-300 text-center bg-slate-50">
+                        <button
+                          type="button"
+                          onClick={() => deleteBook(book.id)}
+                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-100 rounded-lg transition cursor-pointer"
+                          title="Hapus Baris Ini"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Spreadsheet Footer Bar */}
+          <div className="bg-slate-100 px-4 py-2 border-t border-slate-300 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 font-mono">
+            <div>
+              Total Baris: <span className="font-bold text-slate-800">{filteredBooks.length}</span> | Terhubung: <span className="text-emerald-700 font-bold">Cloud Firestore</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleAddNewGridRow}
+                className="text-indigo-600 hover:underline font-bold flex items-center gap-1 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Baris Baru</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
       {/* 1. KHUSUS TAMPILAN HP (MOBILE ONLY: md:hidden)                            */}
       {/* Minimalis: Gambar (klik untuk detail), Judul Buku, Rak, dan Aksi          */}
       {/* ========================================================================= */}
-      <div className="md:hidden space-y-2.5">
+      {viewMode === 'table' && (
+        <div className="md:hidden space-y-2.5">
         {filteredBooks.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-xs">
             Tidak ada buku yang sesuai dengan pencarian
@@ -374,11 +942,13 @@ export const KelolaBuku: React.FC = () => {
           ))
         )}
       </div>
+      )}
 
       {/* ========================================================================= */}
       {/* 2. TAMPILAN TABEL LENGKAP UNTUK DESKTOP (md:block)                        */}
       {/* ========================================================================= */}
-      <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      {viewMode === 'table' && (
+        <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
@@ -502,6 +1072,7 @@ export const KelolaBuku: React.FC = () => {
           </table>
         </div>
       </div>
+      )}
 
       {/* Add / Edit Modal */}
       {isModalOpen && (
@@ -965,6 +1536,306 @@ export const KelolaBuku: React.FC = () => {
         }}
         title="Ambil Foto Sampul Buku"
       />
+
+      {/* ========================================================================= */}
+      {/* MODAL IMPOR DATA BUKU (CSV / EXCEL / PASTE)                                */}
+      {/* ========================================================================= */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 animate-in fade-in duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+                  <Upload className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-sm">Impor Arsip Buku (CSV / Excel)</h3>
+                  <p className="text-[11px] text-slate-500">Unggah file CSV atau salin sel dari Excel/Google Sheets.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowImportModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Template Download Prompt */}
+            <div className="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3.5 flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-start gap-2.5">
+                <FileText className="w-4 h-4 text-indigo-600 mt-0.5 shrink-0" />
+                <div>
+                  <span className="font-bold text-indigo-900 block">Belum Punya Format CSV?</span>
+                  <span className="text-indigo-700 text-[11px]">Unduh template standar katalog buku yang sudah terformat rapi.</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={downloadBookTemplateCSV}
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shrink-0 flex items-center gap-1 cursor-pointer transition shadow-xs text-[11px]"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Unduh Template</span>
+              </button>
+            </div>
+
+            {/* Source Selector Tabs */}
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setImportSource('file')}
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer transition ${
+                  importSource === 'file'
+                    ? 'bg-slate-900 text-white'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Unggah File CSV</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setImportSource('text')}
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer transition ${
+                  importSource === 'text'
+                    ? 'bg-slate-900 text-white'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Salin-Tempel Teks (Spreadsheet / CSV)</span>
+              </button>
+            </div>
+
+            {/* File Upload Input */}
+            {importSource === 'file' ? (
+              <div className="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-indigo-500 transition bg-slate-50/50">
+                <UploadCloud className="w-10 h-10 text-indigo-500 mx-auto mb-2" />
+                <p className="text-xs font-bold text-slate-800">Pilih file .CSV atau .TXT dari perangkat</p>
+                <p className="text-[11px] text-slate-400 mt-1 mb-3">Format kolom disarankan: Barcode, Judul Buku, Pengarang, Penerbit, Kategori, Tahun Terbit, Tahun Masuk, Eksemplar, Kondisi, Rak</p>
+                <input
+                  type="file"
+                  accept=".csv,.txt,.tsv"
+                  onChange={handleFileUploadCSV}
+                  className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+                />
+              </div>
+            ) : (
+              /* Raw Text Area */
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block">Tempel Data CSV / Sel Spreadsheet</label>
+                <textarea
+                  rows={6}
+                  value={rawImportText}
+                  onChange={(e) => handleParseImportCSVText(e.target.value)}
+                  placeholder="Barcode,Judul Buku,Pengarang,Penerbit,Kategori,Tahun Terbit,Tahun Masuk,Jumlah,Kondisi,Rak&#10;9786020332116,Laskar Pelangi,Andrea Hirata,Bentang Pustaka,Novel & Sastra,2005,2023,10,Sangat Baik,Rak A1"
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                />
+              </div>
+            )}
+
+            {/* Preview Table of Parsed Rows */}
+            {parsedImportRows.length > 0 && (
+              <div className="space-y-2 border-t border-slate-100 pt-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-800">Pratinjau Hasil Pembacaan Data:</span>
+                  <div className="flex items-center gap-2 text-[11px]">
+                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-bold rounded-md border border-emerald-200">
+                      {parsedImportRows.filter((r) => r.isValid).length} Valid
+                    </span>
+                    {parsedImportRows.filter((r) => r.isExisting).length > 0 && (
+                      <span className="px-2 py-0.5 bg-amber-50 text-amber-700 font-bold rounded-md border border-amber-200">
+                        {parsedImportRows.filter((r) => r.isExisting).length} Perbarui
+                      </span>
+                    )}
+                    {parsedImportRows.filter((r) => !r.isValid).length > 0 && (
+                      <span className="px-2 py-0.5 bg-rose-50 text-rose-700 font-bold rounded-md border border-rose-200">
+                        {parsedImportRows.filter((r) => !r.isValid).length} Tidak Valid
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-xl overflow-x-auto">
+                  <table className="w-full text-left text-[11px]">
+                    <thead className="bg-slate-100 text-slate-600 font-bold sticky top-0">
+                      <tr>
+                        <th className="p-2 border-b border-slate-200">#</th>
+                        <th className="p-2 border-b border-slate-200">Barcode</th>
+                        <th className="p-2 border-b border-slate-200">Judul Buku</th>
+                        <th className="p-2 border-b border-slate-200">Pengarang</th>
+                        <th className="p-2 border-b border-slate-200">Kategori</th>
+                        <th className="p-2 border-b border-slate-200 text-center">Stok</th>
+                        <th className="p-2 border-b border-slate-200">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 bg-white">
+                      {parsedImportRows.slice(0, 15).map((row, index) => (
+                        <tr key={`import-row-${index}`} className="hover:bg-slate-50">
+                          <td className="p-2 font-mono text-slate-400">{index + 1}</td>
+                          <td className="p-2 font-mono text-slate-700">{row.barcode}</td>
+                          <td className="p-2 font-bold text-slate-900">{row.title}</td>
+                          <td className="p-2 text-slate-600">{row.author}</td>
+                          <td className="p-2 text-slate-600">{row.category}</td>
+                          <td className="p-2 text-center font-bold text-indigo-600">{row.totalCopies}</td>
+                          <td className="p-2">
+                            {row.isValid ? (
+                              row.isExisting ? (
+                                <span className="text-[10px] text-amber-700 font-bold">Perbarui</span>
+                              ) : (
+                                <span className="text-[10px] text-emerald-700 font-bold">Buku Baru</span>
+                              )
+                            ) : (
+                              <span className="text-[10px] text-rose-600 font-bold">{row.validationError || 'Gagal'}</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {parsedImportRows.length > 15 && (
+                  <p className="text-[10px] text-slate-400 text-right">
+                    ...menampilkan 15 dari total {parsedImportRows.length} baris
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Footer Buttons */}
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowImportModal(false)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-xl cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleExecuteImport}
+                disabled={parsedImportRows.filter((r) => r.isValid).length === 0}
+                className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+              >
+                <Check className="w-4 h-4" />
+                <span>Impor {parsedImportRows.filter((r) => r.isValid).length} Buku Valid</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL LINK SINKRONISASI GOOGLE SPREADSHEET                                */}
+      {/* ========================================================================= */}
+      {showGoogleSheetsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-xl w-full p-6 space-y-4 animate-in fade-in duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+                  <FileSpreadsheet className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-sm">Hubungkan Google Spreadsheet</h3>
+                  <p className="text-[11px] text-slate-500">Edit data buku langsung dari Google Sheets & sinkronkan 1-klik.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowGoogleSheetsModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Instruction Steps */}
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2 text-xs">
+              <span className="font-bold text-slate-800 block flex items-center gap-1">
+                <Info className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Cara Menggunakan Google Spreadsheet CSV Live Sync:</span>
+              </span>
+              <ol className="list-decimal list-inside text-slate-600 text-[11px] space-y-1 pl-1">
+                <li>Buka file Katalog Buku Anda di Google Sheets (atau unduh template standar kami).</li>
+                <li>Pilih menu <strong>File</strong> &rarr; <strong>Bagikan</strong> &rarr; <strong>Publikasikan ke Web</strong>.</li>
+                <li>Pada bagian pilihan format, pilih <strong>Nilai yang Dipisahkan Koma (.csv)</strong>.</li>
+                <li>Klik tombol <strong>Publikasikan</strong>, lalu salin tautan URL yang dihasilkan.</li>
+                <li>Tempel tautan tersebut pada kolom di bawah ini dan klik <strong>Sinkronkan Sekarang</strong>.</li>
+              </ol>
+            </div>
+
+            {/* URL Input */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-800 block flex items-center justify-between">
+                <span>Tautan CSV Publikasi Google Sheets:</span>
+                <button
+                  type="button"
+                  onClick={() => window.open('https://docs.google.com/spreadsheets/u/0/create', '_blank')}
+                  className="text-emerald-600 hover:underline text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  <span>Buka Google Sheets Baru</span>
+                </button>
+              </label>
+              <div className="relative">
+                <Link className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={googleSheetsUrl}
+                  onChange={(e) => setGoogleSheetsUrl(e.target.value)}
+                  placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv"
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono text-slate-800"
+                />
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={downloadBookTemplateCSV}
+                className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-xl flex items-center gap-1.5 cursor-pointer transition"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Unduh Template Buku (.csv)</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleSheetsModal(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-xl cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSyncGoogleSheetsCSV()}
+                  disabled={isSyncingSheets || !googleSheetsUrl.trim()}
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                >
+                  {isSyncingSheets ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Menyinkronkan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4" />
+                      <span>Sinkronkan Sekarang</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

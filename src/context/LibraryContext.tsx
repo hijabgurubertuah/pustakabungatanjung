@@ -97,6 +97,9 @@ interface LibraryContextType {
   updateLogo: (newLogoUrl: string) => Promise<boolean>;
   updateAppsScriptSettings: (url: string, folderId?: string) => Promise<boolean>;
   syncAllToFirebase: () => Promise<{ success: boolean; count: number; error?: string }>;
+  syncCollectionToFirebase: (
+    collectionName: 'books' | 'students' | 'admins' | 'settings' | 'transactions' | 'visits'
+  ) => Promise<{ success: boolean; count: number; error?: string }>;
 
   // Smart Differential Sync & Quota Protection
   syncMeta: SyncMetaState;
@@ -968,42 +971,33 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       createdAt: new Date().toISOString().split('T')[0],
     };
     setBooks((prev) => [newBook, ...prev]);
-    showToast('success', 'Buku Ditambahkan', bookData.title);
-    triggerBackgroundSync('books', newBook.id, newBook);
+    showToast('success', 'Buku Ditambahkan', `${bookData.title} tersimpan di lokal. Klik 'Simpan ke Firebase' untuk kirim ke cloud.`);
     return newBook;
   };
 
   const updateBook = (id: string, bookData: Partial<Book>) => {
-    let updatedTarget: Book | null = null;
     setBooks((prev) =>
       prev.map((b) => {
         if (b.id !== id) return b;
         const updated = { ...b, ...bookData };
-        // If total copies changed, maintain proper available ratio
         if (bookData.totalCopies !== undefined && bookData.availableCopies === undefined) {
           const diff = bookData.totalCopies - b.totalCopies;
           updated.availableCopies = Math.max(0, Math.min(bookData.totalCopies, b.availableCopies + diff));
         }
-        updatedTarget = updated;
         return updated;
       })
     );
-    if (updatedTarget) {
-      triggerBackgroundSync('books', id, updatedTarget);
-    }
-    showToast('success', 'Buku Diperbarui', 'Data buku berhasil disimpan');
+    showToast('success', 'Buku Diperbarui (Lokal)', 'Perubahan tersimpan di browser. Klik "Simpan ke Firebase" untuk menyinkronkan.');
   };
 
   const deleteBook = (id: string): boolean => {
-    // Check if currently borrowed
     const active = transactions.some((t) => t.bookId === id && t.status !== 'Kembali');
     if (active) {
       showToast('error', 'Gagal Menghapus', 'Buku ini sedang dalam status peminjaman aktif');
       return false;
     }
     setBooks((prev) => prev.filter((b) => b.id !== id));
-    triggerBackgroundSync('books', id, null, true);
-    showToast('success', 'Buku Dihapus', 'Buku telah dihapus dari katalog');
+    showToast('success', 'Buku Dihapus (Lokal)', 'Buku telah dihapus dari katalog lokal');
     return true;
   };
 
@@ -1020,26 +1014,15 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       activeLoanCount: 0,
     };
     setStudents((prev) => [newStudent, ...prev]);
-    triggerBackgroundSync('students', newStudent.id, newStudent);
-    showToast('success', 'Siswa Terdaftar', `${studentData.name} (${newId})`);
+    showToast('success', 'Siswa Terdaftar (Lokal)', `${studentData.name} (${newId})`);
     return newStudent;
   };
 
   const updateStudent = (id: string, studentData: Partial<Student>) => {
-    let target: Student | null = null;
     setStudents((prev) =>
-      prev.map((s) => {
-        if (s.id === id) {
-          target = { ...s, ...studentData };
-          return target;
-        }
-        return s;
-      })
+      prev.map((s) => (s.id === id ? { ...s, ...studentData } : s))
     );
-    if (target) {
-      triggerBackgroundSync('students', id, target);
-    }
-    showToast('success', 'Data Diperbarui', 'Profil siswa tersimpan');
+    showToast('success', 'Data Diperbarui (Lokal)', 'Profil siswa tersimpan di perangkat lokal');
   };
 
   const deleteStudent = (id: string): boolean => {
@@ -1049,8 +1032,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return false;
     }
     setStudents((prev) => prev.filter((s) => s.id !== id));
-    triggerBackgroundSync('students', id, null, true);
-    showToast('success', 'Siswa Dihapus', 'Data anggota telah dihapus');
+    showToast('success', 'Siswa Dihapus (Lokal)', 'Data anggota telah dihapus dari lokal');
     return true;
   };
 
@@ -1064,8 +1046,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       lastLogin: undefined,
     };
     setAdmins((prev) => [...prev, newAdmin]);
-    triggerBackgroundSync('admins', newAdmin.id, newAdmin);
-    showToast('success', 'Admin Ditambahkan', `${adminData.name} (${adminData.role})`);
+    showToast('success', 'Admin Ditambahkan (Lokal)', `${adminData.name} (${adminData.role})`);
     return newAdmin;
   };
 
@@ -1081,21 +1062,18 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       })
     );
 
-    if (updatedAdmin) {
-      if (currentUser?.adminData?.id === id) {
-        setCurrentUser((prev) =>
-          prev
-            ? {
-                ...prev,
-                role: (updatedAdmin as AdminUser).role,
-                adminData: updatedAdmin as AdminUser,
-              }
-            : null
-        );
-      }
-      triggerBackgroundSync('admins', id, updatedAdmin);
+    if (updatedAdmin && currentUser?.adminData?.id === id) {
+      setCurrentUser((prev) =>
+        prev
+          ? {
+              ...prev,
+              role: (updatedAdmin as AdminUser).role,
+              adminData: updatedAdmin as AdminUser,
+            }
+          : null
+      );
     }
-    showToast('success', 'Akun Admin Diperbarui', 'Data akun berhasil disimpan & disinkronkan ke Firebase');
+    showToast('success', 'Akun Admin Diperbarui (Lokal)', 'Data akun tersimpan di lokal. Klik "Simpan ke Firebase" untuk menyinkronkan.');
   };
 
   const deleteAdmin = (id: string): boolean => {
@@ -1108,8 +1086,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return false;
     }
     setAdmins((prev) => prev.filter((a) => a.id !== id));
-    triggerBackgroundSync('admins', id, null, true);
-    showToast('success', 'Admin Dihapus', 'Akun admin telah dicabut');
+    showToast('success', 'Admin Dihapus (Lokal)', 'Akun admin telah dicabut');
     return true;
   };
 
@@ -1124,13 +1101,10 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return a;
       })
     );
-    if (updatedAdmin) {
-      if (currentUser?.adminData?.id === id) {
-        setCurrentUser((prev) => (prev ? { ...prev, adminData: updatedAdmin as AdminUser } : null));
-      }
-      triggerBackgroundSync('admins', id, updatedAdmin);
+    if (updatedAdmin && currentUser?.adminData?.id === id) {
+      setCurrentUser((prev) => (prev ? { ...prev, adminData: updatedAdmin as AdminUser } : null));
     }
-    showToast('success', 'Password Direset', 'Password baru berhasil diterapkan');
+    showToast('success', 'Password Direset (Lokal)', 'Password baru diterapkan');
   };
 
   // Borrow Book workflow
@@ -1541,6 +1515,90 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return { addedCount, updatedCount };
   };
 
+  // Sync a single specific collection to Firebase Cloud Firestore
+  const syncCollectionToFirebase = async (
+    collectionName: 'books' | 'students' | 'admins' | 'settings' | 'transactions' | 'visits'
+  ): Promise<{ success: boolean; count: number; error?: string }> => {
+    try {
+      const now = new Date().toISOString();
+      let count = 0;
+
+      if (collectionName === 'books') {
+        for (const b of books) {
+          await setDoc(doc(db, 'books', b.id), b, { merge: true });
+          count++;
+        }
+        await setDoc(doc(db, 'meta', 'sync_state'), { booksUpdated: now }, { merge: true });
+        setSyncMeta((prev) => ({ ...prev, booksUpdated: now, lastCheckedAt: now }));
+      } else if (collectionName === 'students') {
+        for (const s of students) {
+          await setDoc(doc(db, 'students', s.id), s, { merge: true });
+          count++;
+        }
+        await setDoc(doc(db, 'meta', 'sync_state'), { studentsUpdated: now }, { merge: true });
+        setSyncMeta((prev) => ({ ...prev, studentsUpdated: now, lastCheckedAt: now }));
+      } else if (collectionName === 'admins') {
+        for (const a of admins) {
+          await setDoc(doc(db, 'admins', a.id), a, { merge: true });
+          count++;
+        }
+        await setDoc(doc(db, 'meta', 'sync_state'), { adminsUpdated: now }, { merge: true });
+        setSyncMeta((prev) => ({ ...prev, adminsUpdated: now, lastCheckedAt: now }));
+      } else if (collectionName === 'settings') {
+        await setDoc(
+          doc(db, 'settings', 'general'),
+          {
+            appName: 'Sistem Perpustakaan Digital Bunga Tanjung',
+            schoolName: 'SMP Negeri 1 Bengkalis',
+            logoUrl,
+            appsScriptUrl,
+            driveFolderId,
+            welcomeTitle,
+            welcomeSubtitle,
+            welcomeQuote,
+            welcomeMotto,
+            welcomeCopyright,
+            welcomeButtonText,
+            welcomeBgTheme,
+            welcomeBgColor,
+            updatedAt: now,
+          },
+          { merge: true }
+        );
+        count = 1;
+        await setDoc(doc(db, 'meta', 'sync_state'), { settingsUpdated: now }, { merge: true });
+        setSyncMeta((prev) => ({ ...prev, settingsUpdated: now, lastCheckedAt: now }));
+      } else if (collectionName === 'transactions') {
+        for (const t of transactions) {
+          await setDoc(doc(db, 'transactions', t.id), t, { merge: true });
+          count++;
+        }
+        await setDoc(doc(db, 'meta', 'sync_state'), { transactionsUpdated: now }, { merge: true });
+        setSyncMeta((prev) => ({ ...prev, transactionsUpdated: now, lastCheckedAt: now }));
+      } else if (collectionName === 'visits') {
+        for (const v of visits) {
+          await setDoc(doc(db, 'visits', v.id), v, { merge: true });
+          count++;
+        }
+        await setDoc(doc(db, 'meta', 'sync_state'), { visitsUpdated: now }, { merge: true });
+        setSyncMeta((prev) => ({ ...prev, visitsUpdated: now, lastCheckedAt: now }));
+      }
+
+      recordFirestoreOp('write', count + 1);
+      setIsFirebaseConnected(true);
+      showToast(
+        'success',
+        'Tersimpan ke Firebase Cloud',
+        `Data ${collectionName} (${count} item) berhasil dikirim dan disinkronkan ke Cloud Firestore`
+      );
+      return { success: true, count };
+    } catch (err: any) {
+      console.error(`Firebase sync error for ${collectionName}:`, err);
+      showToast('error', 'Gagal Simpan ke Firebase', err.message || 'Gagal menyinkronkan data ke Cloud Firestore');
+      return { success: false, count: 0, error: err.message };
+    }
+  };
+
   // Full synchronization to Firebase Cloud Firestore
   const syncAllToFirebase = async (): Promise<{ success: boolean; count: number; error?: string }> => {
     try {
@@ -1835,6 +1893,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateLogo,
         updateAppsScriptSettings,
         syncAllToFirebase,
+        syncCollectionToFirebase,
         addBook,
         updateBook,
         deleteBook,

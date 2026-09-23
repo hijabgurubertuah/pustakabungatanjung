@@ -18,6 +18,7 @@ import {
   Quote,
   ShieldAlert,
   Check,
+  Cloud,
 } from 'lucide-react';
 
 export const PengaturanHalamanUtama: React.FC = () => {
@@ -35,6 +36,7 @@ export const PengaturanHalamanUtama: React.FC = () => {
     updateLogo,
     appsScriptUrl,
     showToast,
+    syncCollectionToFirebase,
   } = useLibrary();
 
   // Local draft states for editing
@@ -71,6 +73,7 @@ export const PengaturanHalamanUtama: React.FC = () => {
       welcomeBgColor: draftBgColor,
       logoUrl: draftLogoUrl,
     });
+    await syncCollectionToFirebase('settings');
     setIsSaving(false);
   };
 
@@ -184,10 +187,28 @@ export const PengaturanHalamanUtama: React.FC = () => {
             disabled={isSaving}
             className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 active:scale-[0.98] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-sky-600/20 transition-all cursor-pointer"
           >
-            <Save className="w-4 h-4" />
-            <span>{isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}</span>
+            <Cloud className="w-4 h-4" />
+            <span>{isSaving ? 'Menyimpan...' : 'Simpan ke Firebase'}</span>
           </button>
         </div>
+      </div>
+
+      {/* Quota Notice Banner */}
+      <div className="bg-amber-50 border border-amber-200/80 rounded-xl p-3.5 flex items-center justify-between gap-3 text-xs text-amber-800">
+        <div className="flex items-center gap-2 min-w-0">
+          <Info className="w-4 h-4 text-amber-600 shrink-0" />
+          <span>
+            <strong>Hemat Kuota Tulis Firebase:</strong> Pengeditan tersimpan di memori browser lokal. Tekan tombol <strong>"Simpan ke Firebase"</strong> jika sudah selesai untuk mengirim ke Cloud Firestore.
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={isSaving}
+          className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] shrink-0 transition-colors cursor-pointer"
+        >
+          Simpan Cloud
+        </button>
       </div>
 
       {/* Main Grid: Form Left, Live Preview Right */}
