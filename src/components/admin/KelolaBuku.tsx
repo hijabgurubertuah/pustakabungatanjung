@@ -3,6 +3,7 @@ import { useLibrary } from '../../context/LibraryContext';
 import { Book, BookCondition } from '../../types';
 import { BarcodeDisplay } from '../common/BarcodeDisplay';
 import { CameraPhotoModal } from '../common/CameraPhotoModal';
+import { BookCover } from '../common/BookCover';
 import { compressImageFile } from '../../lib/imageUtils';
 import { uploadImageToDrive } from '../../lib/driveAppsScript';
 import {
@@ -339,7 +340,7 @@ export const KelolaBuku: React.FC = () => {
       entryYear: new Date().getFullYear(),
       totalCopies: 5,
       condition: 'Baik',
-      coverUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80',
+      coverUrl: '',
       shelfLocation: 'Rak A1',
       synopsis: '',
     });
@@ -830,10 +831,10 @@ export const KelolaBuku: React.FC = () => {
                 className="relative shrink-0 group focus:outline-none cursor-pointer"
                 title="Tekan foto untuk melihat detail lengkap"
               >
-                <img
-                  src={book.coverUrl || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=100'}
-                  alt={book.title}
-                  className="w-12 h-16 object-cover rounded-xl border border-slate-200 shadow-2xs group-hover:opacity-90 group-active:scale-95 transition-all"
+                <BookCover
+                  coverUrl={book.coverUrl}
+                  title={book.title}
+                  className="w-12 h-16 rounded-xl border border-slate-200 shadow-2xs group-hover:opacity-90 group-active:scale-95 transition-all"
                 />
                 <span className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 rounded-xl flex items-center justify-center text-white transition-opacity">
                   <Eye className="w-3.5 h-3.5" />
@@ -939,10 +940,10 @@ export const KelolaBuku: React.FC = () => {
                         className="cursor-pointer group relative focus:outline-none"
                         title="Klik untuk melihat detail buku"
                       >
-                        <img
-                          src={book.coverUrl || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=100'}
-                          alt=""
-                          className="w-10 h-14 object-cover rounded-lg border border-slate-200 shrink-0 group-hover:opacity-90"
+                        <BookCover
+                          coverUrl={book.coverUrl}
+                          title={book.title}
+                          className="w-10 h-14 rounded-lg border border-slate-200 shrink-0 group-hover:opacity-90"
                         />
                       </button>
                     </td>
@@ -1233,10 +1234,10 @@ export const KelolaBuku: React.FC = () => {
                         className="w-16 h-22 object-cover rounded-xl border border-indigo-200 shadow-xs bg-white"
                       />
                     ) : (
-                      <div className="w-16 h-22 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 bg-white">
-                        <ImageIcon className="w-6 h-6 stroke-1" />
-                        <span className="text-[9px] mt-1 font-medium">Tanpa Foto</span>
-                      </div>
+                      <BookCover
+                        title={formData.title || 'Buku Baru'}
+                        className="w-16 h-22 rounded-xl border border-slate-200 shadow-xs"
+                      />
                     )}
                     {isUploadingImage && (
                       <div className="absolute inset-0 bg-black/50 backdrop-blur-xs rounded-xl flex flex-col items-center justify-center text-white">
@@ -1390,10 +1391,10 @@ export const KelolaBuku: React.FC = () => {
 
             {/* Content: Cover & Core Details */}
             <div className="flex flex-col sm:flex-row gap-4 items-center sm:items-start text-center sm:text-left">
-              <img
-                src={detailBook.coverUrl || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=100'}
-                alt={detailBook.title}
-                className="w-28 h-40 sm:w-32 sm:h-44 object-cover rounded-xl border border-slate-200 shadow-md shrink-0"
+              <BookCover
+                coverUrl={detailBook.coverUrl}
+                title={detailBook.title}
+                className="w-28 h-40 sm:w-32 sm:h-44 rounded-xl border border-slate-200 shadow-md shrink-0"
               />
 
               <div className="flex-1 space-y-2 w-full text-xs">
@@ -1718,8 +1719,7 @@ export const KelolaBuku: React.FC = () => {
                   <FileSpreadsheet className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm">Hubungkan Google Spreadsheet</h3>
-                  <p className="text-[11px] text-slate-500">Edit data buku langsung dari Google Sheets & sinkronkan 1-klik.</p>
+                  <h3 className="font-bold text-slate-900 text-sm">Hubungkan Spreadsheet</h3>
                 </div>
               </div>
               <button
@@ -1729,21 +1729,6 @@ export const KelolaBuku: React.FC = () => {
               >
                 <X className="w-5 h-5" />
               </button>
-            </div>
-
-            {/* Instruction Steps */}
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2 text-xs">
-              <span className="font-bold text-slate-800 block flex items-center gap-1">
-                <Info className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Cara Menggunakan Google Spreadsheet CSV Live Sync:</span>
-              </span>
-              <ol className="list-decimal list-inside text-slate-600 text-[11px] space-y-1 pl-1">
-                <li>Buka file Katalog Buku Anda di Google Sheets (atau unduh template standar kami).</li>
-                <li>Pilih menu <strong>File</strong> &rarr; <strong>Bagikan</strong> &rarr; <strong>Publikasikan ke Web</strong>.</li>
-                <li>Pada bagian pilihan format, pilih <strong>Nilai yang Dipisahkan Koma (.csv)</strong>.</li>
-                <li>Klik tombol <strong>Publikasikan</strong>, lalu salin tautan URL yang dihasilkan.</li>
-                <li>Tempel tautan tersebut pada kolom di bawah ini dan klik <strong>Sinkronkan Sekarang</strong>.</li>
-              </ol>
             </div>
 
             {/* URL Input */}

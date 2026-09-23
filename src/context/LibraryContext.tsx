@@ -231,7 +231,30 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [books, setBooks] = useState<Book[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.BOOKS);
-      return saved ? JSON.parse(saved) : INITIAL_BOOKS;
+      if (saved) {
+        const parsed: Book[] = JSON.parse(saved);
+        // If saved data consists of old hardcoded mock items (BK-001 through BK-010) or unsplash images, clear them
+        const isOldMock =
+          parsed.length > 0 &&
+          parsed.every(
+            (b) =>
+              b.id.startsWith('BK-00') ||
+              (b.coverUrl && b.coverUrl.includes('images.unsplash.com'))
+          );
+        if (isOldMock) {
+          localStorage.removeItem(STORAGE_KEYS.BOOKS);
+          return [];
+        }
+        // Strip any unsplash cover URLs from any saved book
+        return parsed.map((b) => ({
+          ...b,
+          coverUrl:
+            b.coverUrl && b.coverUrl.includes('images.unsplash.com')
+              ? ''
+              : b.coverUrl || '',
+        }));
+      }
+      return INITIAL_BOOKS;
     } catch {
       return INITIAL_BOOKS;
     }
@@ -261,7 +284,23 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [transactions, setTransactions] = useState<LoanTransaction[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
-      return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
+      if (saved) {
+        const parsed: LoanTransaction[] = JSON.parse(saved);
+        const isOldMockTrx =
+          parsed.length > 0 && parsed.every((t) => t.bookId.startsWith('BK-00'));
+        if (isOldMockTrx) {
+          localStorage.removeItem(STORAGE_KEYS.TRANSACTIONS);
+          return [];
+        }
+        return parsed.map((t) => ({
+          ...t,
+          bookCoverUrl:
+            t.bookCoverUrl && t.bookCoverUrl.includes('images.unsplash.com')
+              ? ''
+              : t.bookCoverUrl || '',
+        }));
+      }
+      return INITIAL_TRANSACTIONS;
     } catch {
       return INITIAL_TRANSACTIONS;
     }

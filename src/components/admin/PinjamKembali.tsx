@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLibrary } from '../../context/LibraryContext';
 import { BarcodeScannerModal } from '../common/BarcodeScannerModal';
+import { BookCover } from '../common/BookCover';
 import {
   ScanLine,
   CheckCircle2,
@@ -401,10 +402,10 @@ export const PinjamKembali: React.FC = () => {
               </div>
               {currentBook ? (
                 <div className="flex items-center gap-3">
-                  <img
-                    src={currentBook.coverUrl}
-                    alt=""
-                    className="w-12 h-16 object-cover rounded-xl border border-slate-200"
+                  <BookCover
+                    coverUrl={currentBook.coverUrl}
+                    title={currentBook.title}
+                    className="w-12 h-16 rounded-xl border border-slate-200 shrink-0"
                   />
                   <div className="min-w-0 space-y-1">
                     <h4 className="font-bold text-slate-900 text-sm line-clamp-1">

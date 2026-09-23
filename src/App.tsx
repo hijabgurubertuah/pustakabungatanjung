@@ -9,9 +9,13 @@ import { OfflineIndicator } from './components/common/OfflineIndicator';
 const MainApp: React.FC = () => {
   const { currentUser } = useLibrary();
 
-  // Detect URL path or default to 'beranda'
+  // Detect URL path, localStorage, or default to 'beranda'
   const [currentRoute, setCurrentRoute] = useState<'beranda' | 'umum' | 'admin'>(() => {
     if (typeof window !== 'undefined') {
+      const savedRoute = localStorage.getItem('bt_app_current_route');
+      if (savedRoute === 'admin' || savedRoute === 'umum' || savedRoute === 'beranda') {
+        return savedRoute;
+      }
       const path = window.location.pathname.toLowerCase();
       if (path.includes('admin')) return 'admin';
       if (path.includes('umum') || path.includes('siswa')) return 'umum';
@@ -23,15 +27,21 @@ const MainApp: React.FC = () => {
   useEffect(() => {
     if (currentUser?.role === 'siswa') {
       setCurrentRoute('umum');
+      localStorage.setItem('bt_app_current_route', 'umum');
     } else if (currentUser?.role === 'admin' || currentUser?.role === 'superadmin') {
       setCurrentRoute('admin');
+      localStorage.setItem('bt_app_current_route', 'admin');
     } else if (!currentUser) {
       setCurrentRoute('beranda');
+      localStorage.setItem('bt_app_current_route', 'beranda');
     }
   }, [currentUser]);
 
   const handleRouteChange = (route: 'beranda' | 'umum' | 'admin') => {
     setCurrentRoute(route);
+    try {
+      localStorage.setItem('bt_app_current_route', route);
+    } catch {}
     if (typeof window !== 'undefined' && window.history) {
       window.history.pushState(null, '', `/${route === 'beranda' ? '' : route}`);
     }

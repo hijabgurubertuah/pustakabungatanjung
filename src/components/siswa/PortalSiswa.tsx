@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLibrary } from '../../context/LibraryContext';
 import { BarcodeDisplay } from '../common/BarcodeDisplay';
+import { BookCover } from '../common/BookCover';
 import { FormulirPendataanSiswa } from './FormulirPendataanSiswa';
 import {
   BookOpen,
@@ -275,10 +276,10 @@ export const PortalSiswa: React.FC = () => {
                   key={loan.id}
                   className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 flex gap-4 items-start"
                 >
-                  <img
-                    src={loan.bookCoverUrl || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=200'}
-                    alt={loan.bookTitle}
-                    className="w-16 h-22 object-cover rounded-xl border border-slate-100 shrink-0 shadow-xs"
+                  <BookCover
+                    coverUrl={loan.bookCoverUrl}
+                    title={loan.bookTitle}
+                    className="w-16 h-22 rounded-xl border border-slate-100 shrink-0 shadow-xs"
                   />
                   <div className="flex-1 min-w-0 space-y-2">
                     <div>

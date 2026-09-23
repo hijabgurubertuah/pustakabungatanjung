@@ -32,8 +32,26 @@ import { motion, AnimatePresence } from 'motion/react';
 export const AdminLayout: React.FC = () => {
   const { currentUser, logout, logoUrl, unsyncedStatus } = useLibrary();
 
-  // Admin active tab
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  // Admin active tab - Persisted across browser refresh
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.replace('#', '').trim();
+      if (hash) return hash;
+      const saved = localStorage.getItem('bt_admin_active_tab');
+      if (saved) return saved;
+    }
+    return 'dashboard';
+  });
+
+  // Keep localStorage and URL hash in sync with activeTab
+  useEffect(() => {
+    try {
+      localStorage.setItem('bt_admin_active_tab', activeTab);
+      if (typeof window !== 'undefined' && window.history) {
+        window.history.replaceState(null, '', `#${activeTab}`);
+      }
+    } catch {}
+  }, [activeTab]);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
 

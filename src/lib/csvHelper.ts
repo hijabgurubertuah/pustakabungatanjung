@@ -221,10 +221,10 @@ export const BOOK_CSV_TEMPLATE_HEADERS = [
 ];
 
 export const BOOK_SAMPLE_ROWS = [
-  ['9786020332116', 'Laskar Pelangi', 'Andrea Hirata', 'Bentang Pustaka', 'Novel & Sastra', 2005, 2023, 10, 'Sangat Baik', 'Rak A1', 'Kisah perjuangan 10 anak Laskar Pelangi di Belitung.', 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80'],
-  ['9789791227025', 'Bumi Manusia', 'Pramoedya Ananta Toer', 'Lentera Dipantara', 'Novel & Sastra', 1980, 2022, 5, 'Baik', 'Rak A2', 'Novel pencerahan kebangsaan awal abad ke-20.', 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&auto=format&fit=crop&q=80'],
-  ['9786022914120', 'Ensiklopedia Sains & Teknologi', 'Tim LIPI', 'Penerbit Erlangga', 'Ensiklopedia & Referensi', 2018, 2024, 8, 'Baik', 'Rak B1', 'Panduan sains modern untuk siswa SMP.', 'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&auto=format&fit=crop&q=80'],
-  ['9786020633112', 'Matematika SMP Kelas VII', 'Kementerian Pendidikan', 'Kemdikbud RI', 'Buku Pelajaran', 2022, 2023, 25, 'Baik', 'Rak C1', 'Buku teks utama mata pelajaran Matematika Kurikulum Merdeka.', 'https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&auto=format&fit=crop&q=80'],
+  ['9786020332116', 'Laskar Pelangi', 'Andrea Hirata', 'Bentang Pustaka', 'Novel & Sastra', 2005, 2023, 10, 'Sangat Baik', 'Rak A1', 'Kisah perjuangan 10 anak Laskar Pelangi di Belitung.', ''],
+  ['9789791227025', 'Bumi Manusia', 'Pramoedya Ananta Toer', 'Lentera Dipantara', 'Novel & Sastra', 1980, 2022, 5, 'Baik', 'Rak A2', 'Novel pencerahan kebangsaan awal abad ke-20.', ''],
+  ['9786022914120', 'Ensiklopedia Sains & Teknologi', 'Tim LIPI', 'Penerbit Erlangga', 'Ensiklopedia & Referensi', 2018, 2024, 8, 'Baik', 'Rak B1', 'Panduan sains modern untuk siswa SMP.', ''],
+  ['9786020633112', 'Matematika SMP Kelas VII', 'Kementerian Pendidikan', 'Kemdikbud RI', 'Buku Pelajaran', 2022, 2023, 25, 'Baik', 'Rak C1', 'Buku teks utama mata pelajaran Matematika Kurikulum Merdeka.', ''],
 ];
 
 export interface ParsedBookRow {
@@ -398,7 +398,8 @@ export function parseBookCSV(rawText: string, existingBooks: any[] = []): Parsed
     const rawCondition = (cols[8] || '').replace(/['"]/g, '').trim();
     const shelfLocation = (cols[9] || '').replace(/['"]/g, '').trim() || 'Rak A1';
     const synopsis = (cols[10] || '').replace(/['"]/g, '').trim() || '';
-    const coverUrl = (cols[11] || '').replace(/['"]/g, '').trim() || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80';
+    const rawCoverUrl = (cols[11] || '').replace(/['"]/g, '').trim();
+    const coverUrl = rawCoverUrl.includes('images.unsplash.com') ? '' : rawCoverUrl;
 
     let condition: 'Sangat Baik' | 'Baik' | 'Rusak Sedang' | 'Rusak Parah' = 'Baik';
     if (rawCondition.toLowerCase().includes('sangat')) condition = 'Sangat Baik';
