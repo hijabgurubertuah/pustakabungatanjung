@@ -161,12 +161,25 @@ interface LibraryContextType {
 
   // Toasts
   toasts: ToastMessage[];
-  showToast: (type: 'success' | 'error' | 'info' | 'warning', title: string, message?: string) => void;
+  showToast: (type: 'success' | 'error' | 'info' | 'warning', title: string, message?: string, duration?: number) => void;
   removeToast: (id: string) => void;
+
+  // Unsynced / Local status tracking per collection
+  unsyncedStatus: UnsyncedStatus;
+  setUnsyncedStatus: React.Dispatch<React.SetStateAction<UnsyncedStatus>>;
 
   // Utilities
   resetToDefaultData: () => void;
   importData: (importedBooks?: Book[], importedStudents?: Student[]) => { booksAdded: number; studentsAdded: number };
+}
+
+export interface UnsyncedStatus {
+  books: boolean;
+  students: boolean;
+  admins: boolean;
+  transactions: boolean;
+  visits: boolean;
+  settings: boolean;
 }
 
 const LibraryContext = createContext<LibraryContextType | undefined>(undefined);
@@ -181,6 +194,7 @@ const STORAGE_KEYS = {
   SETTINGS: 'bt_lib_settings_v1',
   SYNC_META: 'bt_lib_sync_meta_v2',
   DAILY_QUOTA: 'bt_lib_daily_quota_v2',
+  UNSYNCED_STATUS: 'bt_lib_unsynced_status_v1',
 };
 
 interface DailyQuotaState {
@@ -262,6 +276,38 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return INITIAL_VISITS;
     }
   });
+
+  // Track unsynced / local changes for each collection
+  const [unsyncedStatus, setUnsyncedStatus] = useState<UnsyncedStatus>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.UNSYNCED_STATUS);
+      return saved
+        ? JSON.parse(saved)
+        : {
+            books: false,
+            students: false,
+            admins: false,
+            transactions: false,
+            visits: false,
+            settings: false,
+          };
+    } catch {
+      return {
+        books: false,
+        students: false,
+        admins: false,
+        transactions: false,
+        visits: false,
+        settings: false,
+      };
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.UNSYNCED_STATUS, JSON.stringify(unsyncedStatus));
+    } catch {}
+  }, [unsyncedStatus]);
 
   // Settings: Logo, Apps Script URL, Drive Folder
   const [logoUrl, setLogoUrl] = useState<string>(() => {
@@ -897,14 +943,18 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [currentUser]);
 
-  // Toast Helper with intelligent deduplication & screen flood protection
+  // Toast Helper with intelligent deduplication & screen flood protection (ultra-fast & compact)
   const lastToastRef = useRef<{ key: string; time: number }>({ key: '', time: 0 });
 
-  const showToast = (type: 'success' | 'error' | 'info' | 'warning', title: string, message?: string) => {
+  const showToast = (
+    type: 'success' | 'error' | 'info' | 'warning',
+    title: string,
+    message?: string,
+    duration: number = 500
+  ) => {
     const key = `${type}:${title}:${message || ''}`;
     const now = Date.now();
-    // Do not show the same toast message within 2.5 seconds
-    if (lastToastRef.current.key === key && now - lastToastRef.current.time < 2500) {
+    if (lastToastRef.current.key === key && now - lastToastRef.current.time < 200) {
       return;
     }
     lastToastRef.current = { key, time: now };
@@ -918,7 +968,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     setTimeout(() => {
       removeToast(id);
-    }, 3500);
+    }, duration);
   };
 
   const removeToast = (id: string) => {
@@ -1037,7 +1087,8 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       createdAt: new Date().toISOString().split('T')[0],
     };
     setBooks((prev) => [newBook, ...prev]);
-    showToast('success', 'Buku Ditambahkan', `${bookData.title} tersimpan di lokal. Klik 'Simpan ke Firebase' untuk kirim ke cloud.`);
+    setUnsyncedStatus((prev) => ({ ...prev, books: true }));
+    showToast('success', 'Berhasil', undefined, 400);
     return newBook;
   };
 
@@ -1053,17 +1104,19 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return updated;
       })
     );
-    showToast('success', 'Buku Diperbarui (Lokal)', 'Perubahan tersimpan di browser. Klik "Simpan ke Firebase" untuk menyinkronkan.');
+    setUnsyncedStatus((prev) => ({ ...prev, books: true }));
+    showToast('success', 'Tersimpan', undefined, 400);
   };
 
   const deleteBook = (id: string): boolean => {
     const active = transactions.some((t) => t.bookId === id && t.status !== 'Kembali');
     if (active) {
-      showToast('error', 'Gagal Menghapus', 'Buku ini sedang dalam status peminjaman aktif');
+      showToast('error', 'Gagal Menghapus', 'Buku sedang dalam status peminjaman aktif', 800);
       return false;
     }
     setBooks((prev) => prev.filter((b) => b.id !== id));
-    showToast('success', 'Buku Dihapus (Lokal)', 'Buku telah dihapus dari katalog lokal');
+    setUnsyncedStatus((prev) => ({ ...prev, books: true }));
+    showToast('success', 'Dihapus', undefined, 400);
     return true;
   };
 
@@ -1080,7 +1133,8 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       activeLoanCount: 0,
     };
     setStudents((prev) => [newStudent, ...prev]);
-    showToast('success', 'Siswa Terdaftar (Lokal)', `${studentData.name} (${newId})`);
+    setUnsyncedStatus((prev) => ({ ...prev, students: true }));
+    showToast('success', 'Berhasil', undefined, 400);
     return newStudent;
   };
 
@@ -1088,17 +1142,19 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setStudents((prev) =>
       prev.map((s) => (s.id === id ? { ...s, ...studentData } : s))
     );
-    showToast('success', 'Data Diperbarui (Lokal)', 'Profil siswa tersimpan di perangkat lokal');
+    setUnsyncedStatus((prev) => ({ ...prev, students: true }));
+    showToast('success', 'Tersimpan', undefined, 400);
   };
 
   const deleteStudent = (id: string): boolean => {
     const hasActiveLoan = transactions.some((t) => t.studentId === id && t.status !== 'Kembali');
     if (hasActiveLoan) {
-      showToast('error', 'Gagal Hapus', 'Siswa masih memiliki tanggungan buku yang dipinjam');
+      showToast('error', 'Gagal Hapus', 'Siswa masih meminjam buku', 800);
       return false;
     }
     setStudents((prev) => prev.filter((s) => s.id !== id));
-    showToast('success', 'Siswa Dihapus (Lokal)', 'Data anggota telah dihapus dari lokal');
+    setUnsyncedStatus((prev) => ({ ...prev, students: true }));
+    showToast('success', 'Dihapus', undefined, 400);
     return true;
   };
 
@@ -1112,7 +1168,8 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       lastLogin: undefined,
     };
     setAdmins((prev) => [...prev, newAdmin]);
-    showToast('success', 'Admin Ditambahkan (Lokal)', `${adminData.name} (${adminData.role})`);
+    setUnsyncedStatus((prev) => ({ ...prev, admins: true }));
+    showToast('success', 'Berhasil', undefined, 400);
     return newAdmin;
   };
 
@@ -1139,20 +1196,22 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
           : null
       );
     }
-    showToast('success', 'Akun Admin Diperbarui (Lokal)', 'Data akun tersimpan di lokal. Klik "Simpan ke Firebase" untuk menyinkronkan.');
+    setUnsyncedStatus((prev) => ({ ...prev, admins: true }));
+    showToast('success', 'Tersimpan', undefined, 400);
   };
 
   const deleteAdmin = (id: string): boolean => {
     if (admins.length <= 1) {
-      showToast('error', 'Tidak Dapat Menghapus', 'Minimal harus ada 1 akun admin');
+      showToast('error', 'Gagal', 'Minimal harus ada 1 akun admin', 800);
       return false;
     }
     if (currentUser?.adminData?.id === id) {
-      showToast('error', 'Tidak Dapat Menghapus', 'Anda tidak bisa menghapus akun yang sedang aktif');
+      showToast('error', 'Gagal', 'Tidak bisa menghapus akun aktif', 800);
       return false;
     }
     setAdmins((prev) => prev.filter((a) => a.id !== id));
-    showToast('success', 'Admin Dihapus (Lokal)', 'Akun admin telah dicabut');
+    setUnsyncedStatus((prev) => ({ ...prev, admins: true }));
+    showToast('success', 'Dihapus', undefined, 400);
     return true;
   };
 
@@ -1170,7 +1229,8 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (updatedAdmin && currentUser?.adminData?.id === id) {
       setCurrentUser((prev) => (prev ? { ...prev, adminData: updatedAdmin as AdminUser } : null));
     }
-    showToast('success', 'Password Direset (Lokal)', 'Password baru diterapkan');
+    setUnsyncedStatus((prev) => ({ ...prev, admins: true }));
+    showToast('success', 'Tersimpan', undefined, 400);
   };
 
   // Borrow Book workflow
@@ -1265,8 +1325,9 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     // Append transaction
     setTransactions((prev) => [newTrx, ...prev]);
+    setUnsyncedStatus((prev) => ({ ...prev, transactions: true, books: true, students: true }));
 
-    showToast('success', 'Pinjam Berhasil', `${student.name} meminjam "${book.title}"`);
+    showToast('success', 'Berhasil', undefined, 400);
     return { success: true, message: 'Peminjaman berhasil dicatat', transaction: newTrx };
   };
 
@@ -1287,7 +1348,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     );
 
     if (!activeTrx) {
-      showToast('error', 'Transaksi Tidak Ditemukan', 'Tidak ada data peminjaman aktif untuk kode ini');
+      showToast('error', 'Tidak Ditemukan', undefined, 600);
       return { success: false, message: 'Transaksi aktif tidak ditemukan' };
     }
 
@@ -1324,7 +1385,8 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       )
     );
 
-    showToast('success', 'Buku Dikembalikan', `Buku "${activeTrx.bookTitle}" telah diterima oleh ${currentAdmin.name}`);
+    setUnsyncedStatus((prev) => ({ ...prev, transactions: true, books: true, students: true }));
+    showToast('success', 'Berhasil', undefined, 400);
     return { success: true, message: 'Pengembalian buku berhasil diproses', transaction: updatedTrx };
   };
 
@@ -1339,7 +1401,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     );
 
     if (!student) {
-      showToast('error', 'Kartu Tidak Dikenal', 'Data siswa tidak terdaftar');
+      showToast('error', 'Kartu Tidak Dikenal', undefined, 600);
       return { success: false, message: 'Data siswa tidak ditemukan' };
     }
 
@@ -1359,8 +1421,9 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const updatedStudent = { ...student, visitCount: student.visitCount + 1 };
     setStudents((prev) => prev.map((s) => (s.id === student.id ? updatedStudent : s)));
     setVisits((prev) => [newVisit, ...prev]);
+    setUnsyncedStatus((prev) => ({ ...prev, visits: true, students: true }));
 
-    showToast('success', 'Kunjungan Tercatat', `${student.name} (${student.classGrade}) - Kunjungan ke-${updatedStudent.visitCount}`);
+    showToast('success', 'Berhasil', undefined, 400);
     return { success: true, message: 'Kunjungan berhasil dicatat', student: updatedStudent };
   };
 
@@ -1371,7 +1434,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setAdmins(INITIAL_ADMINS);
     setTransactions(INITIAL_TRANSACTIONS);
     setVisits(INITIAL_VISITS);
-    showToast('info', 'Data Direset', 'Katalog dan riwayat dikembalikan ke data awal');
+    showToast('info', 'Direset', undefined, 400);
   };
 
   // Bulk Import
@@ -1397,7 +1460,13 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
     }
 
-    showToast('success', 'Impor Selesai', `${booksAdded} buku & ${studentsAdded} siswa berhasil diimpor`);
+    setUnsyncedStatus((prev) => ({
+      ...prev,
+      books: booksAdded > 0 ? true : prev.books,
+      students: studentsAdded > 0 ? true : prev.students,
+    }));
+
+    showToast('success', 'Berhasil', undefined, 400);
     return { booksAdded, studentsAdded };
   };
 
@@ -1667,15 +1736,12 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       recordFirestoreOp('write', count + 1);
       setIsFirebaseConnected(true);
-      showToast(
-        'success',
-        'Tersimpan ke Firebase Cloud',
-        `Data ${collectionName} (${count} item) berhasil dikirim dan disinkronkan ke Cloud Firestore`
-      );
+      setUnsyncedStatus((prev) => ({ ...prev, [collectionName]: false }));
+      showToast('success', 'Berhasil', undefined, 400);
       return { success: true, count };
     } catch (err: any) {
       console.error(`Firebase sync error for ${collectionName}:`, err);
-      showToast('error', 'Gagal Simpan ke Firebase', err.message || 'Gagal menyinkronkan data ke Cloud Firestore');
+      showToast('error', 'Gagal', err.message, 800);
       return { success: false, count: 0, error: err.message };
     }
   };
@@ -1771,11 +1837,19 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       setLastSyncedAt(now);
       setIsFirebaseConnected(true);
-      showToast('success', 'Sinkronisasi Firebase Sukses', `${count} dokumen berhasil disinkronkan ke Cloud Firestore`);
+      setUnsyncedStatus({
+        books: false,
+        students: false,
+        admins: false,
+        transactions: false,
+        visits: false,
+        settings: false,
+      });
+      showToast('success', 'Berhasil', undefined, 400);
       return { success: true, count };
     } catch (err: any) {
       console.error('Firebase sync error:', err);
-      showToast('error', 'Sinkronisasi Gagal', err.message || 'Gagal menyinkronkan data ke Firebase');
+      showToast('error', 'Gagal', err.message, 800);
       return { success: false, count: 0, error: err.message };
     }
   };
@@ -1991,6 +2065,8 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         toasts,
         showToast,
         removeToast,
+        unsyncedStatus,
+        setUnsyncedStatus,
         resetToDefaultData,
         importData,
       }}

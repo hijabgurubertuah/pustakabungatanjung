@@ -33,23 +33,24 @@ export const ToastContainer: React.FC = () => {
   };
 
   return (
-    <div id="toast-container" className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-3 max-h-[80vh] overflow-hidden justify-end">
+    <div id="toast-container" className="fixed bottom-4 right-4 z-50 flex flex-col gap-1.5 max-w-xs w-auto pointer-events-none px-3 max-h-[80vh] overflow-hidden justify-end">
       <AnimatePresence>
         {toasts.map((toast) => (
           <motion.div
             key={toast.id}
-            initial={{ opacity: 0, y: 15, scale: 0.95 }}
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
-            className={`pointer-events-auto flex items-start gap-3 p-3.5 rounded-xl border shadow-lg backdrop-blur-sm ${getBorderColor(
+            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.1 } }}
+            transition={{ duration: 0.1 }}
+            className={`pointer-events-auto flex items-center gap-2.5 px-3.5 py-2 rounded-xl border shadow-md backdrop-blur-sm ${getBorderColor(
               toast.type
             )}`}
           >
             {getIcon(toast.type)}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold leading-tight">{toast.title}</p>
+              <p className="text-xs font-bold leading-tight">{toast.title}</p>
               {toast.message && (
-                <p className="text-xs opacity-90 mt-0.5 leading-snug line-clamp-2">{toast.message}</p>
+                <p className="text-[10px] opacity-90 mt-0.5 leading-snug line-clamp-1">{toast.message}</p>
               )}
             </div>
             <button
@@ -57,7 +58,7 @@ export const ToastContainer: React.FC = () => {
               className="text-slate-400 hover:text-slate-700 p-0.5 rounded transition-colors"
               aria-label="Tutup"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </motion.div>
         ))}

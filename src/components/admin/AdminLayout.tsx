@@ -30,7 +30,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 
 export const AdminLayout: React.FC = () => {
-  const { currentUser, logout, logoUrl } = useLibrary();
+  const { currentUser, logout, logoUrl, unsyncedStatus } = useLibrary();
 
   // Admin active tab
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -39,6 +39,37 @@ export const AdminLayout: React.FC = () => {
 
   const isAdmin =
     currentUser && (currentUser.role === 'admin' || currentUser.role === 'superadmin');
+
+  const getTabSyncStatus = (tabId: string): 'unsynced' | 'synced' | null => {
+    if (!unsyncedStatus) return null;
+    switch (tabId) {
+      case 'buku':
+        return unsyncedStatus.books ? 'unsynced' : 'synced';
+      case 'kartu-siswa':
+        return unsyncedStatus.students ? 'unsynced' : 'synced';
+      case 'akun':
+        return unsyncedStatus.admins ? 'unsynced' : 'synced';
+      case 'pinjam-kembali':
+        return unsyncedStatus.transactions ? 'unsynced' : 'synced';
+      case 'pengunjung':
+        return unsyncedStatus.visits ? 'unsynced' : 'synced';
+      case 'halaman-utama':
+        return unsyncedStatus.settings ? 'unsynced' : 'synced';
+      case 'sinkronisasi':
+        return (
+          unsyncedStatus.settings ||
+          unsyncedStatus.books ||
+          unsyncedStatus.students ||
+          unsyncedStatus.transactions ||
+          unsyncedStatus.visits ||
+          unsyncedStatus.admins
+        )
+          ? 'unsynced'
+          : 'synced';
+      default:
+        return null;
+    }
+  };
 
   // Prevent background scrolling when mobile sidebar is open
   useEffect(() => {
@@ -208,6 +239,7 @@ export const AdminLayout: React.FC = () => {
                 {NAV_ITEMS.map((item) => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
+                  const syncStatus = getTabSyncStatus(item.id);
                   return (
                     <button
                       key={item.id}
@@ -216,7 +248,7 @@ export const AdminLayout: React.FC = () => {
                         setActiveTab(item.id);
                         setIsMobileSidebarOpen(false);
                       }}
-                      className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between gap-3 transition-all min-h-[46px] ${
+                      className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between gap-2.5 transition-all min-h-[46px] ${
                         isActive
                           ? 'bg-indigo-600 text-white font-bold shadow-sm shadow-indigo-600/20'
                           : 'text-slate-700 hover:bg-slate-100 font-medium'
@@ -242,7 +274,35 @@ export const AdminLayout: React.FC = () => {
                         </div>
                       </div>
 
-                      {isActive && <ChevronRight className="w-4 h-4 shrink-0 text-white/80" />}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {syncStatus === 'unsynced' && (
+                          <span
+                            className={`px-1.5 py-0.5 text-[9px] font-extrabold rounded-md flex items-center gap-1 ${
+                              isActive
+                                ? 'bg-amber-400 text-amber-950 shadow-2xs'
+                                : 'bg-amber-100 text-amber-800 border border-amber-300'
+                            }`}
+                            title="Ada perubahan lokal yang belum disinkronkan ke Firebase"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                            <span>Lokal</span>
+                          </span>
+                        )}
+                        {syncStatus === 'synced' && (
+                          <span
+                            className={`px-1.5 py-0.5 text-[9px] font-extrabold rounded-md flex items-center gap-1 ${
+                              isActive
+                                ? 'bg-emerald-400 text-emerald-950 shadow-2xs'
+                                : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            }`}
+                            title="Tersinkronkan ke Cloud Firebase"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                            <span>Sinkron</span>
+                          </span>
+                        )}
+                        {isActive && <ChevronRight className="w-4 h-4 shrink-0 text-white/80" />}
+                      </div>
                     </button>
                   );
                 })}
@@ -325,6 +385,7 @@ export const AdminLayout: React.FC = () => {
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
+              const syncStatus = getTabSyncStatus(item.id);
               return (
                 <button
                   key={item.id}
@@ -356,7 +417,35 @@ export const AdminLayout: React.FC = () => {
                     </div>
                   </div>
 
-                  {isActive && <ChevronRight className="w-4 h-4 shrink-0 text-white/80" />}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {syncStatus === 'unsynced' && (
+                      <span
+                        className={`px-1.5 py-0.5 text-[9px] font-extrabold rounded-md flex items-center gap-1 ${
+                          isActive
+                            ? 'bg-amber-400 text-amber-950 shadow-2xs'
+                            : 'bg-amber-100 text-amber-800 border border-amber-300'
+                        }`}
+                        title="Ada perubahan lokal yang belum disinkronkan ke Firebase"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                        <span>Lokal</span>
+                      </span>
+                    )}
+                    {syncStatus === 'synced' && (
+                      <span
+                        className={`px-1.5 py-0.5 text-[9px] font-extrabold rounded-md flex items-center gap-1 ${
+                          isActive
+                            ? 'bg-emerald-400 text-emerald-950 shadow-2xs'
+                            : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        }`}
+                        title="Tersinkronkan ke Cloud Firebase"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                        <span>Sinkron</span>
+                      </span>
+                    )}
+                    {isActive && <ChevronRight className="w-4 h-4 shrink-0 text-white/80" />}
+                  </div>
                 </button>
               );
             })}
