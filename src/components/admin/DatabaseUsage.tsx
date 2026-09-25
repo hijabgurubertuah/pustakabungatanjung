@@ -103,10 +103,10 @@ export const DatabaseUsage: React.FC = () => {
           type="button"
           onClick={handleRefresh}
           disabled={isSyncChecking}
-          className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs shadow-indigo-600/20 transition-all cursor-pointer disabled:opacity-50"
+          className="min-h-[44px] px-4 py-2 rounded-xl bg-[#1E3A5F] hover:bg-[#162C47] active:bg-[#0F1F33] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-50 select-none"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${isSyncChecking ? 'animate-spin' : ''}`} />
-          <span>{isSyncChecking ? 'Menyinkronkan...' : 'Sinkronkan'}</span>
+          <RefreshCw className={`w-4 h-4 ${isSyncChecking ? 'animate-spin' : ''}`} />
+          <span>{isSyncChecking ? 'Menyinkronkan...' : 'Sinkronkan Database'}</span>
         </button>
       </div>
 
@@ -456,42 +456,42 @@ export const DatabaseUsage: React.FC = () => {
         {/* Right 5 cols: Compact Efisiensi & Info Card */}
         <div className="lg:col-span-5 space-y-3">
           {/* Smart Delta Quota Protection Summary */}
-          <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 text-white rounded-xl p-3.5 shadow-xs border border-indigo-500/20 space-y-2.5">
+          <div className="bg-[#1E3A5F] text-white rounded-xl p-3.5 shadow-xs border border-[#142842] space-y-2.5">
             <div className="flex items-center justify-between border-b border-white/10 pb-2">
               <div className="flex items-center gap-1.5">
-                <Zap className="w-4 h-4 text-amber-400" />
+                <Zap className="w-4 h-4 text-[#F5A623]" />
                 <h3 className="text-xs font-bold text-white font-heading">
-                  Efisiensi & Hemat Kuota Cloud
+                  Efisiensi & Kuota Cloud
                 </h3>
               </div>
-              <span className="text-[10px] font-medium text-indigo-300">
+              <span className="text-[10px] font-medium text-blue-200">
                 Cache Aktif
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="bg-white/10 p-2 rounded-lg border border-white/10">
-                <span className="text-[10px] text-indigo-200 block">
+                <span className="text-[10px] text-blue-200 block">
                   Baca Terhemat:
                 </span>
-                <span className="text-sm font-extrabold text-amber-300 font-mono">
+                <span className="text-sm font-extrabold text-[#F5A623] font-mono">
                   +{firebaseUsageStats.savedReadsCount.toLocaleString('id-ID')}
                 </span>
               </div>
 
               <div className="bg-white/10 p-2 rounded-lg border border-white/10">
-                <span className="text-[10px] text-indigo-200 block">
+                <span className="text-[10px] text-blue-200 block">
                   Rata-rata Dokumen:
                 </span>
-                <span className="text-sm font-extrabold text-emerald-300 font-mono">
+                <span className="text-sm font-extrabold text-[#10B981] font-mono">
                   {firebaseUsageStats.avgDocumentSizeBytes} B
                 </span>
               </div>
             </div>
 
-            <div className="pt-1 flex items-center justify-between text-[11px] text-indigo-200 border-t border-white/10">
-              <span>Penyimpanan Berkas Foto:</span>
-              <span className="font-semibold text-emerald-400 flex items-center gap-1">
+            <div className="pt-1 flex items-center justify-between text-[11px] text-blue-200 border-t border-white/10">
+              <span>Penyimpanan Foto:</span>
+              <span className="font-semibold text-[#10B981] flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" />
                 Google Drive
               </span>
@@ -499,9 +499,9 @@ export const DatabaseUsage: React.FC = () => {
           </div>
 
           {/* Spark Quota Summary in 1 line */}
-          <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-2xs flex items-center justify-between text-[11px]">
-            <div className="flex items-center gap-1.5 text-slate-700 font-semibold">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+          <div className="bg-white rounded-xl border border-[#E2E8F0] p-3 shadow-2xs flex items-center justify-between text-[11px]">
+            <div className="flex items-center gap-1.5 text-[#1A1A2E] font-semibold">
+              <Sparkles className="w-3.5 h-3.5 text-[#F5A623]" />
               <span>Batas Kuota Gratis:</span>
             </div>
             <div className="flex items-center gap-2 text-slate-500 font-mono">

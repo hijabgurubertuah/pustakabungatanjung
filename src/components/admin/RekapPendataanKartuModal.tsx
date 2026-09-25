@@ -156,37 +156,37 @@ export const RekapPendataanKartuModal: React.FC<RekapPendataanKartuModalProps> =
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-      <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden">
+      <div className="bg-white rounded-xl shadow-2xl border border-[#E2E8F0] max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden">
         {/* MODAL HEADER */}
-        <div className="bg-slate-900 text-white p-5 flex items-center justify-between shrink-0">
+        <div className="bg-[#1E3A5F] text-white p-5 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center border border-emerald-500/30">
+            <div className="w-10 h-10 bg-white/10 text-[#F5A623] rounded-xl flex items-center justify-center border border-white/20">
               <FileSpreadsheet className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-base font-heading">Rekap Pendataan Kartu Pustaka Siswa</h3>
-              <p className="text-xs text-slate-400">Spreadsheet rekapitulasi data diri, tempat tanggal lahir, & pasfoto Drive</p>
+              <h3 className="font-bold text-base font-heading">Rekap Pendataan Kartu Pustaka</h3>
+              <p className="text-xs text-blue-200">Rekapitulasi data anggota perpustakaan</p>
             </div>
           </div>
 
-          <button onClick={onClose} className="text-slate-400 hover:text-white p-1 rounded-lg">
+          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center text-white/70 hover:text-white rounded-xl hover:bg-white/10 transition-colors cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* CONTROLS & STATS BAR */}
-        <div className="p-4 bg-slate-50 border-b border-slate-200 space-y-3 shrink-0">
+        <div className="p-4 bg-[#F5F7FA] border-b border-[#E2E8F0] space-y-3 shrink-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
             {/* STATS BADGES */}
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 shadow-2xs">
-                Total Siswa: <strong className="text-indigo-600">{students.length}</strong>
+              <span className="px-3 py-1.5 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold text-[#1A1A2E] shadow-2xs">
+                Total Siswa: <strong className="text-[#1E3A5F]">{students.length}</strong>
               </span>
-              <span className="px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-700 shadow-2xs">
-                Lengkap (Pasfoto 3x4): <strong>{totalLengkap}</strong>
+              <span className="px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-[#10B981] shadow-2xs">
+                Lengkap: <strong>{totalLengkap}</strong>
               </span>
-              <span className="px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs font-bold text-amber-700 shadow-2xs">
-                Belum Lengkap: <strong>{totalBelum}</strong>
+              <span className="px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs font-bold text-[#F59E0B] shadow-2xs">
+                Belum: <strong>{totalBelum}</strong>
               </span>
             </div>
 
@@ -194,38 +194,38 @@ export const RekapPendataanKartuModal: React.FC<RekapPendataanKartuModalProps> =
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={handleCopyFormLink}
-                className="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-xl flex items-center gap-1.5 border border-indigo-200 transition-colors cursor-pointer"
+                className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-[#F5F7FA] text-[#1E3A5F] text-xs font-bold rounded-xl flex items-center gap-1.5 border border-[#E2E8F0] transition-all cursor-pointer"
               >
-                {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5 text-indigo-600" />}
-                <span>{copiedLink ? 'Tautan Disalin!' : 'Bagikan Link Formulir'}</span>
+                {copiedLink ? <Check className="w-3.5 h-3.5 text-[#10B981]" /> : <Share2 className="w-3.5 h-3.5 text-[#1E3A5F]" />}
+                <span>{copiedLink ? 'Tersalin' : 'Bagikan Link'}</span>
               </button>
 
               <button
                 onClick={onOpenFormulirMandiri}
-                className="px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold rounded-xl flex items-center gap-1.5 border border-purple-200 transition-colors cursor-pointer"
+                className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-[#F5F7FA] text-[#1A1A2E] text-xs font-bold rounded-xl flex items-center gap-1.5 border border-[#E2E8F0] transition-all cursor-pointer"
               >
-                <UserCheck className="w-3.5 h-3.5 text-purple-600" />
-                <span>Buka Formulir Mandiri</span>
+                <UserCheck className="w-3.5 h-3.5 text-[#10B981]" />
+                <span>Formulir Siswa</span>
               </button>
 
               <button
                 onClick={handleSyncToSheets}
                 disabled={isSyncingSheets}
-                className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                className="min-h-[44px] px-3.5 py-2 bg-[#1E3A5F] hover:bg-[#162C47] active:bg-[#0F1F33] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
               >
                 {isSyncingSheets ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 ) : (
-                  <HardDrive className="w-3.5 h-3.5" />
+                  <HardDrive className="w-3.5 h-3.5 text-[#F5A623]" />
                 )}
-                <span>Kiriman ke Google Sheets</span>
+                <span>Kirim ke Sheets</span>
               </button>
 
               <button
                 onClick={handleExportCSV}
-                className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                className="min-h-[44px] px-4 py-2 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] text-[#1A1A2E] text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
               >
-                <Download className="w-3.5 h-3.5 text-emerald-400" />
+                <Download className="w-3.5 h-3.5" />
                 <span>Ekspor CSV</span>
               </button>
             </div>
@@ -239,8 +239,8 @@ export const RekapPendataanKartuModal: React.FC<RekapPendataanKartuModalProps> =
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari siswa, NISN, kelas, tempat lahir..."
-                className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
+                placeholder="cth: Ahmad / 0098765431"
+                className="w-full min-h-[44px] pl-9 pr-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F]"
               />
             </div>
 
@@ -249,9 +249,9 @@ export const RekapPendataanKartuModal: React.FC<RekapPendataanKartuModalProps> =
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as any)}
-                className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none"
+                className="min-h-[44px] px-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-semibold text-[#1A1A2E] focus:outline-none"
               >
-                <option value="semua">Semua Status Pendataan</option>
+                <option value="semua">Semua Status</option>
                 <option value="lengkap">Lengkap (Pasfoto 3x4)</option>
                 <option value="belum">Belum Lengkap</option>
               </select>
@@ -263,20 +263,20 @@ export const RekapPendataanKartuModal: React.FC<RekapPendataanKartuModalProps> =
         <div className="flex-1 overflow-y-auto p-4">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold sticky top-0 z-10">
+              <tr className="bg-[#F5F7FA] border-b border-[#E2E8F0] text-slate-600 font-bold sticky top-0 z-10">
                 <th className="py-2.5 px-3">Pasfoto 3x4</th>
                 <th className="py-2.5 px-3">Nama Siswa</th>
                 <th className="py-2.5 px-3">NISN / Kelas</th>
                 <th className="py-2.5 px-3">Tempat & Tgl Lahir</th>
                 <th className="py-2.5 px-3">Status Data</th>
-                <th className="py-2.5 px-3">Link Google Drive / Base64</th>
+                <th className="py-2.5 px-3">Link Drive</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#E2E8F0]">
               {filteredStudents.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-slate-400 text-xs">
-                    Tidak ada data siswa yang cocok dengan kriteria pencarian
+                    Tidak ada data siswa yang cocok
                   </td>
                 </tr>
               ) : (
@@ -285,23 +285,23 @@ export const RekapPendataanKartuModal: React.FC<RekapPendataanKartuModalProps> =
                   const isDrive = student.photoUrl && (student.photoUrl.includes('googleusercontent.com') || student.photoUrl.includes('drive.google.com'));
 
                   return (
-                    <tr key={student.id} className="hover:bg-slate-50/70">
+                    <tr key={student.id} className="hover:bg-[#F5F7FA]/70">
                       <td className="py-2.5 px-3">
                         <img
                           src={student.photoUrl}
                           alt=""
-                          className="w-10 h-13 object-cover rounded-lg border border-slate-200 shadow-2xs bg-slate-100"
+                          className="w-10 h-13 object-cover rounded-lg border border-[#E2E8F0] shadow-2xs bg-slate-100"
                         />
                       </td>
 
-                      <td className="py-2.5 px-3 font-bold text-slate-900">
+                      <td className="py-2.5 px-3 font-bold text-[#1A1A2E]">
                         <div>{student.name}</div>
                         <div className="text-[10px] text-slate-400 font-mono">{student.id}</div>
                       </td>
 
-                      <td className="py-2.5 px-3 text-slate-700">
+                      <td className="py-2.5 px-3 text-[#1A1A2E]">
                         <div className="font-mono font-semibold">{student.nisn}</div>
-                        <span className="inline-block px-1.5 py-0.5 bg-slate-100 text-slate-700 font-bold rounded text-[10px] mt-0.5">
+                        <span className="inline-block px-1.5 py-0.5 bg-[#F5F7FA] text-[#1E3A5F] font-bold rounded text-[10px] mt-0.5 border border-[#E2E8F0]">
                           {student.classGrade}
                         </span>
                       </td>
@@ -309,7 +309,7 @@ export const RekapPendataanKartuModal: React.FC<RekapPendataanKartuModalProps> =
                       <td className="py-2.5 px-3 text-slate-700">
                         {student.pob || student.dob ? (
                           <div>
-                            <div className="font-medium">{student.pob || '-'}</div>
+                            <div className="font-medium text-[#1A1A2E]">{student.pob || '-'}</div>
                             <div className="text-[10px] text-slate-400">{student.dob || '-'}</div>
                           </div>
                         ) : (
@@ -326,7 +326,7 @@ export const RekapPendataanKartuModal: React.FC<RekapPendataanKartuModalProps> =
                         ) : (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 font-bold rounded-md text-[10px]">
                             <AlertCircle className="w-3 h-3" />
-                            Belum Lengkap
+                            Belum
                           </span>
                         )}
                       </td>
@@ -337,15 +337,15 @@ export const RekapPendataanKartuModal: React.FC<RekapPendataanKartuModalProps> =
                             href={student.photoUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-indigo-600 hover:underline text-[11px] font-medium flex items-center gap-1 truncate"
+                            className="text-[#1E3A5F] hover:underline text-[11px] font-medium flex items-center gap-1 truncate"
                           >
-                            <HardDrive className="w-3 h-3 shrink-0 text-emerald-600" />
-                            <span className="truncate">Google Drive Link</span>
+                            <HardDrive className="w-3 h-3 shrink-0 text-[#10B981]" />
+                            <span className="truncate">Google Drive</span>
                             <ExternalLink className="w-3 h-3 shrink-0" />
                           </a>
                         ) : student.photoUrl ? (
                           <span className="text-slate-500 font-mono text-[10px] truncate block" title={student.photoUrl}>
-                            Base64 ({student.photoUrl.substring(0, 30)}...)
+                            Base64
                           </span>
                         ) : (
                           <span className="text-slate-400 italic">-</span>
@@ -360,13 +360,10 @@ export const RekapPendataanKartuModal: React.FC<RekapPendataanKartuModalProps> =
         </div>
 
         {/* MODAL FOOTER */}
-        <div className="p-4 bg-slate-100 border-t border-slate-200 flex items-center justify-between shrink-0">
-          <div className="text-xs text-slate-500">
-            * Data rekap siap diimpor ke Google Sheets, Excel, atau disinkronkan ke sistem pusat.
-          </div>
+        <div className="p-4 bg-[#F5F7FA] border-t border-[#E2E8F0] flex items-center justify-end shrink-0">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-semibold cursor-pointer"
+            className="min-h-[44px] px-5 py-2 bg-[#1E3A5F] hover:bg-[#162C47] text-white rounded-xl text-xs font-bold cursor-pointer transition-all"
           >
             Tutup
           </button>

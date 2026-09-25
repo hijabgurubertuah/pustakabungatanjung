@@ -77,70 +77,70 @@ export const DashboardStats: React.FC = () => {
       {/* 4 Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Koleksi */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5">
+        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500">Total Koleksi</span>
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[#F5F7FA] text-[#1E3A5F] flex items-center justify-center border border-[#E2E8F0]">
               <BookOpen className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-slate-900 font-heading">{totalBooks}</span>
-            <span className="text-xs text-slate-400 font-medium">eksemplar</span>
+            <span className="text-2xl font-bold text-[#1A1A2E] font-heading">{totalBooks}</span>
+            <span className="text-xs text-slate-500 font-medium">eksemplar</span>
           </div>
-          <div className="mt-1 text-[11px] text-slate-500 flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-            <span>Tersedia: <strong>{totalAvailable}</strong> buku</span>
+          <div className="mt-1 text-xs text-slate-500 flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#10B981] inline-block" />
+            <span>Tersedia: <strong className="text-[#1A1A2E]">{totalAvailable}</strong> buku</span>
           </div>
         </div>
 
         {/* Buku Dipinjam */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5">
+        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500">Buku Dipinjam</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 text-[#F5A623] flex items-center justify-center border border-amber-200">
               <BookmarkCheck className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-slate-900 font-heading">{activeLoans.length}</span>
-            <span className="text-xs text-slate-400 font-medium">transaksi aktif</span>
+            <span className="text-2xl font-bold text-[#1A1A2E] font-heading">{activeLoans.length}</span>
+            <span className="text-xs text-slate-500 font-medium">transaksi aktif</span>
           </div>
-          <div className="mt-1 text-[11px] text-amber-600 font-semibold">
+          <div className="mt-1 text-xs text-[#F59E0B] font-semibold">
             {transactions.filter((t) => t.status === 'Terlambat').length} melewati jatuh tempo
           </div>
         </div>
 
         {/* Anggota Siswa */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5">
+        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500">Anggota Siswa</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#10B981] flex items-center justify-center border border-emerald-200">
               <Users className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-slate-900 font-heading">{students.length}</span>
-            <span className="text-xs text-slate-400 font-medium">terdaftar</span>
+            <span className="text-2xl font-bold text-[#1A1A2E] font-heading">{students.length}</span>
+            <span className="text-xs text-slate-500 font-medium">terdaftar</span>
           </div>
-          <div className="mt-1 text-[11px] text-slate-500">
+          <div className="mt-1 text-xs text-slate-500">
             SMPN 1 Bengkalis
           </div>
         </div>
 
         {/* Kunjungan Hari Ini */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5">
+        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500">Kunjungan Hari Ini</span>
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[#F5F7FA] text-[#1E3A5F] flex items-center justify-center border border-[#E2E8F0]">
               <CalendarCheck className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-slate-900 font-heading">{todayVisits.length}</span>
-            <span className="text-xs text-slate-400 font-medium">siswa hadir</span>
+            <span className="text-2xl font-bold text-[#1A1A2E] font-heading">{todayVisits.length}</span>
+            <span className="text-xs text-slate-500 font-medium">siswa hadir</span>
           </div>
-          <div className="mt-1 text-[11px] text-indigo-600 font-medium">
+          <div className="mt-1 text-xs text-[#1E3A5F] font-semibold">
             Total {visits.length} riwayat kunjungan
           </div>
         </div>
@@ -149,57 +149,57 @@ export const DashboardStats: React.FC = () => {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Monthly Trend Area Chart */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-indigo-600" />
-              <h3 className="text-sm font-bold text-slate-800 font-heading">Tren Peminjaman Bulanan</h3>
+              <TrendingUp className="w-4 h-4 text-[#1E3A5F]" />
+              <h3 className="text-sm font-bold text-[#1A1A2E] font-heading">Tren Peminjaman Bulanan</h3>
             </div>
-            <span className="text-xs font-semibold text-slate-400">Tahun 2026</span>
+            <span className="text-xs font-medium text-slate-400">Tahun 2026</span>
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={monthlyLoanData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="loanGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#4F46E5" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="#1E3A5F" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#1E3A5F" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="bulan" tickLine={false} axisLine={{ stroke: '#e2e8f0' }} tick={{ fill: '#64748b', fontSize: 12 }} />
-                <YAxis tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+                <XAxis dataKey="bulan" tickLine={false} axisLine={{ stroke: '#E2E8F0' }} tick={{ fill: '#64748B', fontSize: 12 }} />
+                <YAxis tickLine={false} axisLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
-                  itemStyle={{ color: '#818cf8' }}
+                  contentStyle={{ backgroundColor: '#1A1A2E', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                  itemStyle={{ color: '#F5A623' }}
                 />
-                <Area type="monotone" dataKey="total" stroke="#4F46E5" strokeWidth={2.5} fillOpacity={1} fill="url(#loanGradient)" />
+                <Area type="monotone" dataKey="total" stroke="#1E3A5F" strokeWidth={2.5} fillOpacity={1} fill="url(#loanGradient)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Top Borrowed Books Bar Chart */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-emerald-600" />
-              <h3 className="text-sm font-bold text-slate-800 font-heading">Buku Paling Sering Dipinjam</h3>
+              <BarChart3 className="w-4 h-4 text-[#F5A623]" />
+              <h3 className="text-sm font-bold text-[#1A1A2E] font-heading">Buku Paling Sering Dipinjam</h3>
             </div>
-            <span className="text-xs font-semibold text-slate-400">Top 5</span>
+            <span className="text-xs font-medium text-slate-400">Top 5</span>
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartTopBooks} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                <XAxis type="number" tickLine={false} axisLine={{ stroke: '#e2e8f0' }} tick={{ fill: '#64748b', fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} tick={{ fill: '#475569', fontSize: 11 }} width={110} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" horizontal={false} />
+                <XAxis type="number" tickLine={false} axisLine={{ stroke: '#E2E8F0' }} tick={{ fill: '#64748B', fontSize: 11 }} />
+                <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} tick={{ fill: '#1A1A2E', fontSize: 11 }} width={110} />
                 <Tooltip
                   formatter={(value: any) => [`${value} kali`, 'Peminjaman']}
                   labelFormatter={(name) => `Judul: ${name}`}
-                  contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                  contentStyle={{ backgroundColor: '#1A1A2E', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
                 />
-                <Bar dataKey="peminjaman" fill="#10B981" radius={[0, 6, 6, 0]} barSize={18} />
+                <Bar dataKey="peminjaman" fill="#F5A623" radius={[0, 6, 6, 0]} barSize={18} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -207,11 +207,11 @@ export const DashboardStats: React.FC = () => {
       </div>
 
       {/* Reward Leaderboard: Most Active Visitors */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Award className="w-4 h-4 text-amber-500" />
-            <h3 className="text-sm font-bold text-slate-800 font-heading">
+            <Award className="w-4 h-4 text-[#F5A623]" />
+            <h3 className="text-sm font-bold text-[#1A1A2E] font-heading">
               Peringkat Pengunjung Teraktif (Apresiasi Minat Baca)
             </h3>
           </div>
@@ -221,7 +221,7 @@ export const DashboardStats: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-semibold">
+              <tr className="bg-[#F5F7FA] border-b border-[#E2E8F0] text-slate-600 font-semibold">
                 <th className="py-3 px-4 w-16 text-center">Peringkat</th>
                 <th className="py-3 px-4">Nama Siswa</th>
                 <th className="py-3 px-4">Kelas</th>
@@ -230,9 +230,9 @@ export const DashboardStats: React.FC = () => {
                 <th className="py-3 px-4 text-center">Status Reward</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#E2E8F0]">
               {sortedStudents.map((s, idx) => (
-                <tr key={s.id} className="hover:bg-slate-50/50">
+                <tr key={s.id} className="hover:bg-[#F5F7FA]">
                   <td className="py-3 px-4 text-center font-bold">
                     <span
                       className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
@@ -256,7 +256,7 @@ export const DashboardStats: React.FC = () => {
                   </td>
                   <td className="py-3 px-4 text-slate-600 font-medium">{s.classGrade}</td>
                   <td className="py-3 px-4 font-mono text-slate-500">{s.id}</td>
-                  <td className="py-3 px-4 text-right font-bold text-indigo-600 text-sm">
+                  <td className="py-3 px-4 text-right font-bold text-[#1E3A5F] text-sm">
                     {s.visitCount}x
                   </td>
                   <td className="py-3 px-4 text-center">

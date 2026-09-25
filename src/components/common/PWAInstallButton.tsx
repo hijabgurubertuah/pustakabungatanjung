@@ -41,31 +41,31 @@ export const PWAInstallButton: React.FC = () => {
 
         {showIOSGuide && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-            <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in duration-200">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl border border-[#E2E8F0] animate-in fade-in zoom-in duration-200">
+              <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
                 <div className="flex items-center gap-2">
-                  <Smartphone className="w-5 h-5 text-indigo-600" />
-                  <h3 className="text-sm font-bold text-slate-900">Install di iPhone / iPad</h3>
+                  <Smartphone className="w-5 h-5 text-[#1E3A5F]" />
+                  <h3 className="text-sm font-bold text-[#1A1A2E]">Install di iPhone / iPad</h3>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowIOSGuide(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-[#F5F7FA]"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="mt-4 space-y-3 text-xs text-slate-600 leading-relaxed">
-                <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100 flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
+              <div className="mt-4 space-y-3 text-xs text-[#1A1A2E] leading-relaxed">
+                <div className="p-3 bg-[#F5F7FA] rounded-xl border border-[#E2E8F0] flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
                   <p>
-                    Tekan tombol <strong>Bagikan (Share)</strong> <Share className="w-3.5 h-3.5 inline text-indigo-600 mx-0.5" /> di menu bawah browser Safari Anda.
+                    Tekan tombol <strong>Bagikan (Share)</strong> <Share className="w-3.5 h-3.5 inline text-[#1E3A5F] mx-0.5" /> di menu bawah browser Safari Anda.
                   </p>
                 </div>
 
-                <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100 flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
+                <div className="p-3 bg-[#F5F7FA] rounded-xl border border-[#E2E8F0] flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
                   <p>
                     Gulir ke bawah lalu pilih opsi <strong>Tambahkan ke Layar Utama (Add to Home Screen)</strong>.
                   </p>

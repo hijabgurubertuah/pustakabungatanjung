@@ -341,19 +341,19 @@ export const BarcodeScannerModal: React.FC<ScannerProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-xl shadow-2xl border border-[#E2E8F0] max-w-md w-full overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/70">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E2E8F0] bg-[#F5F7FA]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#1E3A5F] text-[#F5A623] flex items-center justify-center">
               <ScanLine className="w-4 h-4" />
             </div>
-            <h3 className="font-semibold text-slate-800 text-base">{title}</h3>
+            <h3 className="font-bold text-[#1A1A2E] text-base font-heading">{title}</h3>
           </div>
           
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors cursor-pointer"
+            className="w-10 h-10 rounded-xl hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors cursor-pointer"
             aria-label="Tutup"
           >
             <X className="w-4 h-4" />
@@ -366,7 +366,7 @@ export const BarcodeScannerModal: React.FC<ScannerProps> = ({
           <div 
             onClick={handleTapToFocus}
             className="relative bg-slate-900 rounded-xl overflow-hidden min-h-[220px] h-[260px] border border-slate-800 cursor-pointer select-none group"
-            title="Arahkan barcode atau ketuk untuk memfokuskan"
+            title="Arahkan barcode atau ketuk untuk fokus"
           >
             <div id={readerElementId} className="w-full h-full" />
 
@@ -374,11 +374,11 @@ export const BarcodeScannerModal: React.FC<ScannerProps> = ({
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-slate-900/90 text-slate-300">
                 {cameraError ? (
                   <>
-                    <AlertCircle className="w-8 h-8 text-amber-400 mb-2" />
+                    <AlertCircle className="w-8 h-8 text-[#F5A623] mb-2" />
                     <p className="text-xs text-slate-300 max-w-xs">{cameraError}</p>
                     <button
                       onClick={startCamera}
-                      className="mt-3 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                      className="mt-3 min-h-[44px] px-4 py-2 bg-[#1E3A5F] hover:bg-[#162C47] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                       Coba Kamera Lagi
@@ -386,8 +386,8 @@ export const BarcodeScannerModal: React.FC<ScannerProps> = ({
                   </>
                 ) : (
                   <div className="flex flex-col items-center gap-2">
-                    <RefreshCw className="w-6 h-6 animate-spin text-indigo-400" />
-                    <span className="text-xs text-slate-400">Menghubungkan kamera & fokus...</span>
+                    <RefreshCw className="w-6 h-6 animate-spin text-[#F5A623]" />
+                    <span className="text-xs text-slate-400">Menghubungkan kamera...</span>
                   </div>
                 )}
               </div>
@@ -396,11 +396,11 @@ export const BarcodeScannerModal: React.FC<ScannerProps> = ({
             {/* Target Reticle Overlay */}
             {cameraActive && (
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center p-4">
-                <div className={`w-60 h-32 border-2 ${inlineError ? 'border-rose-400 bg-rose-950/20' : tapFocusTriggered ? 'border-amber-300 scale-102' : 'border-emerald-400/80'} rounded-xl relative shadow-[0_0_15px_rgba(52,211,153,0.3)] transition-all duration-200`}>
-                  <div className={`absolute -top-1 -left-1 w-3.5 h-3.5 border-t-2 border-l-2 ${inlineError ? 'border-rose-400' : 'border-emerald-400'}`} />
-                  <div className={`absolute -top-1 -right-1 w-3.5 h-3.5 border-t-2 border-r-2 ${inlineError ? 'border-rose-400' : 'border-emerald-400'}`} />
-                  <div className={`absolute -bottom-1 -left-1 w-3.5 h-3.5 border-b-2 border-l-2 ${inlineError ? 'border-rose-400' : 'border-emerald-400'}`} />
-                  <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 border-b-2 border-r-2 ${inlineError ? 'border-rose-400' : 'border-emerald-400'}`} />
+                <div className={`w-60 h-32 border-2 ${inlineError ? 'border-rose-400 bg-rose-950/20' : tapFocusTriggered ? 'border-[#F5A623] scale-102' : 'border-[#10B981]/80'} rounded-xl relative shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all duration-200`}>
+                  <div className={`absolute -top-1 -left-1 w-3.5 h-3.5 border-t-2 border-l-2 ${inlineError ? 'border-rose-400' : 'border-[#10B981]'}`} />
+                  <div className={`absolute -top-1 -right-1 w-3.5 h-3.5 border-t-2 border-r-2 ${inlineError ? 'border-rose-400' : 'border-[#10B981]'}`} />
+                  <div className={`absolute -bottom-1 -left-1 w-3.5 h-3.5 border-b-2 border-l-2 ${inlineError ? 'border-rose-400' : 'border-[#10B981]'}`} />
+                  <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 border-b-2 border-r-2 ${inlineError ? 'border-rose-400' : 'border-[#10B981]'}`} />
                   <div className={`w-full h-0.5 ${inlineError ? 'bg-rose-400' : 'bg-rose-500'} absolute top-1/2 -translate-y-1/2 shadow-[0_0_6px_#f43f5e] animate-pulse`} />
                 </div>
                 
@@ -414,11 +414,11 @@ export const BarcodeScannerModal: React.FC<ScannerProps> = ({
                   ) : tapFocusTriggered ? (
                     <div className="flex items-center gap-1.5 text-amber-200 text-[11px] font-medium">
                       <Focus className="w-3 h-3 text-amber-300 animate-spin" />
-                      <span>Memfokuskan lensa...</span>
+                      <span>Fokus lensa...</span>
                     </div>
                   ) : (
                     <span className="text-[11px] text-white/95">
-                      Posisikan barcode kartu di dalam kotak (Ketuk untuk fokus)
+                      Arahkan barcode ke dalam kotak
                     </span>
                   )}
                 </div>
@@ -426,11 +426,8 @@ export const BarcodeScannerModal: React.FC<ScannerProps> = ({
             )}
           </div>
 
-          {/* Manual Input Fallback (No autoFocus to prevent mobile keyboard popup) */}
+          {/* Manual Input Fallback */}
           <form onSubmit={handleManualSubmit} className="space-y-1.5 pt-1">
-            <label className="text-xs font-medium text-slate-600 block">
-              Atau ketik ID / NISN manual:
-            </label>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Keyboard className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -439,13 +436,13 @@ export const BarcodeScannerModal: React.FC<ScannerProps> = ({
                   value={manualCode}
                   onChange={(e) => setManualCode(e.target.value)}
                   placeholder={placeholder}
-                  className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800 placeholder-slate-400"
+                  className="w-full min-h-[44px] pl-9 pr-3 py-2 text-xs bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl focus:outline-none focus:border-[#1E3A5F] text-[#1A1A2E] placeholder-slate-400"
                 />
               </div>
               <button
                 type="submit"
                 disabled={!manualCode.trim()}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+                className="min-h-[44px] px-5 py-2 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] disabled:bg-[#E2E8F0] disabled:text-slate-400 text-[#1A1A2E] text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer select-none"
               >
                 <Check className="w-4 h-4" />
                 Pilih

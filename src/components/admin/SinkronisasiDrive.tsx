@@ -22,6 +22,7 @@ import {
   ArrowRight,
   BookOpen,
   IdCard,
+  X,
 } from 'lucide-react';
 import {
   APPS_SCRIPT_CODE,
@@ -336,83 +337,65 @@ export const SinkronisasiDrive: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shrink-0">
-            <Cloud className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-[#F5F7FA] text-[#1E3A5F] flex items-center justify-center border border-[#E2E8F0] shrink-0">
+            <Cloud className="w-5 h-5 text-[#1E3A5F]" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-slate-900 font-heading">
+            <h2 className="text-base font-bold text-[#1A1A2E] font-heading">
               Sinkronisasi Cloud Drive & Firebase
             </h2>
             <p className="text-xs text-slate-500">
-              Pengelolaan logo resmi, pencadangan Google Drive via Apps Script, dan database Firebase
+              Pengelolaan logo resmi, cadangan Google Drive via Apps Script, dan Firestore
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-[#10B981] border border-emerald-200">
+            <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
             Firebase Aktif
           </span>
           <button
+            type="button"
             onClick={() => setShowCodeModal(true)}
-            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all"
+            className="min-h-[44px] px-3.5 py-2 bg-[#F5F7FA] hover:bg-[#E2E8F0] text-[#1E3A5F] rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors border border-[#E2E8F0] cursor-pointer"
+            title="Lihat dan salin kode Google Apps Script"
           >
-            <Code className="w-3.5 h-3.5" />
-            <span>Kode Apps Script</span>
+            <Code className="w-4 h-4" />
+            <span>Kode Script</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleSaveSettings}
+            disabled={isSavingSettings}
+            className="min-h-[44px] px-4 py-2 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] disabled:bg-[#E2E8F0] disabled:text-slate-400 text-[#1A1A2E] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer select-none"
+            title="Simpan pengaturan Apps Script ke Firebase"
+          >
+            {isSavingSettings ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <UploadCloud className="w-4 h-4" />
+            )}
+            <span>Simpan ke Firebase</span>
           </button>
         </div>
-      </div>
-
-      {/* Realtime & Quota Notice Banner */}
-      <div className="bg-emerald-50 border border-emerald-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-emerald-900 shadow-2xs">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl shrink-0">
-            <UploadCloud className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="font-bold text-emerald-950 flex items-center gap-1.5 flex-wrap">
-              <span>Sinkronisasi Realtime Google Apps Script & Cloud Firestore</span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200/70 text-emerald-800">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                Realtime Aktif
-              </span>
-            </div>
-            <p className="text-emerald-700 text-[11px] mt-0.5">
-              Tautan Web App Apps Script (exec) atau ID Folder yang disimpan di sini otomatis tersinkronkan ke Firebase dan langsung terbaca di browser/perangkat lain secara realtime.
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={handleSaveSettings}
-          disabled={isSavingSettings}
-          className="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shrink-0 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
-        >
-          {isSavingSettings ? (
-            <RefreshCw className="w-4 h-4 animate-spin" />
-          ) : (
-            <UploadCloud className="w-4 h-4" />
-          )}
-          <span>Simpan ke Firebase</span>
-        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Kolom Kiri: Pengaturan Logo Sekolah (Khusus Super Admin) */}
         <div className="lg:col-span-6 space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="bg-white rounded-xl border border-[#E2E8F0] p-5 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
               <div className="flex items-center gap-2">
-                <ImageIcon className="w-4 h-4 text-indigo-600" />
-                <h3 className="text-sm font-bold text-slate-900 font-heading">
+                <ImageIcon className="w-4 h-4 text-[#1E3A5F]" />
+                <h3 className="text-sm font-bold text-[#1A1A2E] font-heading">
                   Logo Perpustakaan & Sekolah
                 </h3>
               </div>
               {isSuperAdmin ? (
-                <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded-md border border-indigo-200">
+                <span className="px-2 py-0.5 bg-[#F5F7FA] text-[#1E3A5F] text-[10px] font-bold rounded-md border border-[#E2E8F0]">
                   Super Admin
                 </span>
               ) : (
@@ -423,18 +406,18 @@ export const SinkronisasiDrive: React.FC = () => {
             </div>
 
             {/* Logo Saat Ini */}
-            <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl border border-slate-200">
-              <div className="w-16 h-16 rounded-xl bg-white border border-slate-200 p-1 flex items-center justify-center shadow-xs overflow-hidden shrink-0">
+            <div className="flex items-center gap-4 p-3 bg-[#F5F7FA] rounded-xl border border-[#E2E8F0]">
+              <div className="w-16 h-16 rounded-xl bg-white border border-[#E2E8F0] p-1 flex items-center justify-center shadow-xs overflow-hidden shrink-0">
                 {logoUrl ? (
                   <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
                 ) : (
-                  <div className="w-full h-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs rounded-lg">
+                  <div className="w-full h-full bg-[#1E3A5F] text-white flex items-center justify-center font-bold text-xs rounded-lg">
                     SMP 1
                   </div>
                 )}
               </div>
               <div className="space-y-1 min-w-0 flex-1">
-                <div className="text-xs font-semibold text-slate-900 truncate">
+                <div className="text-xs font-semibold text-[#1A1A2E] truncate">
                   {logoUrl ? 'Logo Kustom Tersimpan' : 'Logo Default Sistem (Bunga Tanjung)'}
                 </div>
                 <div className="text-[11px] text-slate-500 truncate">
@@ -442,8 +425,9 @@ export const SinkronisasiDrive: React.FC = () => {
                 </div>
                 {isSuperAdmin && logoUrl && (
                   <button
+                    type="button"
                     onClick={() => updateLogo('')}
-                    className="text-[11px] text-rose-600 hover:text-rose-700 font-medium hover:underline"
+                    className="text-[11px] text-[#EF4444] hover:underline font-medium cursor-pointer"
                   >
                     Kembalikan ke Default
                   </button>
@@ -455,10 +439,10 @@ export const SinkronisasiDrive: React.FC = () => {
             {isSuperAdmin ? (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="block text-xs font-semibold text-slate-700">
-                    Unggah Berkas Logo Baru ke Google Drive
+                  <label className="block text-xs font-semibold text-[#1A1A2E]">
+                    Unggah Berkas Logo Baru
                   </label>
-                  <label className="border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-colors bg-slate-50/60 hover:bg-indigo-50/30 text-center">
+                  <label className="border-2 border-dashed border-[#E2E8F0] hover:border-[#1E3A5F] rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-colors bg-[#F5F7FA] hover:bg-slate-100 text-center">
                     <input
                       type="file"
                       accept="image/*"
@@ -466,8 +450,8 @@ export const SinkronisasiDrive: React.FC = () => {
                       className="hidden"
                     />
                     <UploadCloud className="w-8 h-8 text-slate-400 mb-1" />
-                    <span className="text-xs font-medium text-slate-700">
-                      {selectedFile ? selectedFile.name : 'Pilih atau Tarik Berkas Logo'}
+                    <span className="text-xs font-medium text-[#1A1A2E]">
+                      {selectedFile ? selectedFile.name : 'Pilih Berkas Logo'}
                     </span>
                     <span className="text-[10px] text-slate-400 mt-0.5">
                       PNG, JPG, SVG atau WEBP (Maks. 5 MB)
@@ -477,26 +461,27 @@ export const SinkronisasiDrive: React.FC = () => {
 
                 {/* Pratinjau Berkas Terpilih */}
                 {previewImage && (
-                  <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 flex items-center justify-between gap-3">
+                  <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/80 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5">
                       <img
                         src={previewImage}
                         alt="Preview"
-                        className="w-10 h-10 object-contain rounded-lg bg-white border border-indigo-200 p-0.5"
+                        className="w-10 h-10 object-contain rounded-lg bg-white border border-[#E2E8F0] p-0.5"
                       />
                       <div className="text-xs">
-                        <div className="font-semibold text-indigo-950 truncate max-w-[180px]">
+                        <div className="font-semibold text-[#1A1A2E] truncate max-w-[180px]">
                           {selectedFile?.name}
                         </div>
-                        <div className="text-[10px] text-indigo-600">
-                          Siap diunggah ke Google Drive
+                        <div className="text-[10px] text-slate-500">
+                          Siap diunggah
                         </div>
                       </div>
                     </div>
                     <button
+                      type="button"
                       onClick={handleUploadLogoToDrive}
                       disabled={isUploadingLogo}
-                      className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                      className="min-h-[44px] px-3.5 py-2 bg-[#1E3A5F] hover:bg-[#162C47] text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-xs disabled:opacity-50 cursor-pointer"
                     >
                       {isUploadingLogo ? (
                         <>
@@ -514,22 +499,23 @@ export const SinkronisasiDrive: React.FC = () => {
                 )}
 
                 {/* Alternatif: Tautan URL Langsung */}
-                <div className="pt-2 border-t border-slate-100 space-y-2">
-                  <label className="block text-[11px] font-semibold text-slate-600">
-                    Atau Masukkan Tautan Gambar Langsung (URL)
+                <div className="pt-2 border-t border-[#E2E8F0] space-y-2">
+                  <label className="block text-xs font-semibold text-[#1A1A2E]">
+                    Atau Masukkan Tautan Logo Langsung (URL)
                   </label>
                   <div className="flex gap-2">
                     <input
                       type="url"
-                      placeholder="https://.../logo.png"
+                      placeholder="cth: https://domain.sch.id/logo.png"
                       value={directUrlInput}
                       onChange={(e) => setDirectUrlInput(e.target.value)}
-                      className="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="flex-1 min-h-[44px] px-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-[#F5F7FA] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] text-[#1A1A2E]"
                     />
                     <button
+                      type="button"
                       onClick={handleSaveDirectUrl}
                       disabled={!directUrlInput.trim()}
-                      className="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-semibold disabled:opacity-40"
+                      className="min-h-[44px] px-4 py-2 bg-[#1E3A5F] hover:bg-[#162C47] text-white rounded-xl text-xs font-semibold disabled:opacity-40 cursor-pointer"
                     >
                       Terapkan
                     </button>
@@ -537,57 +523,52 @@ export const SinkronisasiDrive: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="p-3 bg-slate-50 text-slate-500 rounded-xl text-xs text-center">
-                Perubahan logo perpustakaan memerlukan wewenang akun Super Admin.
+              <div className="p-3 bg-[#F5F7FA] text-slate-500 rounded-xl text-xs text-center">
+                Perubahan logo perpustakaan memerlukan wewenang Super Admin.
               </div>
             )}
           </div>
 
-          {/* Card Penyimpanan Gambar Google Drive & Migrasi Massal (Hemat Kuota Firestore) */}
-          <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 rounded-2xl p-5 text-white shadow-md space-y-4 border border-indigo-800/40">
+          {/* Card Penyimpanan Gambar Google Drive & Migrasi Massal */}
+          <div className="bg-[#1E3A5F] rounded-xl p-5 text-white shadow-md space-y-4 border border-[#142842]">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-indigo-500/20 rounded-lg border border-indigo-400/30">
-                  <HardDrive className="w-4 h-4 text-emerald-300" />
+                <div className="p-1.5 bg-white/10 rounded-lg">
+                  <HardDrive className="w-4 h-4 text-[#F5A623]" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-white font-heading">
                     Penyimpanan Gambar Google Drive
                   </h3>
-                  <p className="text-[10px] text-indigo-200">
-                    Otomatis unggah cover buku & foto siswa ke Drive (Hemat Kuota Firestore 100%)
+                  <p className="text-[11px] text-slate-300">
+                    Otomatis simpan sampul buku & foto siswa ke Google Drive
                   </p>
                 </div>
               </div>
-              <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded-md border border-emerald-400/30">
+              <span className="px-2 py-0.5 bg-[#F5A623] text-[#1A1A2E] text-[10px] font-bold rounded-md">
                 Drive Cloud
               </span>
             </div>
 
-            <div className="text-xs text-indigo-100 space-y-2 bg-white/5 p-3 rounded-xl border border-white/10">
-              <p className="leading-relaxed">
-                Setiap kali Anda memfoto atau mengunggah <strong>sampul buku</strong> dan <strong>foto siswa</strong>, sistem otomatis mengunggahnya ke Google Drive melalui Google Apps Script.
-              </p>
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                  <span className="text-[10px] text-indigo-300 block font-medium">Folder Sampul:</span>
-                  <span className="text-xs font-semibold text-white">📁 Sampul Buku</span>
-                </div>
-                <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                  <span className="text-[10px] text-indigo-300 block font-medium">Folder Foto:</span>
-                  <span className="text-xs font-semibold text-white">📁 Foto Siswa</span>
-                </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="p-2.5 bg-white/10 rounded-lg border border-white/10">
+                <span className="text-[10px] text-slate-300 block font-medium">Folder Sampul:</span>
+                <span className="text-xs font-semibold text-white">📁 Sampul Buku</span>
+              </div>
+              <div className="p-2.5 bg-white/10 rounded-lg border border-white/10">
+                <span className="text-[10px] text-slate-300 block font-medium">Folder Foto:</span>
+                <span className="text-xs font-semibold text-white">📁 Foto Siswa</span>
               </div>
             </div>
 
             {/* Status Gambar Base64 vs Drive */}
-            <div className="bg-white/5 p-3 rounded-xl border border-white/10 flex items-center justify-between">
+            <div className="bg-white/10 p-3 rounded-lg border border-white/10 flex items-center justify-between">
               <div>
-                <span className="text-[11px] text-indigo-200 block">Status Gambar di Database:</span>
+                <span className="text-[11px] text-slate-300 block">Status Gambar di Database:</span>
                 <span className="text-xs font-bold text-white">
                   {totalBase64Count === 0
-                    ? ' Semua gambar sudah optimal (Menggunakan Tautan/Drive)'
-                    : `⚠️ Ditemukan ${totalBase64Count} gambar lokal Base64 (${base64BooksCount} sampul, ${base64StudentsCount} foto siswa)`}
+                    ? ' Semua gambar sudah optimal (Tautan Google Drive)'
+                    : `⚠️ ${totalBase64Count} gambar lokal Base64 (${base64BooksCount} sampul, ${base64StudentsCount} foto siswa)`}
                 </span>
               </div>
             </div>
@@ -598,7 +579,7 @@ export const SinkronisasiDrive: React.FC = () => {
                 <button
                   onClick={handleMigrateAllImagesToDrive}
                   disabled={isMigratingImages || !scriptUrlInput}
-                  className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-50 cursor-pointer"
+                  className="w-full min-h-[44px] py-2.5 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] text-[#1A1A2E] font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {isMigratingImages ? (
                     <>
@@ -609,15 +590,15 @@ export const SinkronisasiDrive: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4 text-amber-300" />
-                      <span>Pindahkan Semua Gambar Base64 ke Google Drive Sekarang</span>
+                      <Sparkles className="w-4 h-4 text-[#1A1A2E]" />
+                      <span>Pindahkan Semua Gambar Base64 ke Google Drive</span>
                     </>
                   )}
                 </button>
                 {migrationProgress && (
-                  <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                  <div className="w-full bg-white/20 rounded-full h-1.5 overflow-hidden">
                     <div
-                      className="bg-emerald-400 h-1.5 rounded-full transition-all duration-300"
+                      className="bg-[#F5A623] h-1.5 rounded-full transition-all duration-300"
                       style={{
                         width: `${Math.round(((migrationProgress.current) / (migrationProgress.total || 1)) * 100)}%`,
                       }}
@@ -629,10 +610,10 @@ export const SinkronisasiDrive: React.FC = () => {
           </div>
 
           {/* Card Status & Cadangan Google Sheets */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+          <div className="bg-white rounded-xl border border-[#E2E8F0] p-5 shadow-xs space-y-4">
+            <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-3">
               <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-              <h3 className="text-sm font-bold text-slate-900 font-heading">
+              <h3 className="text-sm font-bold text-[#1A1A2E] font-heading">
                 Cadangkan ke Google Sheets (Drive)
               </h3>
             </div>
@@ -642,7 +623,7 @@ export const SinkronisasiDrive: React.FC = () => {
             <button
               onClick={handleSyncToSheets}
               disabled={isSyncingSheets || !scriptUrlInput}
-              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition-all disabled:opacity-50"
+              className="w-full min-h-[44px] py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
             >
               {isSyncingSheets ? (
                 <>
@@ -662,17 +643,17 @@ export const SinkronisasiDrive: React.FC = () => {
         {/* Kolom Kanan: Pengaturan Apps Script & Firebase */}
         <div className="lg:col-span-6 space-y-6">
           {/* Card Konfigurasi Google Apps Script */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="bg-white rounded-xl border border-[#E2E8F0] p-5 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
               <div className="flex items-center gap-2">
-                <HardDrive className="w-4 h-4 text-indigo-600" />
-                <h3 className="text-sm font-bold text-slate-900 font-heading">
+                <HardDrive className="w-4 h-4 text-[#1E3A5F]" />
+                <h3 className="text-sm font-bold text-[#1A1A2E] font-heading">
                   Konfigurasi Jembatan Google Apps Script
                 </h3>
               </div>
               <button
                 onClick={handleCopyCode}
-                className="text-xs text-indigo-600 hover:text-indigo-700 font-semibold flex items-center gap-1"
+                className="text-xs text-[#1E3A5F] hover:text-[#162C47] font-semibold flex items-center gap-1 cursor-pointer"
               >
                 {copiedCode ? (
                   <>
@@ -690,33 +671,31 @@ export const SinkronisasiDrive: React.FC = () => {
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#1A1A2E] mb-1">
                   URL Web App Google Apps Script
                 </label>
                 <input
                   type="url"
-                  placeholder="https://script.google.com/macros/s/.../exec"
+                  placeholder="cth: https://script.google.com/macros/s/.../exec"
                   value={scriptUrlInput}
                   onChange={(e) => setScriptUrlInput(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-mono"
+                  className="w-full min-h-[44px] px-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-[#F5F7FA] focus:outline-none focus:border-[#1E3A5F] text-[#1A1A2E] font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#1A1A2E] mb-1">
                   ID Folder Google Drive (Opsional)
                 </label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Folder className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-                    <input
-                      type="text"
-                      placeholder="Folder otomatis dibuat jika dikosongkan"
-                      value={folderIdInput}
-                      onChange={(e) => setFolderIdInput(e.target.value)}
-                      className="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-mono"
-                    />
-                  </div>
+                <div className="relative">
+                  <Folder className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="cth: 1a2B3c4D5e... (otomatis jika dikosongkan)"
+                    value={folderIdInput}
+                    onChange={(e) => setFolderIdInput(e.target.value)}
+                    className="w-full min-h-[44px] pl-9 pr-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-[#F5F7FA] focus:outline-none focus:border-[#1E3A5F] text-[#1A1A2E] font-mono"
+                  />
                 </div>
               </div>
 
@@ -742,38 +721,38 @@ export const SinkronisasiDrive: React.FC = () => {
                 <button
                   onClick={handleTestAppsScript}
                   disabled={isTestingScript || !scriptUrlInput}
-                  className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all disabled:opacity-50"
+                  className="min-h-[44px] px-4 py-2 bg-[#F5F7FA] hover:bg-slate-200 active:bg-slate-300 text-[#1A1A2E] border border-[#E2E8F0] rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {isTestingScript ? (
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                   ) : (
-                    <Cloud className="w-3.5 h-3.5" />
+                    <Cloud className="w-3.5 h-3.5 text-slate-500" />
                   )}
                   <span>Uji Sambungan</span>
                 </button>
                 <button
                   onClick={handleSaveSettings}
                   disabled={isSavingSettings}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all disabled:opacity-50 cursor-pointer"
-                  title="Simpan URL deploy Apps Script & ID Folder ke Cloud Firestore secara realtime"
+                  className="min-h-[44px] px-4 py-2 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] text-[#1A1A2E] rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+                  title="Simpan konfigurasi ke Cloud Firestore"
                 >
                   {isSavingSettings ? (
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                   ) : (
                     <UploadCloud className="w-3.5 h-3.5" />
                   )}
-                  <span>Simpan ke Firebase (Realtime)</span>
+                  <span>Simpan ke Firebase</span>
                 </button>
               </div>
             </div>
           </div>
 
           {/* Card Firebase Firestore Database */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="bg-white rounded-xl border border-[#E2E8F0] p-5 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
               <div className="flex items-center gap-2">
-                <Database className="w-4 h-4 text-indigo-600" />
-                <h3 className="text-sm font-bold text-slate-900 font-heading">
+                <Database className="w-4 h-4 text-[#1E3A5F]" />
+                <h3 className="text-sm font-bold text-[#1A1A2E] font-heading">
                   Setup Cloud Firebase Firestore
                 </h3>
               </div>
@@ -782,23 +761,23 @@ export const SinkronisasiDrive: React.FC = () => {
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div className="grid grid-cols-2 gap-3 text-xs bg-[#F5F7FA] p-3 rounded-xl border border-[#E2E8F0]">
               <div>
                 <span className="text-slate-400 block text-[10px]">Project ID:</span>
-                <span className="font-mono font-medium text-slate-800">{firebaseInfo.projectId}</span>
+                <span className="font-mono font-medium text-[#1A1A2E]">{firebaseInfo.projectId}</span>
               </div>
               <div>
                 <span className="text-slate-400 block text-[10px]">Database ID:</span>
-                <span className="font-mono font-medium text-slate-800 truncate block">
+                <span className="font-mono font-medium text-[#1A1A2E] truncate block">
                   {firebaseInfo.databaseId}
                 </span>
               </div>
-              <div className="col-span-2 pt-1 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <div className="col-span-2 pt-1 border-t border-[#E2E8F0] flex items-center justify-between text-[11px]">
                 <span className="text-slate-500">Mode Sinkronisasi:</span>
-                <span className="font-semibold text-emerald-700">Diferensial (Delta Sync Hemat Kuota)</span>
+                <span className="font-semibold text-emerald-700">Diferensial (Delta Sync)</span>
               </div>
-              <div className="col-span-2 text-[11px] text-slate-600 bg-emerald-50/70 p-2 rounded-lg border border-emerald-200/60">
-                {syncMeta.lastDeltaReport || 'Cache lokal aman dari hard refresh. Hanya perbedaan cloud yang diunduh.'}
+              <div className="col-span-2 text-[11px] text-slate-600 bg-white p-2 rounded-lg border border-[#E2E8F0]">
+                {syncMeta.lastDeltaReport || 'Cache lokal aman. Hanya perubahan data yang diunduh dari cloud.'}
               </div>
             </div>
 
@@ -806,21 +785,21 @@ export const SinkronisasiDrive: React.FC = () => {
               <button
                 onClick={() => checkDeltaSync(false)}
                 disabled={isSyncChecking}
-                className="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
+                className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-[#F5F7FA] active:bg-slate-100 text-[#1E3A5F] border border-[#E2E8F0] rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isSyncChecking ? 'animate-spin' : ''}`} />
-                <span>Cek Perbedaan (Hemat Kuota)</span>
+                <span>Cek Perbedaan</span>
               </button>
 
               <button
                 onClick={handleTestFirebase}
                 disabled={testingFirebase}
-                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
+                className="min-h-[44px] px-3.5 py-2 bg-[#F5F7FA] hover:bg-slate-200 active:bg-slate-300 text-[#1A1A2E] border border-[#E2E8F0] rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
                 {testingFirebase ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                 ) : (
-                  <Database className="w-3.5 h-3.5" />
+                  <Database className="w-3.5 h-3.5 text-slate-600" />
                 )}
                 <span>Tes Koneksi</span>
               </button>
@@ -828,16 +807,16 @@ export const SinkronisasiDrive: React.FC = () => {
               <button
                 onClick={handleSyncToFirebase}
                 disabled={isSyncingFirebase}
-                className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-all disabled:opacity-50"
+                className="min-h-[44px] flex-1 py-2 bg-[#1E3A5F] hover:bg-[#162C47] active:bg-[#0F1F33] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {isSyncingFirebase ? (
                   <>
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Menyinkronkan ke Firebase...</span>
+                    <span>Menyinkronkan...</span>
                   </>
                 ) : (
                   <>
-                    <UploadCloud className="w-3.5 h-3.5" />
+                    <UploadCloud className="w-4 h-4 text-[#F5A623]" />
                     <span>Sinkronkan Semua Data</span>
                   </>
                 )}
@@ -850,37 +829,37 @@ export const SinkronisasiDrive: React.FC = () => {
       {/* Modal Kode Google Apps Script */}
       {showCodeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-2xl w-full p-6 space-y-4 max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="bg-white rounded-xl shadow-2xl border border-[#E2E8F0] max-w-2xl w-full p-6 space-y-4 max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
               <div className="flex items-center gap-2">
-                <Code className="w-5 h-5 text-indigo-600" />
-                <h3 className="font-bold text-slate-900 text-base font-heading">
+                <Code className="w-5 h-5 text-[#1E3A5F]" />
+                <h3 className="font-bold text-[#1A1A2E] text-base font-heading">
                   Kode Google Apps Script (Code.gs)
                 </h3>
               </div>
               <button
                 onClick={() => setShowCodeModal(false)}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className="min-h-[40px] min-w-[40px] flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
               >
-                Tutup
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="text-xs text-slate-600 bg-indigo-50/70 p-3 rounded-xl border border-indigo-100 space-y-1">
-              <div className="font-semibold text-indigo-900">3 Langkah Mudah Penerapan:</div>
-              <ol className="list-decimal list-inside space-y-0.5 text-indigo-950">
-                <li>Buka <strong>script.google.com</strong> dan buat Proyek Baru.</li>
+            <div className="text-xs text-slate-600 bg-[#F5F7FA] p-3 rounded-lg border border-[#E2E8F0] space-y-1">
+              <div className="font-semibold text-[#1A1A2E]">Langkah Penerapan:</div>
+              <ol className="list-decimal list-inside space-y-0.5 text-slate-600">
+                <li>Buka <strong>script.google.com</strong> &gt; buat Proyek Baru.</li>
                 <li>Tempel kode di bawah ke dalam file <strong>Code.gs</strong>.</li>
-                <li>Klik <strong>Deploy (Terapkan)</strong> &gt; <strong>New deployment</strong> &gt; Pilih <strong>Web App</strong> (Akses: <em>Anyone</em>), lalu salin URL-nya.</li>
+                <li>Pilih <strong>Deploy</strong> &gt; <strong>New deployment</strong> &gt; <strong>Web App</strong> (Akses: <em>Anyone</em>), lalu salin URL-nya.</li>
               </ol>
             </div>
 
-            <div className="flex-1 overflow-hidden flex flex-col bg-slate-900 rounded-xl p-3">
-              <div className="flex justify-between items-center mb-2 pb-1 border-b border-slate-800">
+            <div className="flex-1 overflow-hidden flex flex-col bg-[#0F1F33] rounded-xl p-3 border border-[#1E3A5F]">
+              <div className="flex justify-between items-center mb-2 pb-1 border-b border-slate-700">
                 <span className="text-[11px] text-slate-400 font-mono">Code.gs</span>
                 <button
                   onClick={handleCopyCode}
-                  className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1 shadow-xs"
+                  className="px-2.5 py-1 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] text-[#1A1A2E] rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs cursor-pointer"
                 >
                   {copiedCode ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                   <span>{copiedCode ? 'Disalin' : 'Salin Kode'}</span>

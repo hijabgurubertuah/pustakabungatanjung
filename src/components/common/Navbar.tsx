@@ -20,23 +20,26 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { currentUser, logout, logoUrl } = useLibrary();
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+    <header className="sticky top-0 z-40 bg-white border-b border-[#E2E8F0] shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & School Name */}
           <div
             onClick={() => onRouteChange('beranda')}
-            className="flex items-center gap-3 cursor-pointer group"
+            className="flex items-center gap-3 cursor-pointer group select-none"
+            role="button"
+            tabIndex={0}
+            aria-label="Kembali ke Beranda"
           >
-            <div className="w-10 h-10 rounded-xl bg-slate-900 border border-emerald-500/20 flex items-center justify-center p-1 shadow-sm shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[#1E3A5F] border border-[#F5A623]/30 flex items-center justify-center p-1 shadow-xs shrink-0">
               <SMPN1Logo customUrl={logoUrl} className="w-full h-full" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-slate-900 tracking-tight text-base sm:text-lg font-heading group-hover:text-emerald-700 transition-colors">
+                <span className="font-bold text-[#1A1A2E] tracking-tight text-base sm:text-lg font-heading group-hover:text-[#1E3A5F] transition-colors">
                   Bunga Tanjung
                 </span>
-                <span className="hidden sm:inline-block px-2 py-0.5 text-[11px] font-semibold bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100">
+                <span className="hidden sm:inline-block px-2 py-0.5 text-[11px] font-semibold bg-[#F5F7FA] text-[#1E3A5F] rounded-lg border border-[#E2E8F0]">
                   SMPN 1 Bengkalis
                 </span>
               </div>
@@ -50,51 +53,54 @@ export const Navbar: React.FC<NavbarProps> = ({
             <PWAInstallButton />
 
             {/* Direct Switch between /beranda, /umum & /admin */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <nav className="flex items-center bg-[#F5F7FA] p-1 rounded-xl border border-[#E2E8F0] gap-1" aria-label="Navigasi Utama">
               <button
+                type="button"
                 onClick={() => onRouteChange('beranda')}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shrink-0 ${
+                className={`min-h-[44px] px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer select-none active:scale-[0.98] ${
                   currentRoute === 'beranda'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-[#1E3A5F] text-white shadow-xs'
+                    : 'text-[#1A1A2E] hover:bg-white hover:text-[#1E3A5F]'
                 }`}
               >
-                <Home className="w-3.5 h-3.5" />
+                <Home className="w-4 h-4 shrink-0" />
                 <span>Beranda</span>
               </button>
               <button
+                type="button"
                 onClick={() => onRouteChange('umum')}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shrink-0 ${
+                className={`min-h-[44px] px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer select-none active:scale-[0.98] ${
                   currentRoute === 'umum'
-                    ? 'bg-white text-indigo-600 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-[#1E3A5F] text-white shadow-xs'
+                    : 'text-[#1A1A2E] hover:bg-white hover:text-[#1E3A5F]'
                 }`}
               >
-                <UserCheck className="w-3.5 h-3.5" />
+                <UserCheck className="w-4 h-4 shrink-0" />
                 <span>
                   <span className="hidden sm:inline">Portal </span>Siswa
                 </span>
               </button>
               <button
+                type="button"
                 onClick={() => onRouteChange('admin')}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shrink-0 ${
+                className={`min-h-[44px] px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer select-none active:scale-[0.98] ${
                   currentRoute === 'admin'
-                    ? 'bg-indigo-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-[#F5A623] text-[#1A1A2E] font-bold shadow-xs'
+                    : 'text-[#1A1A2E] hover:bg-white hover:text-[#1E3A5F]'
                 }`}
               >
-                <ShieldCheck className="w-3.5 h-3.5" />
+                <ShieldCheck className="w-4 h-4 shrink-0" />
                 <span>
                   <span className="hidden sm:inline">Panel </span>Admin
                 </span>
               </button>
-            </div>
+            </nav>
 
-            {/* Current user pill */}
+            {/* Current user badge */}
             {currentUser && (
-              <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+              <div className="flex items-center gap-2 pl-2 border-l border-[#E2E8F0]">
                 <div className="text-right hidden md:block">
-                  <div className="text-xs font-bold text-slate-800 leading-tight">
+                  <div className="text-xs font-bold text-[#1A1A2E] leading-tight">
                     {currentUser.role === 'siswa'
                       ? currentUser.studentData?.name
                       : currentUser.adminData?.name}
@@ -107,8 +113,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
 
                 <button
+                  type="button"
                   onClick={logout}
-                  className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors border border-transparent hover:border-rose-100"
+                  className="min-h-[44px] min-w-[44px] p-2.5 text-slate-500 hover:text-[#EF4444] hover:bg-rose-50 rounded-xl transition-colors border border-transparent hover:border-rose-200 active:scale-95 flex items-center justify-center cursor-pointer"
                   title="Keluar"
                   aria-label="Logout"
                 >

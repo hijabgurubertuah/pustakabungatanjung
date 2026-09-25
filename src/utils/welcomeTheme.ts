@@ -19,9 +19,28 @@ export interface WelcomeThemePreset {
 }
 
 export const WELCOME_THEMES: Record<string, WelcomeThemePreset> = {
+  navy: {
+    id: 'navy',
+    name: 'Navy & Gold (Standar Resmi)',
+    hex: '#1E3A5F',
+    badgeBg: 'bg-[#1E3A5F]',
+    bgClass: 'bg-[#0E1D31] bg-radial from-[#1E3A5F] via-[#142842] to-[#0A1524]',
+    cardClass: 'bg-[#142842]/95 border-[#F5A623]/30 text-white shadow-[0_4px_30px_rgba(30,58,95,0.4)]',
+    topGlowClass: 'bg-[#F5A623]/15',
+    subtitleClass: 'text-amber-100/95',
+    quoteClass: 'text-amber-200/85',
+    inputClass: 'bg-[#FFFFFF] text-[#1A1A2E] border-[#E2E8F0] focus:ring-[#F5A623] focus:border-[#F5A623]',
+    scanBtnClass: 'bg-[#1E3A5F] hover:bg-[#162C47] text-white border border-[#F5A623]/60 hover:border-[#F5A623] shadow-sm',
+    scanIconClass: 'text-[#F5A623]',
+    submitBtnClass: 'bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] text-[#1A1A2E] font-bold shadow-[0_4px_16px_rgba(245,166,35,0.35)]',
+    mottoClass: 'text-[#F5A623]',
+    copyrightClass: 'text-slate-400',
+    footerTextClass: 'text-slate-400',
+    selectionClass: 'selection:bg-[#F5A623] selection:text-[#1A1A2E]',
+  },
   sky: {
     id: 'sky',
-    name: 'Biru Langit (Standar)',
+    name: 'Biru Langit',
     hex: '#0284c7',
     badgeBg: 'bg-sky-500',
     bgClass: 'bg-[#061d31] bg-radial from-[#0284c7] via-[#0369a1] to-[#041829]',
@@ -57,8 +76,8 @@ export const WELCOME_THEMES: Record<string, WelcomeThemePreset> = {
     footerTextClass: 'text-emerald-500/60',
     selectionClass: 'selection:bg-emerald-500 selection:text-white',
   },
-  navy: {
-    id: 'navy',
+  indigo: {
+    id: 'indigo',
     name: 'Biru Bahari / Indigo',
     hex: '#4338ca',
     badgeBg: 'bg-indigo-600',
@@ -144,6 +163,6 @@ export const getWelcomeTheme = (themeId?: string, customColor?: string): Welcome
     };
   }
 
-  // Default is Biru Langit
-  return WELCOME_THEMES.sky;
+  // Default is Navy & Gold
+  return WELCOME_THEMES.navy;
 };

@@ -242,34 +242,34 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-8 text-center space-y-6"
+          className="bg-white rounded-xl border border-[#E2E8F0] shadow-xl p-6 sm:p-8 text-center space-y-6"
         >
-          <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-inner border border-emerald-200">
+          <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mx-auto shadow-inner border border-emerald-200">
             <CheckCircle2 className="w-8 h-8" />
           </div>
 
           <div>
-            <h2 className="text-xl font-bold text-slate-900 font-heading">Formulir Kartu Pustaka Berhasil Disimpan!</h2>
+            <h2 className="text-xl font-bold text-[#1A1A2E] font-heading">Formulir Kartu Pustaka Disimpan</h2>
             <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-              Data anggota dan pasfoto formal 3x4 milik <strong className="text-slate-800">{submittedStudent.name}</strong> telah terdaftar di sistem perpustakaan dan Google Drive.
+              Data anggota <strong className="text-[#1A1A2E]">{submittedStudent.name}</strong> terdaftar di sistem perpustakaan.
             </p>
           </div>
 
           {/* CARD PREVIEW */}
-          <div className="bg-gradient-to-br from-indigo-700 via-indigo-800 to-slate-900 rounded-2xl p-5 text-white shadow-xl max-w-md mx-auto text-left relative overflow-hidden">
+          <div className="bg-[#1E3A5F] rounded-xl p-5 text-white shadow-xl max-w-md mx-auto text-left relative overflow-hidden border border-[#142842]">
             <div className="flex items-center justify-between border-b border-white/15 pb-3 mb-3">
               <div className="flex items-center gap-2">
                 {logoUrl ? (
                   <img src={logoUrl} alt="" className="w-7 h-7 rounded-lg object-contain bg-white p-0.5" />
                 ) : (
-                  <BookOpen className="w-6 h-6 text-emerald-300" />
+                  <BookOpen className="w-6 h-6 text-[#F5A623]" />
                 )}
                 <div>
                   <div className="text-xs font-bold leading-none">SMP NEGERI 1 BENGKALIS</div>
-                  <div className="text-[9px] text-indigo-200 uppercase tracking-wider">Perpustakaan Bunga Tanjung</div>
+                  <div className="text-[9px] text-blue-200 uppercase tracking-wider">Perpustakaan Bunga Tanjung</div>
                 </div>
               </div>
-              <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 text-[9px] font-bold rounded border border-emerald-400/30">
+              <span className="px-2 py-0.5 bg-[#F5A623]/20 text-[#F5A623] text-[9px] font-bold rounded border border-[#F5A623]/30">
                 ANGGOTA
               </span>
             </div>
@@ -282,16 +282,16 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
               />
               <div className="space-y-1 min-w-0">
                 <div className="text-sm font-bold truncate">{submittedStudent.name}</div>
-                <div className="text-[11px] text-indigo-200">
+                <div className="text-[11px] text-blue-200">
                   Kelas: <span className="font-semibold text-white">{submittedStudent.classGrade}</span>
                 </div>
-                <div className="text-[11px] text-indigo-200">
+                <div className="text-[11px] text-blue-200">
                   TTL: <span className="font-semibold text-white">{submittedStudent.pob}, {submittedStudent.dob}</span>
                 </div>
-                <div className="text-[11px] text-indigo-200">
+                <div className="text-[11px] text-blue-200">
                   NISN: <span className="font-semibold text-white font-mono">{submittedStudent.nisn}</span>
                 </div>
-                <div className="text-[10px] text-indigo-300 font-mono">{submittedStudent.id}</div>
+                <div className="text-[10px] text-blue-300 font-mono">{submittedStudent.id}</div>
               </div>
             </div>
 
@@ -303,7 +303,7 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <button
               onClick={() => window.print()}
-              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-xs cursor-pointer"
+              className="px-5 py-2.5 min-h-[44px] bg-[#1E3A5F] hover:bg-[#162C47] active:bg-[#0F1F33] text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer transition-all"
             >
               <Printer className="w-4 h-4" />
               <span>Cetak Kartu Anggota</span>
@@ -312,7 +312,7 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
             {onClose && (
               <button
                 onClick={onClose}
-                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer"
+                className="px-5 py-2.5 min-h-[44px] bg-[#F5F7FA] hover:bg-[#E2E8F0] active:bg-slate-200 text-[#1A1A2E] border border-[#E2E8F0] rounded-xl text-xs font-semibold cursor-pointer transition-all"
               >
                 Tutup Formulir
               </button>
@@ -321,24 +321,24 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
         </motion.div>
       ) : (
         /* FORM MAIN CONTAINER */
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xl overflow-hidden">
           {/* HEADER */}
-          <div className="bg-gradient-to-r from-indigo-700 via-indigo-800 to-slate-900 p-6 text-white relative">
+          <div className="bg-[#1E3A5F] p-5 sm:p-6 text-white relative">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
-                  <IdCard className="w-5 h-5 text-emerald-300" />
+                <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20">
+                  <IdCard className="w-5 h-5 text-[#F5A623]" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold font-heading">Formulir Pendataan Kartu Pustaka</h2>
-                  <p className="text-xs text-indigo-200">Lengkapi data diri & pasfoto 3x4 untuk penerbitan kartu</p>
+                  <h2 className="text-lg font-bold font-heading">Formulir Kartu Pustaka</h2>
+                  <p className="text-xs text-blue-200">Penerbitan kartu anggota perpustakaan</p>
                 </div>
               </div>
 
               {onClose && (
                 <button
                   onClick={onClose}
-                  className="p-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-xl transition-colors cursor-pointer"
+                  className="w-10 h-10 flex items-center justify-center text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-xl transition-all cursor-pointer"
                 >
                   ✕
                 </button>
@@ -346,11 +346,11 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
             </div>
           </div>
 
-          <div className="p-6 space-y-6">
+          <div className="p-5 sm:p-6 space-y-5">
             {/* STEP 1: LOGIN NISN SEARCH */}
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-              <label className="block text-xs font-bold text-slate-800">
-                1. Masukkan NISN Siswa untuk Verifikasi Data Admin
+            <div className="p-4 bg-[#F5F7FA] rounded-xl border border-[#E2E8F0] space-y-3">
+              <label className="block text-xs font-bold text-[#1A1A2E]">
+                Verifikasi NISN Siswa
               </label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
@@ -359,14 +359,14 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
                     type="text"
                     value={nisnQuery}
                     onChange={(e) => setNisnQuery(e.target.value)}
-                    placeholder="Contoh NISN: 0098765431"
-                    className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500"
+                    placeholder="cth: 0098765431"
+                    className="w-full min-h-[44px] pl-9 pr-3 py-2 bg-white border border-[#E2E8F0] rounded-xl text-xs font-semibold text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F]"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => handleLookupNisn(nisnQuery)}
-                  className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-colors shadow-xs cursor-pointer"
+                  className="px-4 py-2 min-h-[44px] bg-[#1E3A5F] hover:bg-[#162C47] active:bg-[#0F1F33] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all shadow-xs cursor-pointer"
                 >
                   <Search className="w-4 h-4" />
                   <span>Cek NISN</span>
@@ -390,55 +390,55 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
               {hasSearched && isNotFound && (
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>NISN belum terdaftar di database admin. Silakan lengkapi nama & kelas mandiri di bawah ini.</span>
+                  <span>NISN belum ada di basis data. Lengkapi formulir di bawah.</span>
                 </div>
               )}
             </div>
 
             {/* STEP 2: FORM DETAILS */}
             <form onSubmit={handleSubmitForm} className="space-y-4 text-xs">
-              <div className="border-t border-slate-100 pt-4">
-                <h3 className="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
-                  <User className="w-4 h-4 text-indigo-600" />
-                  <span>2. Identitas Siswa</span>
+              <div className="border-t border-[#E2E8F0] pt-4">
+                <h3 className="font-bold text-[#1A1A2E] text-sm mb-3 flex items-center gap-2">
+                  <User className="w-4 h-4 text-[#1E3A5F]" />
+                  <span>Identitas Siswa</span>
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">
-                      Nama Lengkap Siswa {verifiedStudent && <span className="text-emerald-600 font-normal">(Otomatis Admin)</span>}
+                    <label className="block font-semibold text-[#1A1A2E] mb-1">
+                      Nama Lengkap Siswa
                     </label>
                     <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Nama sesuai akta"
+                      placeholder="cth: Ahmad Fadhil"
                       disabled={!!verifiedStudent}
-                      className={`w-full px-3 py-2.5 rounded-xl border text-xs font-semibold ${
+                      className={`w-full min-h-[44px] px-3 py-2.5 rounded-xl border text-xs font-semibold ${
                         verifiedStudent
-                          ? 'bg-slate-100 border-slate-200 text-slate-700'
-                          : 'bg-white border-slate-300 focus:outline-none focus:border-indigo-500'
+                          ? 'bg-[#F5F7FA] border-[#E2E8F0] text-slate-500'
+                          : 'bg-white border-[#E2E8F0] text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F]'
                       }`}
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">
-                      Kelas {verifiedStudent && <span className="text-emerald-600 font-normal">(Otomatis Admin)</span>}
+                    <label className="block font-semibold text-[#1A1A2E] mb-1">
+                      Kelas
                     </label>
                     {verifiedStudent ? (
                       <input
                         type="text"
                         value={formData.classGrade}
                         disabled
-                        className="w-full px-3 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
+                        className="w-full min-h-[44px] px-3 py-2.5 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs font-semibold text-slate-500"
                       />
                     ) : (
                       <select
                         value={formData.classGrade}
                         onChange={(e) => setFormData({ ...formData, classGrade: e.target.value })}
-                        className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500"
+                        className="w-full min-h-[44px] px-3 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-xs font-semibold text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F]"
                       >
                         {['VII-A', 'VII-B', 'VIII-A', 'VIII-B', 'IX-A', 'IX-B', 'IX-C'].map((c) => (
                           <option key={c} value={c}>
@@ -452,29 +452,29 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Tempat Lahir *</label>
+                    <label className="block font-semibold text-[#1A1A2E] mb-1">Tempat Lahir *</label>
                     <div className="relative">
                       <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                       <input
                         type="text"
                         value={formData.pob}
                         onChange={(e) => setFormData({ ...formData, pob: e.target.value })}
-                        placeholder="Contoh: Bengkalis"
-                        className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500"
+                        placeholder="cth: Bengkalis"
+                        className="w-full min-h-[44px] pl-9 pr-3 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-xs font-semibold text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F]"
                         required
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Tanggal Lahir *</label>
+                    <label className="block font-semibold text-[#1A1A2E] mb-1">Tanggal Lahir *</label>
                     <div className="relative">
                       <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                       <input
                         type="date"
                         value={formData.dob}
                         onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                        className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500"
+                        className="w-full min-h-[44px] pl-9 pr-3 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-xs font-semibold text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F]"
                         required
                       />
                     </div>
@@ -483,11 +483,11 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Jenis Kelamin</label>
+                    <label className="block font-semibold text-[#1A1A2E] mb-1">Jenis Kelamin</label>
                     <select
                       value={formData.gender}
                       onChange={(e) => setFormData({ ...formData, gender: e.target.value as 'L' | 'P' })}
-                      className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500"
+                      className="w-full min-h-[44px] px-3 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-xs font-semibold text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F]"
                     >
                       <option value="L">Laki-laki (L)</option>
                       <option value="P">Perempuan (P)</option>
@@ -495,15 +495,15 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">No. WhatsApp / HP</label>
+                    <label className="block font-semibold text-[#1A1A2E] mb-1">No. WhatsApp / HP</label>
                     <div className="relative">
                       <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                       <input
                         type="text"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="08..."
-                        className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500"
+                        placeholder="cth: 08123456789"
+                        className="w-full min-h-[44px] pl-9 pr-3 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-xs font-semibold text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F]"
                       />
                     </div>
                   </div>
@@ -511,25 +511,21 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
               </div>
 
               {/* STEP 3: PASFOTO 3X4 FORMAL WITH AUTO CROP */}
-              <div className="border-t border-slate-100 pt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                    <UploadCloud className="w-4 h-4 text-indigo-600" />
-                    <span>3. Unggah Pasfoto Formal 3x4 *</span>
+              <div className="border-t border-[#E2E8F0] pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-bold text-[#1A1A2E] text-sm flex items-center gap-2">
+                    <UploadCloud className="w-4 h-4 text-[#1E3A5F]" />
+                    <span>Pasfoto Formal 3x4 *</span>
                   </h3>
-                  <span className="text-[10px] bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded border border-indigo-100">
-                    Auto-Crop 3:4 High Quality
+                  <span className="text-[10px] bg-[#F5F7FA] text-[#1E3A5F] font-bold px-2 py-0.5 rounded border border-[#E2E8F0]">
+                    Auto-Crop 3:4
                   </span>
                 </div>
 
-                <p className="text-[11px] text-slate-500 mb-3">
-                  Unggah foto formal berbusana seragam sekolah. Sistem akan otomatis memotong foto menjadi rasio standar pasfoto 3x4 (450x600 px) dan memberi nama file otomatis <code className="bg-slate-100 px-1 font-mono text-indigo-700">PasFoto_[Nama]_[NISN].jpg</code> di Google Drive.
-                </p>
-
-                <div className="bg-slate-50 border-2 border-dashed border-indigo-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-5">
+                <div className="bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-5">
                   {/* PREVIEW FRAME 3X4 */}
                   <div className="relative shrink-0">
-                    <div className="w-28 h-36 bg-slate-200 rounded-xl overflow-hidden border-2 border-indigo-300 shadow-sm relative flex items-center justify-center">
+                    <div className="w-28 h-36 bg-slate-200 rounded-xl overflow-hidden border-2 border-[#E2E8F0] shadow-2xs relative flex items-center justify-center">
                       {formData.photoUrl ? (
                         <img
                           src={formData.photoUrl}
@@ -552,7 +548,7 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
 
                       {isProcessingPhoto && (
                         <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex flex-col items-center justify-center text-white text-[10px] font-semibold gap-1">
-                          <Loader2 className="w-5 h-5 animate-spin text-emerald-400" />
+                          <Loader2 className="w-5 h-5 animate-spin text-[#F5A623]" />
                           <span>Crop 3x4...</span>
                         </div>
                       )}
@@ -561,16 +557,13 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
 
                   {/* UPLOAD CONTROLS */}
                   <div className="space-y-2 flex-1 text-center sm:text-left">
-                    <div className="text-xs font-bold text-slate-800">
-                      {formData.photoUrl ? 'Pasfoto Formal 3x4 Terpasang' : 'Pilih Berkas Foto Formal'}
+                    <div className="text-xs font-bold text-[#1A1A2E]">
+                      {formData.photoUrl ? 'Pasfoto Formal Terpasang' : 'Pilih Foto Formal Siswa'}
                     </div>
-                    <p className="text-[11px] text-slate-500">
-                      Format: JPG, PNG, atau WEBP. Foto dari kamera handphone secara otomatis akan dicrop presisi berasio 3:4.
-                    </p>
 
-                    <label className={`inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold rounded-xl text-xs transition-colors shadow-xs ${isProcessingPhoto ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                    <label className={`inline-flex items-center gap-2 min-h-[44px] px-4 py-2.5 bg-[#1E3A5F] hover:bg-[#162C47] active:bg-[#0F1F33] text-white font-bold rounded-xl text-xs transition-all shadow-xs ${isProcessingPhoto ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
                       <UploadCloud className="w-4 h-4" />
-                      <span>{formData.photoUrl ? 'Ganti Pasfoto 3x4' : 'Unggah & Crop Pasfoto 3x4'}</span>
+                      <span>{formData.photoUrl ? 'Ganti Pasfoto' : 'Pilih Berkas Foto'}</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -584,21 +577,21 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
               </div>
 
               {/* SUBMIT BUTTON */}
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+              <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
                 <div className="text-[11px] text-slate-500 flex items-center gap-1">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>Tersimpan di Sistem & Google Drive</span>
+                  <ShieldCheck className="w-4 h-4 text-[#10B981]" />
+                  <span>Tersimpan di basis data</span>
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSubmitting || isProcessingPhoto}
-                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl text-xs flex items-center gap-2 transition-colors shadow-md shadow-emerald-600/20 cursor-pointer disabled:opacity-50"
+                  className="min-h-[44px] px-6 py-2.5 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] disabled:bg-[#E2E8F0] disabled:text-slate-400 text-[#1A1A2E] font-bold rounded-xl text-xs flex items-center gap-2 transition-all shadow-xs cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Menyimpan & Mengunggah...</span>
+                      <span>Menyimpan...</span>
                     </>
                   ) : (
                     <>

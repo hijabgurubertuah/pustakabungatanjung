@@ -138,9 +138,9 @@ export const KelolaAkunAdmin: React.FC = () => {
 
   if (!isSuperadmin) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center max-w-md mx-auto">
+      <div className="bg-white rounded-xl border border-[#E2E8F0] p-8 text-center max-w-md mx-auto">
         <Shield className="w-10 h-10 text-slate-400 mx-auto mb-2" />
-        <h3 className="font-bold text-slate-800 text-sm font-heading">Akses Terbatas</h3>
+        <h3 className="font-bold text-[#1A1A2E] text-sm font-heading">Akses Terbatas</h3>
         <p className="text-xs text-slate-500 mt-1">
           Hanya Superadmin yang memiliki izin mengelola akun dan mencetak kartu pengurus perpustakaan.
         </p>
@@ -151,10 +151,10 @@ export const KelolaAkunAdmin: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-xs">
         <div>
-          <h3 className="text-sm font-bold text-slate-900 font-heading flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <h3 className="text-sm font-bold text-[#1A1A2E] font-heading flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-[#1E3A5F]" />
             <span>Manajemen Akun & Kartu Petugas</span>
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -164,29 +164,29 @@ export const KelolaAkunAdmin: React.FC = () => {
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Mode Switcher */}
-          <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+          <div className="flex items-center bg-[#F5F7FA] p-1 rounded-xl border border-[#E2E8F0]">
             <button
               type="button"
               onClick={() => setViewMode('cards')}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition ${
+              className={`min-h-[40px] px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition select-none ${
                 viewMode === 'cards'
-                  ? 'bg-white text-slate-800 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
+                  ? 'bg-white text-[#1E3A5F] shadow-xs'
+                  : 'text-slate-500 hover:text-[#1A1A2E]'
               }`}
             >
-              <IdCard className="w-3.5 h-3.5" />
+              <IdCard className="w-4 h-4 text-[#1E3A5F]" />
               <span>Kartu</span>
             </button>
             <button
               type="button"
               onClick={() => setViewMode('spreadsheet')}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition ${
+              className={`min-h-[40px] px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition select-none ${
                 viewMode === 'spreadsheet'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
+                  ? 'bg-[#1E3A5F] text-white shadow-xs'
+                  : 'text-slate-500 hover:text-[#1A1A2E]'
               }`}
             >
-              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <FileSpreadsheet className="w-4 h-4 text-[#F5A623]" />
               <span>Sel Spreadsheet</span>
             </button>
           </div>
@@ -196,10 +196,10 @@ export const KelolaAkunAdmin: React.FC = () => {
             type="button"
             onClick={handleSyncAdmins}
             disabled={isSavingToFirebase}
-            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
-            title="Kirim dan simpan data akun admin ke Cloud Firebase Firestore"
+            className="min-h-[44px] px-3.5 py-2 bg-[#1E3A5F] hover:bg-[#162C47] active:bg-[#0F1F33] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+            title="Sinkronkan data akun admin ke Cloud Firebase Firestore"
           >
-            <CloudUpload className="w-4 h-4 text-white" />
+            <CloudUpload className="w-4 h-4 text-[#F5A623]" />
             <span>{isSavingToFirebase ? 'Menyimpan...' : 'Simpan ke Firebase'}</span>
           </button>
 
@@ -207,9 +207,10 @@ export const KelolaAkunAdmin: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsBatchPrintModal(true)}
-            className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors border border-emerald-200/80 cursor-pointer shadow-xs"
+            className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-[#F5F7FA] active:bg-slate-100 text-[#1E3A5F] text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors border border-[#E2E8F0] cursor-pointer shadow-2xs"
+            title="Cetak Semua Kartu Petugas"
           >
-            <Printer className="w-4 h-4 text-emerald-600" />
+            <Printer className="w-4 h-4 text-slate-600" />
             <span>Cetak Semua Kartu</span>
           </button>
 
@@ -217,7 +218,7 @@ export const KelolaAkunAdmin: React.FC = () => {
           <button
             type="button"
             onClick={openAddModal}
-            className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+            className="min-h-[44px] px-4 py-2 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] text-[#1A1A2E] text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer select-none"
           >
             <UserPlus className="w-4 h-4" />
             <span>Tambah Akun Admin</span>
@@ -225,35 +226,17 @@ export const KelolaAkunAdmin: React.FC = () => {
         </div>
       </div>
 
-      {/* Quota Notice Banner */}
-      <div className="bg-amber-50 border border-amber-200/80 rounded-xl p-3 flex items-center justify-between gap-3 text-xs text-amber-800">
-        <div className="flex items-center gap-2 min-w-0">
-          <Info className="w-4 h-4 text-amber-600 shrink-0" />
-          <span className="truncate">
-            <strong>Hemat Kuota Tulis Firebase:</strong> Pengeditan akun admin tersimpan otomatis di lokal. Tekan tombol <strong>"Simpan ke Firebase"</strong> untuk menyinkronkan data ke Cloud.
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={handleSyncAdmins}
-          disabled={isSavingToFirebase}
-          className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] shrink-0 transition-colors cursor-pointer"
-        >
-          Simpan Cloud
-        </button>
-      </div>
-
       {/* ========================================================================= */}
       {/* TAMPILAN SPREADSHEET ADMIN (EXCEL/GOOGLE SHEETS GRID VIEW)               */}
       {/* ========================================================================= */}
       {viewMode === 'spreadsheet' ? (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs overflow-hidden">
           {/* Header toolbar Excel */}
-          <div className="bg-slate-100 border-b border-slate-200 p-2.5 flex items-center justify-between text-xs gap-2">
-            <div className="flex items-center gap-2 text-slate-700 font-semibold">
-              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-              <span>Mode Sel Spreadsheet Akun Petugas (Edit Langsung)</span>
-              <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-md border border-emerald-200">
+          <div className="bg-[#F5F7FA] border-b border-[#E2E8F0] p-2.5 flex items-center justify-between text-xs gap-2">
+            <div className="flex items-center gap-2 text-[#1A1A2E] font-semibold">
+              <FileSpreadsheet className="w-4 h-4 text-[#1E3A5F]" />
+              <span>Mode Sel Spreadsheet Akun Petugas</span>
+              <span className="text-[10px] bg-white text-[#1E3A5F] font-bold px-2 py-0.5 rounded-md border border-[#E2E8F0]">
                 {admins.length} Baris Petugas
               </span>
             </div>
@@ -285,60 +268,60 @@ export const KelolaAkunAdmin: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {admins.map((adm, index) => (
-                  <tr key={adm.id} className="hover:bg-indigo-50/30 transition-colors">
+                  <tr key={adm.id} className="hover:bg-[#F5F7FA] transition-colors">
                     {/* Row Number */}
-                    <td className="p-1.5 text-center font-mono text-[11px] font-bold bg-slate-100 text-slate-500 border-r border-slate-200 select-none">
+                    <td className="p-1.5 text-center font-mono text-[11px] font-bold bg-[#F5F7FA] text-slate-500 border-r border-[#E2E8F0] select-none">
                       {index + 1}
                     </td>
 
                     {/* Username Cell */}
-                    <td className="p-0 border-r border-slate-200">
+                    <td className="p-0 border-r border-[#E2E8F0]">
                       <input
                         type="text"
                         value={adm.username}
                         onChange={(e) => updateAdmin(adm.id, { username: e.target.value })}
-                        className="w-full h-full px-2 py-1.5 bg-transparent font-mono font-bold text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs"
+                        className="w-full h-full px-2 py-1.5 bg-transparent font-mono font-bold text-[#1A1A2E] focus:bg-white focus:ring-2 focus:ring-[#F5A623] focus:outline-none border-none rounded-none text-xs"
                       />
                     </td>
 
                     {/* Nama Cell */}
-                    <td className="p-0 border-r border-slate-200">
+                    <td className="p-0 border-r border-[#E2E8F0]">
                       <input
                         type="text"
                         value={adm.name}
                         onChange={(e) => updateAdmin(adm.id, { name: e.target.value })}
-                        className="w-full h-full px-2 py-1.5 bg-transparent font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs"
+                        className="w-full h-full px-2 py-1.5 bg-transparent font-bold text-[#1A1A2E] focus:bg-white focus:ring-2 focus:ring-[#F5A623] focus:outline-none border-none rounded-none text-xs"
                       />
                     </td>
 
                     {/* NIP/ID Cell */}
-                    <td className="p-0 border-r border-slate-200">
+                    <td className="p-0 border-r border-[#E2E8F0]">
                       <input
                         type="text"
                         value={adm.nipOrId || ''}
                         placeholder="NIP / ID..."
                         onChange={(e) => updateAdmin(adm.id, { nipOrId: e.target.value })}
-                        className="w-full h-full px-2 py-1.5 bg-transparent font-mono text-slate-700 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs"
+                        className="w-full h-full px-2 py-1.5 bg-transparent font-mono text-slate-700 focus:bg-white focus:ring-2 focus:ring-[#F5A623] focus:outline-none border-none rounded-none text-xs"
                       />
                     </td>
 
                     {/* Email Cell */}
-                    <td className="p-0 border-r border-slate-200">
+                    <td className="p-0 border-r border-[#E2E8F0]">
                       <input
                         type="email"
                         value={adm.email || ''}
                         placeholder="email@..."
                         onChange={(e) => updateAdmin(adm.id, { email: e.target.value })}
-                        className="w-full h-full px-2 py-1.5 bg-transparent text-slate-700 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs"
+                        className="w-full h-full px-2 py-1.5 bg-transparent text-slate-700 focus:bg-white focus:ring-2 focus:ring-[#F5A623] focus:outline-none border-none rounded-none text-xs"
                       />
                     </td>
 
                     {/* Role Cell */}
-                    <td className="p-0 border-r border-slate-200">
+                    <td className="p-0 border-r border-[#E2E8F0]">
                       <select
                         value={adm.role}
                         onChange={(e) => updateAdmin(adm.id, { role: e.target.value as 'superadmin' | 'admin' })}
-                        className="w-full h-full px-2 py-1.5 bg-transparent font-bold text-indigo-700 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none border-none rounded-none text-xs"
+                        className="w-full h-full px-2 py-1.5 bg-transparent font-bold text-[#1E3A5F] focus:bg-white focus:ring-2 focus:ring-[#F5A623] focus:outline-none border-none rounded-none text-xs"
                       >
                         <option value="admin">Admin Perpustakaan</option>
                         <option value="superadmin">Superadmin Utama</option>
@@ -351,7 +334,7 @@ export const KelolaAkunAdmin: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setSelectedCardAdmin(adm)}
-                          className="p-1 text-indigo-600 hover:bg-indigo-100 rounded cursor-pointer"
+                          className="min-h-[32px] min-w-[32px] flex items-center justify-center text-[#1E3A5F] hover:bg-[#F5F7FA] rounded-lg cursor-pointer transition-colors"
                           title="Cetak Kartu Petugas"
                         >
                           <IdCard className="w-3.5 h-3.5" />
@@ -359,7 +342,7 @@ export const KelolaAkunAdmin: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setResetModalAdmin(adm)}
-                          className="p-1 text-amber-600 hover:bg-amber-100 rounded cursor-pointer"
+                          className="min-h-[32px] min-w-[32px] flex items-center justify-center text-amber-600 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors"
                           title="Reset Password"
                         >
                           <KeyRound className="w-3.5 h-3.5" />
@@ -396,7 +379,7 @@ export const KelolaAkunAdmin: React.FC = () => {
         {admins.map((admin) => (
           <div
             key={admin.id}
-            className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 flex flex-col justify-between space-y-4 hover:border-slate-300 transition-colors"
+            className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-5 flex flex-col justify-between space-y-4 hover:border-slate-300 transition-colors"
           >
             <div className="flex items-start gap-3.5">
               <img
@@ -405,16 +388,16 @@ export const KelolaAkunAdmin: React.FC = () => {
                   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
                 }
                 alt={admin.name}
-                className="w-14 h-14 rounded-xl object-cover border border-slate-200 shrink-0 bg-slate-100"
+                className="w-14 h-14 rounded-xl object-cover border border-[#E2E8F0] shrink-0 bg-[#F5F7FA]"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-1">
-                  <h4 className="font-bold text-slate-900 text-sm truncate">{admin.name}</h4>
+                  <h4 className="font-bold text-[#1A1A2E] text-sm truncate">{admin.name}</h4>
                   <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
                       admin.role === 'superadmin'
-                        ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                        : 'bg-[#F5F7FA] text-[#1E3A5F] border border-[#E2E8F0]'
                     }`}
                   >
                     {admin.role === 'superadmin' ? 'Superadmin' : 'Admin'}
@@ -493,11 +476,11 @@ export const KelolaAkunAdmin: React.FC = () => {
       {/* ========================================================================= */}
       {selectedCardAdmin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-md w-full p-6 space-y-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-[#E2E8F0] max-w-md w-full p-6 space-y-4">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
               <div>
-                <h3 className="font-bold text-slate-900 text-base font-heading">
+                <h3 className="font-bold text-[#1A1A2E] text-base font-heading">
                   Kartu Tanda Petugas Perpustakaan
                 </h3>
                 <p className="text-xs text-slate-500">
@@ -507,35 +490,32 @@ export const KelolaAkunAdmin: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedCardAdmin(null)}
-                className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                className="min-h-[40px] min-w-[40px] flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* CARD GRAPHIC (PRINT READY) */}
-            <div className="bg-gradient-to-br from-[#041a14] via-[#082a20] to-[#02130e] text-white rounded-2xl p-5 shadow-2xl relative overflow-hidden border border-emerald-500/30">
-              {/* Decorative radial background glow */}
-              <div className="absolute top-0 right-0 w-44 h-44 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
-
+            <div className="bg-gradient-to-br from-[#1E3A5F] via-[#142842] to-[#0A1624] text-white rounded-xl p-5 shadow-2xl relative overflow-hidden border border-white/10">
               {/* Card Header */}
-              <div className="flex items-center justify-between border-b border-emerald-400/20 pb-3 mb-3">
+              <div className="flex items-center justify-between border-b border-white/15 pb-3 mb-3">
                 <div className="flex items-center gap-2">
                   <SMPN1Logo customUrl={logoUrl} className="w-8 h-9 object-contain shrink-0" />
                   <div className="text-left">
-                    <div className="text-[11px] font-extrabold tracking-wide uppercase font-serif">
+                    <div className="text-[11px] font-extrabold tracking-wide uppercase font-heading">
                       SMP NEGERI 1 BENGKALIS
                     </div>
-                    <div className="text-[9px] text-emerald-300 font-semibold uppercase tracking-wider">
+                    <div className="text-[9px] text-[#F5A623] font-semibold uppercase tracking-wider">
                       Perpustakaan Bunga Tanjung
                     </div>
                   </div>
                 </div>
                 <span
-                  className={`px-2.5 py-0.5 text-[9px] font-extrabold rounded-full tracking-wider uppercase border ${
+                  className={`px-2.5 py-0.5 text-[9px] font-extrabold rounded tracking-wider uppercase ${
                     selectedCardAdmin.role === 'superadmin'
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-400/40'
-                      : 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+                      ? 'bg-[#F5A623] text-[#1A1A2E]'
+                      : 'bg-white/20 text-white'
                   }`}
                 >
                   {selectedCardAdmin.role === 'superadmin' ? 'SUPERADMIN' : 'PETUGAS'}
@@ -550,38 +530,34 @@ export const KelolaAkunAdmin: React.FC = () => {
                     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
                   }
                   alt={selectedCardAdmin.name}
-                  className="w-20 h-24 object-cover rounded-xl border-2 border-emerald-400/40 shrink-0 bg-slate-900 shadow-md"
+                  className="w-20 h-24 object-cover rounded-lg border-2 border-white/30 shrink-0 bg-slate-900 shadow-md"
                 />
                 <div className="space-y-1 min-w-0 text-left">
-                  <div className="text-sm font-extrabold text-white truncate font-serif">
+                  <div className="text-sm font-extrabold text-white truncate font-heading">
                     {selectedCardAdmin.name}
                   </div>
-                  <div className="text-[11px] text-emerald-200">
+                  <div className="text-[11px] text-slate-300">
                     Jabatan:{' '}
-                    <span className="text-emerald-100 font-bold">
+                    <span className="text-white font-bold">
                       {selectedCardAdmin.role === 'superadmin'
                         ? 'Kepala Perpustakaan / Superadmin'
                         : 'Petugas Layanan Perpustakaan'}
                     </span>
                   </div>
-                  <div className="text-[11px] text-emerald-200">
+                  <div className="text-[11px] text-slate-300">
                     NIP/ID:{' '}
                     <span className="text-white font-mono font-bold">
                       {selectedCardAdmin.nipOrId || selectedCardAdmin.username}
                     </span>
                   </div>
-                  <div className="text-[10px] text-emerald-300/80">
+                  <div className="text-[10px] text-[#F5A623]">
                     Username: <span className="font-mono">@{selectedCardAdmin.username}</span>
-                  </div>
-                  <div className="text-[9px] text-emerald-400 font-semibold flex items-center gap-1 mt-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>Status: Pengurus Aktif</span>
                   </div>
                 </div>
               </div>
 
-              {/* Scannable Barcode for direct camera login */}
-              <div className="mt-3.5 pt-2 bg-white rounded-xl p-2 flex flex-col items-center justify-center shadow-inner text-slate-800">
+              {/* Scannable Barcode */}
+              <div className="mt-3.5 pt-2 bg-white rounded-lg p-2 flex flex-col items-center justify-center text-slate-800">
                 <BarcodeDisplay
                   value={
                     selectedCardAdmin.nipOrId ||
@@ -591,9 +567,6 @@ export const KelolaAkunAdmin: React.FC = () => {
                   height={36}
                   width={1.5}
                 />
-                <div className="text-[9px] text-slate-500 font-medium tracking-tight mt-0.5">
-                  Scan barcode ini dengan kamera login admin untuk akses cepat
-                </div>
               </div>
             </div>
 
@@ -602,15 +575,15 @@ export const KelolaAkunAdmin: React.FC = () => {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                className="flex-1 min-h-[44px] py-2.5 bg-[#1E3A5F] hover:bg-[#162C47] active:bg-[#0F1F33] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
               >
-                <Printer className="w-4 h-4" />
+                <Printer className="w-4 h-4 text-[#F5A623]" />
                 <span>Cetak Kartu Petugas</span>
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedCardAdmin(null)}
-                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                className="min-h-[44px] px-4 py-2.5 bg-[#F5F7FA] hover:bg-slate-200 active:bg-slate-300 text-[#1A1A2E] border border-[#E2E8F0] rounded-xl text-xs font-semibold transition-colors cursor-pointer"
               >
                 Tutup
               </button>
@@ -624,10 +597,10 @@ export const KelolaAkunAdmin: React.FC = () => {
       {/* ========================================================================= */}
       {isBatchPrintModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-4xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="bg-white rounded-xl shadow-2xl border border-[#E2E8F0] max-w-4xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
               <div>
-                <h3 className="font-bold text-slate-900 text-base font-heading">
+                <h3 className="font-bold text-[#1A1A2E] text-base font-heading">
                   Cetak Lembar Kartu Petugas Perpustakaan ({admins.length} Akun)
                 </h3>
                 <p className="text-xs text-slate-500">
@@ -638,27 +611,27 @@ export const KelolaAkunAdmin: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  className="min-h-[44px] px-4 py-2 bg-[#1E3A5F] hover:bg-[#162C47] active:bg-[#0F1F33] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
                 >
-                  <Printer className="w-4 h-4" />
+                  <Printer className="w-4 h-4 text-[#F5A623]" />
                   <span>Cetak Lembar A4</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsBatchPrintModal(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 rounded-xl cursor-pointer"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
             {/* Grid of Printable Admin Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 bg-[#F5F7FA] rounded-xl border border-[#E2E8F0]">
               {admins.map((adm) => (
                 <div
                   key={adm.id}
-                  className="bg-white border-2 border-slate-300 rounded-2xl p-4 shadow-xs flex flex-col justify-between space-y-3"
+                  className="bg-white border-2 border-slate-300 rounded-xl p-4 shadow-xs flex flex-col justify-between space-y-3"
                 >
                   <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                     <div className="flex items-center gap-1.5">
@@ -720,66 +693,64 @@ export const KelolaAkunAdmin: React.FC = () => {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* ADD / EDIT ADMIN MODAL (WITH CAMERA PHOTO CAPTURE)                        */}
-      {/* ========================================================================= */}
+      {/* ADD / EDIT ADMIN MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-900 text-base font-heading">
+          <div className="bg-white rounded-xl shadow-2xl border border-[#E2E8F0] max-w-md w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+              <h3 className="font-bold text-[#1A1A2E] text-base font-heading">
                 {editingAdmin ? 'Ubah Akun Petugas' : 'Tambah Akun Petugas Baru'}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                className="min-h-[40px] min-w-[40px] flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
               {/* Photo & Camera Section */}
-              <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <div className="flex items-center gap-3 bg-[#F5F7FA] p-3 rounded-xl border border-[#E2E8F0]">
                 <img
                   src={
                     formData.avatarUrl ||
                     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
                   }
                   alt="Preview"
-                  className="w-14 h-14 rounded-xl object-cover border border-slate-300 bg-white shrink-0"
+                  className="w-14 h-14 rounded-lg object-cover border border-[#E2E8F0] bg-white shrink-0"
                 />
                 <div className="flex-1 min-w-0 space-y-1.5">
-                  <div className="font-semibold text-slate-700 text-xs">Foto Petugas</div>
+                  <div className="font-semibold text-[#1A1A2E] text-xs">Foto Petugas</div>
                   <button
                     type="button"
                     onClick={() => setIsCameraPhotoOpen(true)}
-                    className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors border border-indigo-200 cursor-pointer"
+                    className="min-h-[40px] px-3 py-1.5 bg-white hover:bg-[#F5F7FA] active:bg-slate-100 text-[#1E3A5F] rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors border border-[#E2E8F0] cursor-pointer"
                   >
-                    <Camera className="w-3.5 h-3.5 text-indigo-600" />
+                    <Camera className="w-3.5 h-3.5 text-[#1E3A5F]" />
                     <span>Ambil Foto Kamera</span>
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
+                <label className="block font-semibold text-[#1A1A2E] mb-1">
                   Nama Lengkap & Gelar Petugas
                 </label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Contoh: Hj. Nurbaity, M.Pd."
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium text-slate-800"
+                  placeholder="cth: Hj. Nurbaity, M.Pd."
+                  className="w-full min-h-[44px] px-3 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] placeholder:text-slate-400 focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Username Login</label>
+                  <label className="block font-semibold text-[#1A1A2E] mb-1">Username Login</label>
                   <input
                     type="text"
                     value={formData.username}
@@ -789,17 +760,17 @@ export const KelolaAkunAdmin: React.FC = () => {
                         username: e.target.value.toLowerCase().replace(/\s+/g, '_'),
                       })
                     }
-                    placeholder="nama_petugas"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium text-slate-800"
+                    placeholder="cth: nurbaity"
+                    className="w-full min-h-[44px] px-3 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] placeholder:text-slate-400 focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Peran / Hak Akses</label>
+                  <label className="block font-semibold text-[#1A1A2E] mb-1">Peran / Hak Akses</label>
                   <select
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium text-slate-800"
+                    className="w-full min-h-[44px] px-3 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors cursor-pointer"
                   >
                     <option value="admin">Admin Perpustakaan</option>
                     <option value="superadmin">Superadmin</option>
@@ -808,45 +779,42 @@ export const KelolaAkunAdmin: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
+                <label className="block font-semibold text-[#1A1A2E] mb-1">
                   NIP / ID Petugas (Barcode Login)
                 </label>
                 <input
                   type="text"
                   value={formData.nipOrId}
                   onChange={(e) => setFormData({ ...formData, nipOrId: e.target.value })}
-                  placeholder="Contoh: 197508122000032004 atau ADM-001"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-mono text-slate-800"
+                  placeholder="cth: 197508122000032004 atau ADM-001"
+                  className="w-full min-h-[44px] px-3 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] placeholder:text-slate-400 focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors font-mono"
                 />
-                <p className="text-[11px] text-slate-400 mt-1">
-                  Nomor ini dicetak sebagai barcode pada kartu admin dan dapat di-scan langsung di login
-                </p>
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Email Petugas</label>
+                <label className="block font-semibold text-[#1A1A2E] mb-1">Email Petugas</label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="nama@smpn1bengkalis.sch.id"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium text-slate-800"
+                  placeholder="cth: nurbaity@sekolah.sch.id"
+                  className="w-full min-h-[44px] px-3 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] placeholder:text-slate-400 focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+              <div className="flex justify-end gap-2 pt-3 border-t border-[#E2E8F0]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium cursor-pointer"
+                  className="min-h-[44px] px-4 py-2 bg-[#F5F7FA] hover:bg-slate-200 active:bg-slate-300 text-[#1A1A2E] border border-[#E2E8F0] rounded-xl font-semibold cursor-pointer transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold shadow-xs cursor-pointer"
+                  className="min-h-[44px] px-5 py-2 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] text-[#1A1A2E] rounded-xl font-bold shadow-xs cursor-pointer transition-colors"
                 >
-                  Simpan Akun Petugas
+                  Simpan Akun
                 </button>
               </div>
             </form>
@@ -854,9 +822,7 @@ export const KelolaAkunAdmin: React.FC = () => {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* CAMERA PHOTO MODAL FOR ADMIN PHOTO CAPTURE                                */}
-      {/* ========================================================================= */}
+      {/* CAMERA PHOTO MODAL FOR ADMIN PHOTO CAPTURE */}
       {isCameraPhotoOpen && (
         <CameraPhotoModal
           isOpen={isCameraPhotoOpen}
@@ -870,27 +836,25 @@ export const KelolaAkunAdmin: React.FC = () => {
         />
       )}
 
-      {/* ========================================================================= */}
-      {/* RESET PASSWORD MODAL                                                      */}
-      {/* ========================================================================= */}
+      {/* RESET PASSWORD MODAL */}
       {resetModalAdmin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-sm w-full p-6 space-y-4 text-xs">
-            <h3 className="font-bold text-slate-900 text-sm font-heading">
+          <div className="bg-white rounded-xl shadow-2xl border border-[#E2E8F0] max-w-sm w-full p-6 space-y-4 text-xs">
+            <h3 className="font-bold text-[#1A1A2E] text-sm font-heading">
               Reset Password: {resetModalAdmin.name}
             </h3>
 
             <form onSubmit={handleResetPassword} className="space-y-3">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Password Baru</label>
+                <label className="block font-semibold text-[#1A1A2E] mb-1">Password Baru</label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Masukkan password baru..."
-                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
+                    placeholder="cth: Rahasia123"
+                    className="w-full pl-9 pr-3 py-2.5 min-h-[44px] bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] placeholder:text-slate-400 focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors"
                     required
                   />
                 </div>
@@ -900,13 +864,13 @@ export const KelolaAkunAdmin: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setResetModalAdmin(null)}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium cursor-pointer"
+                  className="min-h-[44px] px-3.5 py-2 bg-[#F5F7FA] hover:bg-slate-200 active:bg-slate-300 text-[#1A1A2E] border border-[#E2E8F0] rounded-xl font-semibold cursor-pointer transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold cursor-pointer"
+                  className="min-h-[44px] px-4 py-2 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] text-[#1A1A2E] rounded-xl font-bold cursor-pointer transition-colors"
                 >
                   Terapkan
                 </button>

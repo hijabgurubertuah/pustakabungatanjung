@@ -157,17 +157,17 @@ export const PengaturanHalamanUtama: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Header Card */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-xl border border-[#E2E8F0] p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-sky-600 font-semibold text-xs tracking-wider uppercase mb-1">
-            <Palette className="w-4 h-4" />
+          <div className="flex items-center gap-2 text-[#1E3A5F] font-semibold text-xs tracking-wider uppercase mb-1">
+            <Palette className="w-4 h-4 text-[#F5A623]" />
             <span>Kustomisasi Tampilan</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A2E] font-heading">
             Pengaturan Tampilan Halaman Utama
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Atur warna latar belakang login (Biru Langit), logo, ucapan selamat datang, kutipan mutiara, motto, tombol, dan hak cipta.
+            Atur warna latar belakang, logo, ucapan selamat datang, kutipan mutiara, motto, tombol, dan hak cipta.
           </p>
         </div>
 
@@ -175,7 +175,7 @@ export const PengaturanHalamanUtama: React.FC = () => {
           <button
             type="button"
             onClick={handleResetDefaults}
-            className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="min-h-[44px] px-3.5 py-2 rounded-xl border border-[#E2E8F0] bg-white hover:bg-[#F5F7FA] text-[#1A1A2E] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
             <span>Format Standar</span>
@@ -185,7 +185,8 @@ export const PengaturanHalamanUtama: React.FC = () => {
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 active:scale-[0.98] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-sky-600/20 transition-all cursor-pointer"
+            className="min-h-[44px] px-4 py-2 rounded-xl bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] disabled:bg-[#E2E8F0] disabled:text-slate-400 text-[#1A1A2E] text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer select-none"
+            title="Simpan perubahan ke Firebase"
           >
             <Cloud className="w-4 h-4" />
             <span>{isSaving ? 'Menyimpan...' : 'Simpan ke Firebase'}</span>
@@ -193,30 +194,12 @@ export const PengaturanHalamanUtama: React.FC = () => {
         </div>
       </div>
 
-      {/* Quota Notice Banner */}
-      <div className="bg-amber-50 border border-amber-200/80 rounded-xl p-3.5 flex items-center justify-between gap-3 text-xs text-amber-800">
-        <div className="flex items-center gap-2 min-w-0">
-          <Info className="w-4 h-4 text-amber-600 shrink-0" />
-          <span>
-            <strong>Hemat Kuota Tulis Firebase:</strong> Pengeditan tersimpan di memori browser lokal. Tekan tombol <strong>"Simpan ke Firebase"</strong> jika sudah selesai untuk mengirim ke Cloud Firestore.
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={isSaving}
-          className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] shrink-0 transition-colors cursor-pointer"
-        >
-          Simpan Cloud
-        </button>
-      </div>
-
       {/* Main Grid: Form Left, Live Preview Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Form: 7 cols */}
         <div className="lg:col-span-7 space-y-5">
           {/* Section 1: Background Color & Theme Selection */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-4">
+          <div className="bg-white rounded-xl border border-[#E2E8F0] p-5 sm:p-6 shadow-xs space-y-4">
             <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
               <Palette className="w-4 h-4 text-sky-600" />
               <span>Warna & Tema Latar Belakang Login</span>
@@ -315,24 +298,24 @@ export const PengaturanHalamanUtama: React.FC = () => {
           </div>
 
           {/* Section 2: Text and Content */}
-          <form onSubmit={handleSave} className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-              <Type className="w-4 h-4 text-sky-600" />
+          <form onSubmit={handleSave} className="bg-white rounded-xl border border-[#E2E8F0] p-5 sm:p-6 shadow-xs space-y-4">
+            <h3 className="text-sm font-bold text-[#1A1A2E] border-b border-[#E2E8F0] pb-3 flex items-center gap-2 font-heading">
+              <Type className="w-4 h-4 text-[#1E3A5F]" />
               <span>Teks & Ucapan Selamat Datang</span>
             </h3>
 
             {/* Logo Settings */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-semibold text-[#1A1A2E] mb-1.5">
                 Logo Perpustakaan / Sekolah
               </label>
               <div className="flex items-center gap-3">
-                <div className="w-14 h-16 rounded-xl bg-slate-900 border border-sky-500/20 flex items-center justify-center p-1.5 shrink-0 shadow-inner">
+                <div className="w-14 h-16 rounded-xl bg-[#0F1F33] border border-white/10 flex items-center justify-center p-1.5 shrink-0 shadow-inner">
                   <SMPN1Logo customUrl={draftLogoUrl} className="w-full h-full" />
                 </div>
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-2">
-                    <label className="px-3 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors">
+                    <label className="min-h-[40px] px-3.5 py-1.5 rounded-lg bg-white hover:bg-[#F5F7FA] border border-[#E2E8F0] text-[#1E3A5F] text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs">
                       <Upload className="w-3.5 h-3.5" />
                       <span>{isUploading ? 'Mengunggah...' : 'Unggah Logo Baru'}</span>
                       <input
@@ -347,9 +330,9 @@ export const PengaturanHalamanUtama: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setDraftLogoUrl('')}
-                        className="px-2.5 py-1.5 rounded-lg text-slate-500 hover:text-rose-600 text-xs font-medium hover:bg-rose-50 transition-colors"
+                        className="min-h-[40px] px-3 py-1.5 rounded-lg text-slate-500 hover:text-rose-600 text-xs font-medium hover:bg-rose-50 transition-colors cursor-pointer"
                       >
-                        Gunakan Lambang Standar SMPN 1
+                        Reset Logo
                       </button>
                     )}
                   </div>
@@ -357,8 +340,8 @@ export const PengaturanHalamanUtama: React.FC = () => {
                     type="url"
                     value={draftLogoUrl}
                     onChange={(e) => setDraftLogoUrl(e.target.value)}
-                    placeholder="Atau tempel URL gambar logo langsung..."
-                    className="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"
+                    placeholder="cth: https://sekolah.sch.id/logo.png"
+                    className="w-full min-h-[44px] text-xs px-3 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] focus:bg-white"
                   />
                 </div>
               </div>
@@ -366,92 +349,91 @@ export const PengaturanHalamanUtama: React.FC = () => {
 
             {/* Field 1: Judul Selamat Datang */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-[#1A1A2E] mb-1">
                 Judul Utama
               </label>
               <input
                 type="text"
                 value={draftTitle}
                 onChange={(e) => setDraftTitle(e.target.value)}
-                placeholder="Contoh: Selamat Datang"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"
+                placeholder="cth: Selamat Datang"
+                className="w-full min-h-[44px] px-3.5 py-2.5 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-sm font-medium text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] focus:bg-white"
                 required
               />
             </div>
 
             {/* Field 2: Subjudul / Nama Perpustakaan */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Subjudul / Instansi (Bisa Multi-baris)
+              <label className="block text-xs font-semibold text-[#1A1A2E] mb-1">
+                Subjudul / Instansi
               </label>
               <textarea
                 rows={2}
                 value={draftSubtitle}
                 onChange={(e) => setDraftSubtitle(e.target.value)}
-                placeholder="Contoh: di Perpustakaan Bunga Tanjung&#10;SMPN 1 Bengkalis"
-                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 font-sans"
+                placeholder="cth: di Perpustakaan Bunga Tanjung&#10;SMPN 1 Bengkalis"
+                className="w-full px-3.5 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-sm font-medium text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] focus:bg-white font-sans"
                 required
               />
-              <span className="text-[11px] text-slate-400">Gunakan Enter jika ingin membagi menjadi 2 baris (seperti di gambar).</span>
             </div>
 
             {/* Field 3: Kutipan Mutiara / Quote */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+              <label className="block text-xs font-semibold text-[#1A1A2E] mb-1 flex items-center gap-1.5">
                 <Quote className="w-3.5 h-3.5 text-slate-400" />
-                <span>Kutipan / Pesan Motivasi (Tercetak Miring)</span>
+                <span>Kutipan / Pesan Motivasi</span>
               </label>
               <textarea
                 rows={3}
                 value={draftQuote}
                 onChange={(e) => setDraftQuote(e.target.value)}
-                placeholder="Contoh: “Ke sekolah bukan hanya mempelajari buku, tetapi belajar tentang Disiplin, Tanggung Jawab, dan Saling Menghargai”"
-                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"
+                placeholder="cth: “Ke sekolah bukan hanya mempelajari buku...”"
+                className="w-full px-3.5 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-sm font-medium text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] focus:bg-white"
               />
             </div>
 
             {/* Field 4: Teks Tombol */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#1A1A2E] mb-1">
                   Teks Tombol Masuk
                 </label>
                 <input
                   type="text"
                   value={draftButtonText}
                   onChange={(e) => setDraftButtonText(e.target.value)}
-                  placeholder="Contoh: MASUK"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"
+                  placeholder="cth: MASUK"
+                  className="w-full min-h-[44px] px-3.5 py-2.5 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-sm font-bold text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] focus:bg-white"
                   required
                 />
               </div>
 
               {/* Field 5: Slogan / Motto */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Motto / Slogan Sekolah (🌱)
+                <label className="block text-xs font-semibold text-[#1A1A2E] mb-1">
+                  Motto / Slogan Sekolah
                 </label>
                 <input
                   type="text"
                   value={draftMotto}
                   onChange={(e) => setDraftMotto(e.target.value)}
-                  placeholder="Contoh: JUJUR ITU BUTUH USAHA"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 uppercase"
+                  placeholder="cth: JUJUR ITU BUTUH USAHA"
+                  className="w-full min-h-[44px] px-3.5 py-2.5 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-sm font-bold text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] focus:bg-white uppercase"
                 />
               </div>
             </div>
 
             {/* Field 6: Hak Cipta / Copyright */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Teks Hak Cipta / Copyright
+              <label className="block text-xs font-semibold text-[#1A1A2E] mb-1">
+                Teks Hak Cipta
               </label>
               <input
                 type="text"
                 value={draftCopyright}
                 onChange={(e) => setDraftCopyright(e.target.value)}
-                placeholder="Contoh: Copyright SMPN 1 BENGKALIS"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"
+                placeholder="cth: Copyright SMPN 1 BENGKALIS"
+                className="w-full min-h-[44px] px-3.5 py-2.5 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-sm font-medium text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] focus:bg-white"
               />
             </div>
 
@@ -459,40 +441,29 @@ export const PengaturanHalamanUtama: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSaving}
-                className="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer"
+                className="min-h-[44px] px-5 py-2.5 rounded-xl bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] disabled:bg-[#E2E8F0] disabled:text-slate-400 text-[#1A1A2E] font-bold text-xs flex items-center gap-2 shadow-xs transition-all cursor-pointer select-none"
               >
                 <Save className="w-4 h-4" />
-                <span>{isSaving ? 'Menyimpan...' : 'Simpan ke Sistem & Firebase'}</span>
+                <span>{isSaving ? 'Menyimpan...' : 'Simpan Pengaturan'}</span>
               </button>
             </div>
           </form>
-
-          {/* Quick info tips */}
-          <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 text-xs text-sky-800 space-y-1.5">
-            <div className="font-bold flex items-center gap-1.5 text-sky-900">
-              <Info className="w-4 h-4 text-sky-700" />
-              <span>Sinkronisasi Otomatis</span>
-            </div>
-            <p className="leading-relaxed">
-              Semua teks, warna latar (Biru Langit), dan logo yang Anda simpan di sini akan langsung tampil di halaman depan beranda dan tersimpan permanen di Firebase Cloud Firestore serta peramban lokal.
-            </p>
-          </div>
         </div>
 
         {/* Right Preview: 5 cols (Simulating Smartphone Device with Screenshot layout) */}
         <div className="lg:col-span-5 sticky top-20">
-          <div className="bg-slate-900 rounded-3xl p-3 border-4 border-slate-800 shadow-2xl max-w-[380px] mx-auto">
+          <div className="bg-slate-900 rounded-xl p-3 border-4 border-slate-800 shadow-2xl max-w-[380px] mx-auto">
             {/* Phone Screen Top Notch */}
             <div className="flex items-center justify-between px-3 py-1.5 text-[10px] text-slate-400 font-mono">
               <div className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F5A623]"></span>
                 <span>Live Preview Beranda</span>
               </div>
               <span>100% Sesuai</span>
             </div>
 
             {/* Inner Phone Screen Layout mimicking the actual login screen */}
-            <div className={`w-full ${previewTheme.bgClass} rounded-2xl p-5 border text-center relative overflow-hidden flex flex-col items-center transition-colors duration-300`}>
+            <div className={`w-full ${previewTheme.bgClass} rounded-xl p-5 border text-center relative overflow-hidden flex flex-col items-center transition-colors duration-300`}>
               {/* Radial Top Glow */}
               <div className={`w-32 h-32 ${previewTheme.topGlowClass} rounded-full blur-xl absolute -top-4 pointer-events-none`} />
 

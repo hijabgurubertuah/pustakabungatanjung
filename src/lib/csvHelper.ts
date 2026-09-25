@@ -1,4 +1,5 @@
 import { Student } from '../types';
+import * as XLSX from 'xlsx';
 
 export const CSV_TEMPLATE_HEADERS = [
   'NISN / NIP',
@@ -310,6 +311,80 @@ export function exportBooksToCSVFile(books: any[], filename?: string): void {
 }
 
 /**
+ * Export books directly to Microsoft Excel (.xlsx) file
+ */
+export function exportBooksToXLSXFile(books: any[], filename?: string): void {
+  const headers = BOOK_CSV_TEMPLATE_HEADERS;
+  const rows = books.map((b) => [
+    b.barcode,
+    b.title,
+    b.author,
+    b.publisher,
+    b.category,
+    b.publishYear,
+    b.entryYear,
+    b.totalCopies,
+    b.condition,
+    b.shelfLocation || 'Rak A1',
+    b.synopsis || '',
+    b.coverUrl || '',
+  ]);
+
+  const worksheetData = [headers, ...rows];
+  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+  // Column width formatting in Excel
+  worksheet['!cols'] = [
+    { wch: 18 }, // Barcode
+    { wch: 38 }, // Judul Buku
+    { wch: 26 }, // Pengarang
+    { wch: 24 }, // Penerbit
+    { wch: 22 }, // Kategori
+    { wch: 14 }, // Tahun Terbit
+    { wch: 14 }, // Tahun Masuk
+    { wch: 16 }, // Jumlah Eksemplar
+    { wch: 15 }, // Kondisi Fisik
+    { wch: 18 }, // Lokasi Rak
+    { wch: 40 }, // Sinopsis
+    { wch: 45 }, // URL Sampul (Drive)
+  ];
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Katalog Buku');
+
+  const defaultFilename =
+    filename ||
+    `Katalog_Buku_Perpustakaan_BungaTanjung_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+  XLSX.writeFile(workbook, defaultFilename);
+}
+
+/**
+ * Downloads a pre-formatted Book Excel (.xlsx) template
+ */
+export function downloadBookTemplateXLSX(): void {
+  const headers = BOOK_CSV_TEMPLATE_HEADERS;
+  const worksheet = XLSX.utils.aoa_to_sheet([headers, ...BOOK_SAMPLE_ROWS]);
+  worksheet['!cols'] = [
+    { wch: 18 },
+    { wch: 35 },
+    { wch: 25 },
+    { wch: 25 },
+    { wch: 22 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 16 },
+    { wch: 15 },
+    { wch: 18 },
+    { wch: 40 },
+    { wch: 45 },
+  ];
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Template Buku');
+  XLSX.writeFile(workbook, `Template_Katalog_Buku_Perpustakaan_${new Date().getFullYear()}.xlsx`);
+}
+
+/**
  * Parse CSV or TSV raw text into validated book items
  */
 export function parseBookCSV(rawText: string, existingBooks: any[] = []): ParsedBookRow[] {
@@ -465,5 +540,17 @@ export async function fetchGoogleSheetsCSV(csvUrl: string): Promise<string> {
 
   const csvText = await response.text();
   return csvText;
+}
+
+/**
+ * Parse an Excel (.xlsx / .xls) ArrayBuffer directly into ParsedBookRow[]
+ */
+export function parseBookExcelBuffer(buffer: ArrayBuffer, existingBooks: any[] = []): ParsedBookRow[] {
+  const workbook = XLSX.read(buffer, { type: 'array' });
+  const firstSheetName = workbook.SheetNames[0];
+  if (!firstSheetName) return [];
+  const worksheet = workbook.Sheets[firstSheetName];
+  const csvText = XLSX.utils.sheet_to_csv(worksheet);
+  return parseBookCSV(csvText, existingBooks);
 }
 

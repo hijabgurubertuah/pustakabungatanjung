@@ -89,7 +89,7 @@ export const PinjamKembali: React.FC = () => {
 
     const res = borrowBook(selectedStudentId, selectedBookBarcode, effectiveDue, loanNotes);
     if (res.success) {
-      confetti({ particleCount: 35, spread: 60, origin: { y: 0.8 } });
+      confetti({ particleCount: 25, spread: 50, origin: { y: 0.8 }, ticks: 80 });
       setSelectedStudentId('');
       setSelectedBookBarcode('');
       setLoanNotes('');
@@ -106,6 +106,7 @@ export const PinjamKembali: React.FC = () => {
 
     const res = returnBook(returnBarcode, returnNotes);
     if (res.success) {
+      confetti({ particleCount: 25, spread: 50, origin: { y: 0.8 }, ticks: 80 });
       setReturnBarcode('');
       setReturnNotes('');
     }
@@ -188,40 +189,40 @@ export const PinjamKembali: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Sub Tabs */}
-      <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-100 p-1 rounded-2xl w-full sm:w-fit border border-slate-200 overflow-x-auto max-w-full scrollbar-none">
+      <div className="flex items-center gap-2 bg-[#F5F7FA] p-1 rounded-xl w-full sm:w-fit border border-[#E2E8F0] overflow-x-auto max-w-full scrollbar-none">
         <button
           onClick={() => setActiveTab('pinjam')}
-          className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
+          className={`min-h-[44px] px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all whitespace-nowrap shrink-0 cursor-pointer active:scale-[0.98] select-none ${
             activeTab === 'pinjam'
-              ? 'bg-indigo-600 text-white shadow-xs'
-              : 'text-slate-600 hover:text-slate-900'
+              ? 'bg-[#1E3A5F] text-white shadow-xs font-bold'
+              : 'text-[#1A1A2E] hover:bg-white hover:text-[#1E3A5F]'
           }`}
         >
-          <BookOpen className="w-3.5 h-3.5 shrink-0" />
+          <BookOpen className="w-4 h-4 shrink-0" />
           <span>Peminjaman Baru</span>
         </button>
 
         <button
           onClick={() => setActiveTab('kembali')}
-          className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
+          className={`min-h-[44px] px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all whitespace-nowrap shrink-0 cursor-pointer active:scale-[0.98] select-none ${
             activeTab === 'kembali'
-              ? 'bg-emerald-600 text-white shadow-xs'
-              : 'text-slate-600 hover:text-slate-900'
+              ? 'bg-[#F5A623] text-[#1A1A2E] shadow-xs font-bold'
+              : 'text-[#1A1A2E] hover:bg-white hover:text-[#1E3A5F]'
           }`}
         >
-          <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+          <RotateCcw className="w-4 h-4 shrink-0" />
           <span>Pengembalian</span>
         </button>
 
         <button
           onClick={() => setActiveTab('riwayat')}
-          className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
+          className={`min-h-[44px] px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all whitespace-nowrap shrink-0 cursor-pointer active:scale-[0.98] select-none ${
             activeTab === 'riwayat'
-              ? 'bg-white text-slate-800 shadow-xs border border-slate-200'
-              : 'text-slate-600 hover:text-slate-900'
+              ? 'bg-white text-[#1E3A5F] shadow-xs border border-[#E2E8F0] font-bold'
+              : 'text-[#1A1A2E] hover:bg-white hover:text-[#1E3A5F]'
           }`}
         >
-          <Clock className="w-3.5 h-3.5 shrink-0" />
+          <Clock className="w-4 h-4 shrink-0" />
           <span>Riwayat ({transactions.length})</span>
         </button>
       </div>
@@ -230,20 +231,20 @@ export const PinjamKembali: React.FC = () => {
       {activeTab === 'pinjam' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Form Side */}
-          <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-bold text-slate-900 font-heading">
+          <div className="lg:col-span-7 bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+              <h3 className="text-sm font-bold text-[#1A1A2E] font-heading">
                 Proses Peminjaman Cepat
               </h3>
-              <span className="text-[11px] text-slate-500 font-medium">
-                Petugas: <strong>{currentUser?.adminData?.name || 'Admin'}</strong>
+              <span className="text-xs text-slate-500 font-medium">
+                Petugas: <strong className="text-[#1A1A2E]">{currentUser?.adminData?.name || 'Admin'}</strong>
               </span>
             </div>
 
             <form onSubmit={handleProcessBorrow} className="space-y-4 text-xs">
               {/* Step 1: Scan Siswa */}
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
+                <label className="block font-semibold text-[#1A1A2E] mb-1">
                   1. Pindai Kartu Siswa (ID / NISN)
                 </label>
                 <div className="flex gap-2">
@@ -253,14 +254,14 @@ export const PinjamKembali: React.FC = () => {
                       type="text"
                       value={selectedStudentId}
                       onChange={(e) => setSelectedStudentId(e.target.value)}
-                      placeholder="Pindai atau ketik ID/NISN siswa..."
-                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 text-slate-800"
+                      placeholder="cth: 0098765431"
+                      className="w-full min-h-[44px] pl-9 pr-3 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] text-[#1A1A2E]"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={() => setScannerMode('student')}
-                    className="px-3.5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 rounded-xl font-semibold flex items-center gap-1.5 shrink-0 transition-colors"
+                    className="min-h-[44px] px-4 py-2 bg-[#F5F7FA] hover:bg-[#E2E8F0] active:bg-slate-300 text-[#1E3A5F] border border-[#E2E8F0] rounded-xl font-bold flex items-center gap-2 shrink-0 transition-all cursor-pointer"
                   >
                     <ScanLine className="w-4 h-4" />
                     <span>Pindai</span>
@@ -270,7 +271,7 @@ export const PinjamKembali: React.FC = () => {
 
               {/* Step 2: Scan Buku */}
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
+                <label className="block font-semibold text-[#1A1A2E] mb-1">
                   2. Pindai Barcode Buku
                 </label>
                 <div className="flex gap-2">
@@ -280,14 +281,14 @@ export const PinjamKembali: React.FC = () => {
                       type="text"
                       value={selectedBookBarcode}
                       onChange={(e) => setSelectedBookBarcode(e.target.value)}
-                      placeholder="Pindai barcode pada buku..."
-                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 text-slate-800"
+                      placeholder="cth: 978-602-03-8591-4"
+                      className="w-full min-h-[44px] pl-9 pr-3 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] text-[#1A1A2E]"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={() => setScannerMode('book')}
-                    className="px-3.5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 rounded-xl font-semibold flex items-center gap-1.5 shrink-0 transition-colors"
+                    className="min-h-[44px] px-4 py-2 bg-[#F5F7FA] hover:bg-[#E2E8F0] active:bg-slate-300 text-[#1E3A5F] border border-[#E2E8F0] rounded-xl font-bold flex items-center gap-2 shrink-0 transition-all cursor-pointer"
                   >
                     <ScanLine className="w-4 h-4" />
                     <span>Pindai</span>
@@ -298,11 +299,11 @@ export const PinjamKembali: React.FC = () => {
               {/* Durasi & Catatan */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Durasi / Waktu Pinjam</label>
+                  <label className="block font-semibold text-[#1A1A2E] mb-1">Durasi / Waktu Pinjam</label>
                   <select
                     value={durationOption}
                     onChange={(e) => setDurationOption(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium"
+                    className="w-full min-h-[44px] px-3 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] font-medium text-[#1A1A2E]"
                   >
                     <option value="3">3 Hari</option>
                     <option value="7">7 Hari (Standar)</option>
@@ -313,48 +314,34 @@ export const PinjamKembali: React.FC = () => {
                     <option value="KUSTOM">Kustom (Pilih Tanggal Pengembalian)</option>
                   </select>
 
-                  {/* Contextual Helpers */}
-                  {durationOption === '180' && (
-                    <p className="text-[11px] text-indigo-600 font-medium mt-1">
-                      Cocok untuk pinjaman Buku Pelajaran Pokok selama 1 Semester (180 Hari).
-                    </p>
-                  )}
-                  {durationOption === 'DITENTUKAN_NANTI' && (
-                    <p className="text-[11px] text-amber-700 font-medium mt-1">
-                      Waktu & tanggal pengembalian akan ditentukan nanti di akhir semester.
-                    </p>
-                  )}
                   {durationOption === 'KUSTOM' && (
                     <div className="mt-2">
-                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                        Pilih Tanggal Pengembalian:
-                      </label>
                       <input
                         type="date"
                         value={customDueDate}
                         onChange={(e) => setCustomDueDate(e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-white border border-indigo-300 rounded-lg focus:outline-none focus:border-indigo-600 text-xs font-semibold text-indigo-900"
+                        className="w-full min-h-[44px] px-3 py-2 bg-white border border-[#E2E8F0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] text-xs font-semibold text-[#1A1A2E]"
                       />
                     </div>
                   )}
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Catatan Tambahan</label>
+                  <label className="block font-semibold text-[#1A1A2E] mb-1">Catatan Tambahan</label>
                   <input
                     type="text"
                     value={loanNotes}
                     onChange={(e) => setLoanNotes(e.target.value)}
-                    placeholder="Opsional (mis: buku pelajaran semester 1)"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
+                    placeholder="cth: buku pelajaran semester 1"
+                    className="w-full min-h-[44px] px-3 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] text-[#1A1A2E]"
                   />
                 </div>
               </div>
 
-              {/* Submit Button */}
+              {/* Submit Button (btn-primary: Gold/Amber #F5A623) */}
               <button
                 type="submit"
                 disabled={!currentStudent || !currentBook || currentBook.availableCopies <= 0}
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-md shadow-emerald-600/20"
+                className="w-full min-h-[44px] py-3 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] disabled:bg-[#E2E8F0] disabled:text-slate-400 disabled:cursor-not-allowed text-[#1A1A2E] text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer select-none"
               >
                 <Check className="w-4 h-4" />
                 <span>Konfirmasi Peminjaman Buku</span>
@@ -365,7 +352,7 @@ export const PinjamKembali: React.FC = () => {
           {/* Real-time Verification Preview Side */}
           <div className="lg:col-span-5 space-y-4">
             {/* Student Preview Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4">
+            <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-4">
               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
                 Verifikasi Siswa
               </div>
@@ -396,7 +383,7 @@ export const PinjamKembali: React.FC = () => {
             </div>
 
             {/* Book Preview Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4">
+            <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-4">
               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
                 Verifikasi Buku
               </div>
@@ -405,10 +392,10 @@ export const PinjamKembali: React.FC = () => {
                   <BookCover
                     coverUrl={currentBook.coverUrl}
                     title={currentBook.title}
-                    className="w-12 h-16 rounded-xl border border-slate-200 shrink-0"
+                    className="w-12 h-16 rounded-xl border border-[#E2E8F0] shrink-0"
                   />
                   <div className="min-w-0 space-y-1">
-                    <h4 className="font-bold text-slate-900 text-sm line-clamp-1">
+                    <h4 className="font-bold text-[#1A1A2E] text-sm line-clamp-1">
                       {currentBook.title}
                     </h4>
                     <div className="text-slate-500 text-xs">
@@ -418,8 +405,8 @@ export const PinjamKembali: React.FC = () => {
                       <span
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
                           currentBook.availableCopies > 0
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : 'bg-rose-50 text-rose-700'
+                            ? 'bg-emerald-50 text-[#10B981]'
+                            : 'bg-rose-50 text-[#EF4444]'
                         }`}
                       >
                         Tersedia: {currentBook.availableCopies} dari {currentBook.totalCopies}
@@ -428,7 +415,7 @@ export const PinjamKembali: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div className="py-4 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                <div className="py-4 text-center text-xs text-slate-400 bg-[#F5F7FA] rounded-xl border border-dashed border-[#E2E8F0]">
                   Belum ada buku terpilih
                 </div>
               )}
@@ -439,19 +426,19 @@ export const PinjamKembali: React.FC = () => {
 
       {/* TAB 2: PENGEMBALIAN BUKU */}
       {activeTab === 'kembali' && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 max-w-2xl mx-auto space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 className="text-sm font-bold text-slate-900 font-heading">
+        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-5 max-w-2xl mx-auto space-y-4">
+          <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+            <h3 className="text-sm font-bold text-[#1A1A2E] font-heading">
               Pengembalian Buku Cepat
             </h3>
-            <span className="text-[11px] text-slate-500">
-              Penerima: <strong>{currentUser?.adminData?.name || 'Admin'}</strong>
+            <span className="text-xs text-slate-500">
+              Penerima: <strong className="text-[#1A1A2E]">{currentUser?.adminData?.name || 'Admin'}</strong>
             </span>
           </div>
 
           <form onSubmit={handleProcessReturn} className="space-y-4 text-xs">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">
+              <label className="block font-semibold text-[#1A1A2E] mb-1">
                 Pindai Barcode Buku atau No. Transaksi
               </label>
               <div className="flex gap-2">
@@ -461,15 +448,15 @@ export const PinjamKembali: React.FC = () => {
                     type="text"
                     value={returnBarcode}
                     onChange={(e) => setReturnBarcode(e.target.value)}
-                    placeholder="Pindai barcode buku yang dikembalikan..."
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-slate-800"
+                    placeholder="cth: 978-602-03-8591-4"
+                    className="w-full min-h-[44px] pl-9 pr-3 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] text-[#1A1A2E]"
                     autoFocus
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => setScannerMode('return')}
-                  className="px-3.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl font-semibold flex items-center gap-1.5 shrink-0 transition-colors"
+                  className="min-h-[44px] px-4 py-2 bg-[#F5F7FA] hover:bg-[#E2E8F0] active:bg-slate-300 text-[#1E3A5F] border border-[#E2E8F0] rounded-xl font-bold flex items-center gap-2 shrink-0 transition-all cursor-pointer"
                 >
                   <ScanLine className="w-4 h-4" />
                   <span>Pindai</span>
@@ -478,24 +465,24 @@ export const PinjamKembali: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">
-                Catatan Pengembalian (Kondisi Buku)
+              <label className="block font-semibold text-[#1A1A2E] mb-1">
+                Catatan Pengembalian
               </label>
               <input
                 type="text"
                 value={returnNotes}
                 onChange={(e) => setReturnNotes(e.target.value)}
-                placeholder="Contoh: Kondisi buku utuh & bersih"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500"
+                placeholder="cth: Kondisi buku utuh & bersih"
+                className="w-full min-h-[44px] px-3 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] text-[#1A1A2E]"
               />
             </div>
 
             <button
               type="submit"
               disabled={!returnBarcode.trim()}
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-md shadow-emerald-600/20"
+              className="w-full min-h-[44px] py-3 bg-[#1E3A5F] hover:bg-[#162C47] active:bg-[#0F1F33] disabled:bg-[#E2E8F0] disabled:text-slate-400 text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer select-none"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-4 h-4 text-[#F5A623]" />
               <span>Proses Pengembalian Buku</span>
             </button>
           </form>
@@ -504,13 +491,13 @@ export const PinjamKembali: React.FC = () => {
 
       {/* TAB 3 / RIWAYAT TRANSAKSI TABEL SPREADSHEET */}
       {(activeTab === 'riwayat' || activeTab === 'pinjam' || activeTab === 'kembali') && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs overflow-hidden">
           {/* Header & Excel Toolbar */}
-          <div className="p-3 bg-slate-100 border-b border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+          <div className="p-3 bg-[#F5F7FA] border-b border-[#E2E8F0] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
             <div className="flex items-center gap-2">
-              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-              <h4 className="text-xs font-bold text-slate-800 font-heading">Sel Spreadsheet Transaksi Sirkulasi</h4>
-              <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded border border-emerald-200">
+              <FileSpreadsheet className="w-4 h-4 text-[#1E3A5F]" />
+              <h4 className="text-xs font-bold text-[#1A1A2E] font-heading">Sel Spreadsheet Transaksi Sirkulasi</h4>
+              <span className="text-[10px] bg-white text-[#1E3A5F] font-bold px-2 py-0.5 rounded border border-[#E2E8F0]">
                 {filteredTransactions.length} Transaksi
               </span>
             </div>
@@ -522,15 +509,15 @@ export const PinjamKembali: React.FC = () => {
                   type="text"
                   value={searchFilter}
                   onChange={(e) => setSearchFilter(e.target.value)}
-                  placeholder="Cari transaksi / buku / siswa..."
-                  className="w-full pl-8 pr-2.5 py-1 bg-white border border-slate-300 rounded-lg text-xs focus:outline-none"
+                  placeholder="cth: Laskar Pelangi / Fadhil"
+                  className="w-full pl-8 pr-2.5 py-1.5 bg-white border border-[#E2E8F0] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]"
                 />
               </div>
 
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="px-2.5 py-1 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none"
+                className="px-2.5 py-1.5 bg-white border border-[#E2E8F0] rounded-lg text-xs font-semibold text-[#1A1A2E] focus:outline-none"
               >
                 <option value="Semua">Semua Status</option>
                 <option value="Dipinjam">Dipinjam</option>
@@ -541,10 +528,10 @@ export const PinjamKembali: React.FC = () => {
               <button
                 type="button"
                 onClick={handleExportTrxCSV}
-                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg flex items-center gap-1 cursor-pointer transition shadow-2xs"
-                title="Ekspor Rekap Sirkulasi ke File Excel CSV"
+                className="min-h-[36px] px-3 py-1.5 bg-[#1E3A5F] hover:bg-[#162C47] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition shadow-2xs"
+                title="Ekspor CSV"
               >
-                <Download className="w-3.5 h-3.5" />
+                <Download className="w-3.5 h-3.5 text-[#F5A623]" />
                 <span>Ekspor CSV</span>
               </button>
             </div>
@@ -568,41 +555,52 @@ export const PinjamKembali: React.FC = () => {
               <tbody className="divide-y divide-slate-200 bg-white">
                 {filteredTransactions.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-8 text-center text-slate-400">
-                      Tidak ada data transaksi ditemukan dalam sel spreadsheet.
+                    <td colSpan={8} className="py-12 text-center text-slate-500">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <Clock className="w-8 h-8 text-slate-300" />
+                        <p className="text-xs text-slate-500 font-medium">Belum ada transaksi sirkulasi.</p>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('pinjam')}
+                          className="min-h-[44px] px-4 py-2 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] text-[#1A1A2E] text-xs font-bold rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-xs select-none"
+                        >
+                          <BookOpen className="w-4 h-4" />
+                          <span>Peminjaman Baru</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ) : (
                   filteredTransactions.map((trx, index) => (
-                    <tr key={trx.id} className="hover:bg-indigo-50/30 transition-colors">
+                    <tr key={trx.id} className="hover:bg-[#F5F7FA] transition-colors">
                       {/* Row Num */}
-                      <td className="p-1.5 text-center font-mono text-[11px] font-bold bg-slate-100 text-slate-500 border-r border-slate-200 select-none">
+                      <td className="p-1.5 text-center font-mono text-[11px] font-bold bg-[#F5F7FA] text-slate-500 border-r border-[#E2E8F0] select-none">
                         {index + 1}
                       </td>
 
                       {/* Buku */}
-                      <td className="p-2 border-r border-slate-200">
-                        <div className="font-bold text-slate-900 line-clamp-1">{trx.bookTitle}</div>
+                      <td className="p-2 border-r border-[#E2E8F0]">
+                        <div className="font-bold text-[#1A1A2E] line-clamp-1">{trx.bookTitle}</div>
                         <div className="text-[10px] text-slate-500 font-mono">
                           ID: {trx.id} • BC: {trx.bookBarcode}
                         </div>
                       </td>
 
                       {/* Peminjam */}
-                      <td className="p-2 border-r border-slate-200">
-                        <div className="font-bold text-slate-800">{trx.studentName}</div>
-                        <div className="text-[10px] text-indigo-600 font-semibold">
+                      <td className="p-2 border-r border-[#E2E8F0]">
+                        <div className="font-bold text-[#1A1A2E]">{trx.studentName}</div>
+                        <div className="text-[10px] text-[#1E3A5F] font-semibold">
                           {trx.studentClass} • NISN: {trx.studentNisn}
                         </div>
                       </td>
 
                       {/* Tanggal */}
-                      <td className="p-2 border-r border-slate-200 font-mono text-[11px] text-slate-600">
+                      <td className="p-2 border-r border-[#E2E8F0] font-mono text-[11px] text-slate-600">
                         <div>Pinjam: {trx.borrowDate}</div>
                         <div
                           className={`text-[10px] font-bold ${
                             trx.status === 'Terlambat'
-                              ? 'text-rose-600'
+                              ? 'text-[#EF4444]'
                               : 'text-slate-500'
                           }`}
                         >
@@ -618,12 +616,12 @@ export const PinjamKembali: React.FC = () => {
                       </td>
 
                       {/* Admin Pinjam */}
-                      <td className="p-2 border-r border-slate-200 text-slate-700">
-                        <span className="font-semibold text-slate-800">{trx.borrowAdminName}</span>
+                      <td className="p-2 border-r border-[#E2E8F0] text-slate-700">
+                        <span className="font-semibold text-[#1A1A2E]">{trx.borrowAdminName}</span>
                       </td>
 
                       {/* Admin Terima */}
-                      <td className="p-2 border-r border-slate-200 text-slate-700">
+                      <td className="p-2 border-r border-[#E2E8F0] text-slate-700">
                         {trx.returnAdminName ? (
                           <span className="font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 text-[10px]">
                             {trx.returnAdminName}
@@ -634,14 +632,14 @@ export const PinjamKembali: React.FC = () => {
                       </td>
 
                       {/* Status */}
-                      <td className="p-1.5 border-r border-slate-200 text-center">
+                      <td className="p-1.5 border-r border-[#E2E8F0] text-center">
                         <span
                           className={`px-2 py-0.5 text-[10px] font-bold rounded border ${
                             trx.status === 'Kembali'
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              ? 'bg-emerald-50 text-[#10B981] border-emerald-200'
                               : trx.status === 'Terlambat'
-                              ? 'bg-rose-50 text-rose-700 border-rose-200'
-                              : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                              ? 'bg-rose-50 text-[#EF4444] border-rose-200'
+                              : 'bg-blue-50 text-[#1E3A5F] border-blue-200'
                           }`}
                         >
                           {trx.status}
@@ -652,8 +650,9 @@ export const PinjamKembali: React.FC = () => {
                       <td className="p-1.5 text-center">
                         {trx.status !== 'Kembali' ? (
                           <button
+                            type="button"
                             onClick={() => handleDirectReturn(trx.id)}
-                            className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-bold cursor-pointer transition shadow-2xs"
+                            className="min-h-[36px] px-3 py-1 bg-[#1E3A5F] hover:bg-[#162C47] text-white rounded-lg text-xs font-bold cursor-pointer transition-all shadow-2xs active:scale-95"
                           >
                             Kembalikan
                           </button>

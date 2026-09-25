@@ -4,6 +4,7 @@ import { DashboardStats } from './DashboardStats';
 import { KelolaBuku } from './KelolaBuku';
 import { PinjamKembali } from './PinjamKembali';
 import { KelolaKartuSiswa } from './KelolaKartuSiswa';
+import { BuatKartu } from './BuatKartu';
 import { PendataanPengunjung } from './PendataanPengunjung';
 import { KelolaAkunAdmin } from './KelolaAkunAdmin';
 import { EksporImpor } from './EksporImpor';
@@ -140,27 +141,27 @@ export const AdminLayout: React.FC = () => {
   const CurrentIcon = currentItem.icon;
 
   return (
-    <div className="relative max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       {/* ========================================================================= */}
-      {/* MOBILE HAMBURGER BUTTON (Tinggi 120px x Lebar 30px di Kiri Tengah Layar HP) */}
+      {/* MOBILE HAMBURGER BUTTON (Navy #1E3A5F with Gold #F5A623 accent)           */}
       {/* ========================================================================= */}
       <button
         type="button"
         onClick={() => setIsMobileSidebarOpen(true)}
-        className="fixed left-0 top-1/2 -translate-y-1/2 z-40 md:hidden bg-gradient-to-b from-indigo-600 via-indigo-700 to-indigo-800 text-white rounded-r-xl shadow-xl shadow-indigo-600/30 flex flex-col items-center justify-center cursor-pointer border-y border-r border-indigo-400/40 active:scale-95 transition-all group focus:outline-none select-none"
-        style={{ height: '120px', width: '30px' }}
+        className="fixed left-0 top-1/2 -translate-y-1/2 z-40 md:hidden bg-[#1E3A5F] hover:bg-[#162C47] text-white rounded-r-xl shadow-lg flex flex-col items-center justify-center cursor-pointer border-y border-r border-[#F5A623]/40 active:scale-95 transition-all group focus:outline-none select-none min-h-[44px]"
+        style={{ height: '110px', width: '32px' }}
         aria-label="Buka Menu Pengaturan"
         title="Buka Menu Pengaturan"
       >
         {/* Visual 3 Hamburger Bars */}
         <div className="flex flex-col items-center justify-center gap-1.5 w-full">
-          <span className="w-3.5 h-0.5 bg-white/95 rounded-full group-hover:w-4 transition-all" />
-          <span className="w-4.5 h-0.5 bg-white rounded-full shadow-xs" />
-          <span className="w-3.5 h-0.5 bg-white/95 rounded-full group-hover:w-4 transition-all" />
+          <span className="w-3.5 h-0.5 bg-white rounded-full group-hover:w-4 transition-all" />
+          <span className="w-4.5 h-0.5 bg-[#F5A623] rounded-full shadow-xs" />
+          <span className="w-3.5 h-0.5 bg-white rounded-full group-hover:w-4 transition-all" />
         </div>
 
         {/* Vertical Text Label */}
-        <span className="text-[9px] font-black tracking-widest text-indigo-100 uppercase mt-2.5 [writing-mode:vertical-lr] rotate-180 select-none pointer-events-none">
+        <span className="text-[9px] font-bold tracking-widest text-amber-200 uppercase mt-2.5 [writing-mode:vertical-lr] rotate-180 select-none pointer-events-none">
           MENU
         </span>
       </button>
@@ -178,7 +179,7 @@ export const AdminLayout: React.FC = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setIsMobileSidebarOpen(false)}
-              className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 md:hidden"
+              className="fixed inset-0 bg-[#0E1D31]/60 backdrop-blur-xs z-50 md:hidden"
               style={{ touchAction: 'none' }}
               aria-hidden="true"
             />
@@ -190,28 +191,28 @@ export const AdminLayout: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-              className="fixed top-0 bottom-0 left-0 w-[290px] max-w-[85vw] bg-white z-50 md:hidden shadow-2xl border-r border-slate-200 flex flex-col overscroll-contain"
+              className="fixed top-0 bottom-0 left-0 w-[290px] max-w-[85vw] bg-white z-50 md:hidden shadow-2xl border-r border-[#E2E8F0] flex flex-col overscroll-contain"
               style={{ touchAction: 'pan-y' }}
               role="dialog"
               aria-modal="true"
               aria-label="Menu Pengaturan Perpustakaan"
             >
               {/* Drawer Header */}
-              <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+              <div className="p-4 border-b border-[#E2E8F0] flex items-center justify-between bg-[#F5F7FA]">
                 <div className="flex items-center gap-2.5">
                   {logoUrl ? (
                     <img
                       src={logoUrl}
                       alt="Logo"
-                      className="w-8 h-8 rounded-lg object-contain bg-white border border-slate-200 p-0.5 shadow-2xs shrink-0"
+                      className="w-8 h-8 rounded-lg object-contain bg-white border border-[#E2E8F0] p-0.5 shadow-2xs shrink-0"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-xs shrink-0">
-                      <BookOpen className="w-4 h-4" />
+                    <div className="w-8 h-8 rounded-lg bg-[#1E3A5F] text-white flex items-center justify-center shadow-xs shrink-0 font-bold">
+                      <BookOpen className="w-4 h-4 text-[#F5A623]" />
                     </div>
                   )}
                   <div>
-                    <h2 className="text-sm font-bold text-slate-900 leading-tight">
+                    <h2 className="text-sm font-bold text-[#1A1A2E] leading-tight font-heading">
                       Bunga Tanjung
                     </h2>
                     <p className="text-[10px] text-slate-500 font-medium">Panel Pengaturan</p>
@@ -222,7 +223,7 @@ export const AdminLayout: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsMobileSidebarOpen(false)}
-                  className="w-10 h-10 -mr-1 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
+                  className="w-11 h-11 -mr-1 flex items-center justify-center rounded-xl text-slate-500 hover:text-[#1A1A2E] hover:bg-[#E2E8F0] transition-colors"
                   aria-label="Tutup Menu"
                 >
                   <X className="w-5 h-5" />
@@ -230,30 +231,27 @@ export const AdminLayout: React.FC = () => {
               </div>
 
               {/* Active Admin Profile Bar */}
-              <div className="px-4 py-3 bg-indigo-50/60 border-b border-indigo-100/60 flex items-center justify-between">
+              <div className="px-4 py-3 bg-[#F5F7FA] border-b border-[#E2E8F0] flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs">
+                  <div className="w-8 h-8 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center text-xs font-bold shadow-xs">
                     {currentUser?.adminData?.name.charAt(0) || 'P'}
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-slate-800 leading-tight">
+                    <div className="text-xs font-bold text-[#1A1A2E] leading-tight">
                       {currentUser?.adminData?.name || 'Petugas'}
                     </div>
-                    <div className="text-[10px] text-indigo-600 font-semibold capitalize">
+                    <div className="text-[10px] text-[#1E3A5F] font-semibold capitalize">
                       {currentUser?.role === 'superadmin' ? 'Super Admin' : 'Admin Sirkulasi'}
                     </div>
                   </div>
                 </div>
-                <span className="px-2 py-0.5 bg-white text-indigo-700 text-[10px] font-bold rounded-md border border-indigo-200">
+                <span className="px-2 py-0.5 bg-white text-[#10B981] text-[10px] font-bold rounded-md border border-[#10B981]/30">
                   Online
                 </span>
               </div>
 
               {/* Scrollable Navigation Menu (Overscroll contained, background does not scroll) */}
               <nav className="flex-1 overflow-y-auto overscroll-contain p-3 space-y-1">
-                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Daftar Menu
-                </div>
                 {NAV_ITEMS.map((item) => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
@@ -266,16 +264,16 @@ export const AdminLayout: React.FC = () => {
                         setActiveTab(item.id);
                         setIsMobileSidebarOpen(false);
                       }}
-                      className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between gap-2.5 transition-all min-h-[46px] ${
+                      className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between gap-2.5 transition-all min-h-[44px] cursor-pointer ${
                         isActive
-                          ? 'bg-indigo-600 text-white font-bold shadow-sm shadow-indigo-600/20'
-                          : 'text-slate-700 hover:bg-slate-100 font-medium'
+                          ? 'bg-[#1E3A5F] text-white font-bold shadow-xs'
+                          : 'text-[#1A1A2E] hover:bg-[#F5F7FA] font-medium'
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div
                           className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                            isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                            isActive ? 'bg-white/20 text-[#F5A623]' : 'bg-[#F5F7FA] text-[#1E3A5F]'
                           }`}
                         >
                           <Icon className="w-4 h-4" />
@@ -284,7 +282,7 @@ export const AdminLayout: React.FC = () => {
                           <div className="text-xs truncate">{item.label}</div>
                           <div
                             className={`text-[10px] truncate ${
-                              isActive ? 'text-indigo-100' : 'text-slate-400'
+                              isActive ? 'text-slate-200' : 'text-slate-400'
                             }`}
                           >
                             {item.desc}
@@ -295,27 +293,27 @@ export const AdminLayout: React.FC = () => {
                       <div className="flex items-center gap-1.5 shrink-0">
                         {syncStatus === 'unsynced' && (
                           <span
-                            className={`px-1.5 py-0.5 text-[9px] font-extrabold rounded-md flex items-center gap-1 ${
+                            className={`px-1.5 py-0.5 text-[9px] font-bold rounded-md flex items-center gap-1 ${
                               isActive
-                                ? 'bg-amber-400 text-amber-950 shadow-2xs'
+                                ? 'bg-[#F5A623] text-[#1A1A2E]'
                                 : 'bg-amber-100 text-amber-800 border border-amber-300'
                             }`}
-                            title="Ada perubahan lokal yang belum disinkronkan ke Firebase"
+                            title="Perubahan lokal belum disinkronkan"
                           >
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] animate-pulse shrink-0" />
                             <span>Lokal</span>
                           </span>
                         )}
                         {syncStatus === 'synced' && (
                           <span
-                            className={`px-1.5 py-0.5 text-[9px] font-extrabold rounded-md flex items-center gap-1 ${
+                            className={`px-1.5 py-0.5 text-[9px] font-bold rounded-md flex items-center gap-1 ${
                               isActive
-                                ? 'bg-emerald-400 text-emerald-950 shadow-2xs'
+                                ? 'bg-[#10B981] text-white'
                                 : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                             }`}
-                            title="Tersinkronkan ke Cloud Firebase"
+                            title="Tersinkronkan ke Firebase"
                           >
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] shrink-0" />
                             <span>Sinkron</span>
                           </span>
                         )}
@@ -327,14 +325,14 @@ export const AdminLayout: React.FC = () => {
               </nav>
 
               {/* Drawer Footer with School Name & Logout */}
-              <div className="p-3 border-t border-slate-100 bg-slate-50/60 space-y-2">
+              <div className="p-3 border-t border-[#E2E8F0] bg-[#F5F7FA] space-y-2">
                 <button
                   type="button"
                   onClick={() => {
                     setIsMobileSidebarOpen(false);
                     logout();
                   }}
-                  className="w-full py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold flex items-center justify-center gap-2 border border-rose-200 transition-colors"
+                  className="w-full min-h-[44px] py-2 px-3 rounded-xl bg-white hover:bg-rose-50 text-[#EF4444] text-xs font-bold flex items-center justify-center gap-2 border border-[#E2E8F0] hover:border-rose-200 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Keluar dari Panel Admin</span>
@@ -353,22 +351,22 @@ export const AdminLayout: React.FC = () => {
       {/* ========================================================================= */}
       <div className="flex flex-col md:flex-row gap-6 items-start">
         {/* DESKTOP SIDEBAR NAV (Visible on md: and above) */}
-        <aside className="hidden md:flex flex-col w-64 lg:w-72 shrink-0 bg-white rounded-2xl border border-slate-200 shadow-xs p-4 space-y-4 self-start sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto">
+        <aside className="hidden md:flex flex-col w-64 lg:w-72 shrink-0 bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-4 space-y-4 self-start sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto">
           {/* Header / Brand */}
-          <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+          <div className="flex items-center gap-3 pb-3 border-b border-[#E2E8F0]">
             {logoUrl ? (
               <img
                 src={logoUrl}
                 alt="Logo"
-                className="w-9 h-9 rounded-xl object-contain bg-white border border-slate-200 p-0.5 shadow-2xs shrink-0"
+                className="w-9 h-9 rounded-xl object-contain bg-white border border-[#E2E8F0] p-0.5 shadow-2xs shrink-0"
               />
             ) : (
-              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs shrink-0 font-bold">
-                <BookOpen className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-xl bg-[#1E3A5F] text-white flex items-center justify-center shadow-xs shrink-0 font-bold">
+                <BookOpen className="w-5 h-5 text-[#F5A623]" />
               </div>
             )}
             <div className="min-w-0">
-              <h2 className="text-sm font-extrabold text-slate-900 leading-tight font-heading truncate">
+              <h2 className="text-sm font-bold text-[#1A1A2E] leading-tight font-heading truncate">
                 Bunga Tanjung
               </h2>
               <p className="text-[11px] text-slate-500 font-medium truncate">Panel Admin Perpustakaan</p>
@@ -376,30 +374,27 @@ export const AdminLayout: React.FC = () => {
           </div>
 
           {/* Admin User Profile Badge */}
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between gap-2">
+          <div className="p-3 bg-[#F5F7FA] rounded-xl border border-[#E2E8F0] flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-black shadow-xs shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0">
                 {currentUser?.adminData?.name.charAt(0) || 'P'}
               </div>
               <div className="min-w-0">
-                <div className="text-xs font-bold text-slate-800 truncate leading-tight">
+                <div className="text-xs font-bold text-[#1A1A2E] truncate leading-tight">
                   {currentUser?.adminData?.name || 'Petugas'}
                 </div>
-                <div className="text-[10px] text-indigo-600 font-semibold capitalize truncate">
+                <div className="text-[10px] text-[#1E3A5F] font-semibold capitalize truncate">
                   {currentUser?.role === 'superadmin' ? 'Super Admin' : 'Admin Sirkulasi'}
                 </div>
               </div>
             </div>
-            <span className="px-2 py-0.5 bg-emerald-100/80 text-emerald-700 text-[10px] font-bold rounded-md border border-emerald-200/60 shrink-0">
+            <span className="px-2 py-0.5 bg-white text-[#10B981] text-[10px] font-bold rounded-md border border-[#10B981]/30 shrink-0">
               Online
             </span>
           </div>
 
           {/* Navigation Links List */}
           <nav className="space-y-1">
-            <div className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              Menu Pengaturan
-            </div>
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -409,16 +404,16 @@ export const AdminLayout: React.FC = () => {
                   key={item.id}
                   type="button"
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
+                  className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between gap-2.5 transition-all min-h-[44px] cursor-pointer ${
                     isActive
-                      ? 'bg-indigo-600 text-white font-bold shadow-sm shadow-indigo-600/25'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                      ? 'bg-[#1E3A5F] text-white font-bold shadow-xs'
+                      : 'text-[#1A1A2E] hover:bg-[#F5F7FA] font-medium'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div
                       className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
-                        isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                        isActive ? 'bg-white/20 text-[#F5A623]' : 'bg-[#F5F7FA] text-[#1E3A5F]'
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -427,7 +422,7 @@ export const AdminLayout: React.FC = () => {
                       <div className="text-xs truncate">{item.label}</div>
                       <div
                         className={`text-[10px] truncate ${
-                          isActive ? 'text-indigo-100' : 'text-slate-400'
+                          isActive ? 'text-slate-200' : 'text-slate-400'
                         }`}
                       >
                         {item.desc}
@@ -438,27 +433,27 @@ export const AdminLayout: React.FC = () => {
                   <div className="flex items-center gap-1.5 shrink-0">
                     {syncStatus === 'unsynced' && (
                       <span
-                        className={`px-1.5 py-0.5 text-[9px] font-extrabold rounded-md flex items-center gap-1 ${
+                        className={`px-1.5 py-0.5 text-[9px] font-bold rounded-md flex items-center gap-1 ${
                           isActive
-                            ? 'bg-amber-400 text-amber-950 shadow-2xs'
+                            ? 'bg-[#F5A623] text-[#1A1A2E]'
                             : 'bg-amber-100 text-amber-800 border border-amber-300'
                         }`}
-                        title="Ada perubahan lokal yang belum disinkronkan ke Firebase"
+                        title="Perubahan lokal belum disinkronkan"
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] animate-pulse shrink-0" />
                         <span>Lokal</span>
                       </span>
                     )}
                     {syncStatus === 'synced' && (
                       <span
-                        className={`px-1.5 py-0.5 text-[9px] font-extrabold rounded-md flex items-center gap-1 ${
+                        className={`px-1.5 py-0.5 text-[9px] font-bold rounded-md flex items-center gap-1 ${
                           isActive
-                            ? 'bg-emerald-400 text-emerald-950 shadow-2xs'
+                            ? 'bg-[#10B981] text-white'
                             : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                         }`}
-                        title="Tersinkronkan ke Cloud Firebase"
+                        title="Tersinkronkan ke Firebase"
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] shrink-0" />
                         <span>Sinkron</span>
                       </span>
                     )}
@@ -470,11 +465,11 @@ export const AdminLayout: React.FC = () => {
           </nav>
 
           {/* Footer Logout Button */}
-          <div className="pt-3 border-t border-slate-100 mt-auto space-y-2">
+          <div className="pt-3 border-t border-[#E2E8F0] mt-auto space-y-2">
             <button
               type="button"
               onClick={logout}
-              className="w-full py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold flex items-center justify-center gap-2 border border-rose-200 transition-colors cursor-pointer"
+              className="w-full min-h-[44px] py-2 px-3 rounded-xl bg-white hover:bg-rose-50 text-[#EF4444] text-xs font-bold flex items-center justify-center gap-2 border border-[#E2E8F0] hover:border-rose-200 transition-colors cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
               <span>Keluar Panel Admin</span>
@@ -489,6 +484,7 @@ export const AdminLayout: React.FC = () => {
           {activeTab === 'buku' && <KelolaBuku />}
           {activeTab === 'pinjam-kembali' && <PinjamKembali />}
           {activeTab === 'kartu-siswa' && <KelolaKartuSiswa />}
+          {activeTab === 'buat-kartu' && <BuatKartu onBackToMembers={() => setActiveTab('kartu-siswa')} />}
           {activeTab === 'pengunjung' && <PendataanPengunjung />}
           {activeTab === 'halaman-utama' && <PengaturanHalamanUtama />}
           {activeTab === 'sinkronisasi' && <SinkronisasiDrive />}

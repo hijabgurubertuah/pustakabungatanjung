@@ -129,44 +129,44 @@ export const ImportAnggotaModal: React.FC<ImportAnggotaModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-3 sm:p-5 overflow-y-auto">
-      <div className="relative bg-white border border-slate-200 rounded-3xl w-full max-w-4xl max-h-[92vh] shadow-2xl flex flex-col overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150">
+      <div className="relative bg-white border border-[#E2E8F0] rounded-xl w-full max-w-4xl max-h-[92vh] shadow-2xl flex flex-col overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/70 shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] bg-[#F5F7FA] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-600/10 border border-indigo-600/20 flex items-center justify-center text-indigo-600">
+            <div className="w-10 h-10 rounded-xl bg-[#1E3A5F] flex items-center justify-center text-[#F5A623]">
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 text-base">
-                Impor Data Anggota Massal
+              <h3 className="font-bold text-[#1A1A2E] text-base font-heading">
+                Impor Data Anggota
               </h3>
               <p className="text-xs text-slate-500">
-                Unggah berkas CSV atau tempel tabel Excel/Google Spreadsheet
+                Unggah berkas CSV atau tempel tabel spreadsheet
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+            className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-[#1A1A2E] hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="p-6 space-y-5 overflow-y-auto flex-1">
+        <div className="p-6 space-y-4 overflow-y-auto flex-1">
           {/* Quick Action Bar for Template */}
-          <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-indigo-50 border border-emerald-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
-                <FileSpreadsheet className="w-4 h-4 text-emerald-700" />
-                <h4 className="font-bold text-xs text-emerald-950">
-                  Template Data Anggota (Siswa, Guru, Staf)
+                <FileSpreadsheet className="w-4 h-4 text-[#1E3A5F]" />
+                <h4 className="font-bold text-xs text-[#1A1A2E]">
+                  Template Data Anggota
                 </h4>
               </div>
-              <p className="text-[11px] text-emerald-800/80">
-                Unduh template CSV atau gunakan Google Spreadsheet untuk mengisi data massal
+              <p className="text-[11px] text-slate-500">
+                Gunakan template standar untuk input massal
               </p>
             </div>
 
@@ -174,37 +174,35 @@ export const ImportAnggotaModal: React.FC<ImportAnggotaModalProps> = ({
               <button
                 type="button"
                 onClick={downloadMemberTemplateCSV}
-                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                className="min-h-[44px] px-3.5 py-2 bg-[#1E3A5F] hover:bg-[#162C47] active:bg-[#0F1F33] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
               >
-                <Download className="w-3.5 h-3.5" />
-                <span>Unduh Template CSV</span>
+                <Download className="w-3.5 h-3.5 text-[#F5A623]" />
+                <span>Unduh CSV</span>
               </button>
 
               <button
                 type="button"
                 onClick={openGoogleSheetsTemplate}
-                className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
-                title="Buka Google Spreadsheet baru untuk input data"
+                className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-[#F5F7FA] active:bg-slate-200 text-[#1A1A2E] border border-[#E2E8F0] rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
               >
-                <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Buka Spreadsheet</span>
+                <ExternalLink className="w-3.5 h-3.5 text-[#10B981]" />
+                <span>Spreadsheet</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleCopyTemplate}
-                className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
-                title="Salin judul kolom ke clipboard"
+                className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-[#F5F7FA] active:bg-slate-200 text-[#1A1A2E] border border-[#E2E8F0] rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
               >
                 {isCopied ? (
                   <>
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                    <span className="text-emerald-700 font-bold">Disalin!</span>
+                    <Check className="w-3.5 h-3.5 text-[#10B981]" />
+                    <span className="text-[#10B981] font-bold">Disalin</span>
                   </>
                 ) : (
                   <>
                     <Copy className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Salin Kolom</span>
+                    <span>Salin Format</span>
                   </>
                 )}
               </button>
@@ -212,30 +210,30 @@ export const ImportAnggotaModal: React.FC<ImportAnggotaModalProps> = ({
           </div>
 
           {/* Mode Tabs: Upload vs Paste */}
-          <div className="flex border-b border-slate-200">
+          <div className="flex border-b border-[#E2E8F0]">
             <button
               type="button"
               onClick={() => setActiveTab('upload')}
-              className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
+              className={`min-h-[44px] px-4 py-2.5 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
                 activeTab === 'upload'
-                  ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-slate-500 hover:text-slate-800'
+                  ? 'border-[#1E3A5F] text-[#1E3A5F]'
+                  : 'border-transparent text-slate-500 hover:text-[#1A1A2E]'
               }`}
             >
               <UploadCloud className="w-4 h-4" />
-              <span>Unggah Berkas CSV (.csv)</span>
+              <span>Unggah Berkas CSV</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('paste')}
-              className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
+              className={`min-h-[44px] px-4 py-2.5 text-xs font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
                 activeTab === 'paste'
-                  ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-slate-500 hover:text-slate-800'
+                  ? 'border-[#1E3A5F] text-[#1E3A5F]'
+                  : 'border-transparent text-slate-500 hover:text-[#1A1A2E]'
               }`}
             >
               <FileText className="w-4 h-4" />
-              <span>Tempel Teks Excel / Spreadsheet</span>
+              <span>Tempel Teks Spreadsheet</span>
             </button>
           </div>
 
@@ -244,17 +242,14 @@ export const ImportAnggotaModal: React.FC<ImportAnggotaModalProps> = ({
             <div className="space-y-3">
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-indigo-50/30 hover:bg-indigo-50/60 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all text-center group"
+                className="border-2 border-dashed border-[#E2E8F0] hover:border-[#1E3A5F] bg-[#F5F7FA] hover:bg-white rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all text-center group min-h-[140px]"
               >
-                <div className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                <div className="w-12 h-12 rounded-xl bg-white text-[#1E3A5F] flex items-center justify-center mb-3 shadow-xs border border-[#E2E8F0] group-hover:scale-105 transition-transform">
                   <UploadCloud className="w-6 h-6" />
                 </div>
-                <h5 className="font-bold text-slate-800 text-sm">
-                  {fileName ? fileName : 'Pilih atau Tarik Berkas CSV ke Sini'}
+                <h5 className="font-bold text-[#1A1A2E] text-sm">
+                  {fileName ? fileName : 'Pilih berkas CSV'}
                 </h5>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                  Format yang didukung: <strong>.csv</strong> yang diekspor dari Excel atau Google Sheets (pemisah koma atau titik koma).
-                </p>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -269,58 +264,52 @@ export const ImportAnggotaModal: React.FC<ImportAnggotaModalProps> = ({
           {/* Tab 2: Direct Paste from Excel */}
           {activeTab === 'paste' && (
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-700">
-                Tempel (Paste Ctrl+V) baris dari Excel / Google Sheets di sini:
-              </label>
               <textarea
                 value={pastedText}
                 onChange={(e) => handlePasteChange(e.target.value)}
-                placeholder={`NISN\tNama Lengkap\tTipe\tKelas\tGender\tNo HP\tEmail\n0081234567\tAhmad Fauzi\tSiswa\tVII-A\tL\t081234567890\t...\n0087654321\tSiti Nurhaliza\tSiswa\tVII-B\tP\t081398765432\t...`}
+                placeholder="cth: NISN&#9;Nama Siswa&#9;Kelas&#9;Gender..."
                 rows={5}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl font-mono text-xs text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
+                className="w-full px-3.5 py-2.5 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl font-mono text-xs text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-all"
               />
-              <p className="text-[11px] text-slate-400">
-                Tip: Salin kolom langsung dari Excel atau Google Spreadsheet, lalu tekan Ctrl+V pada kotak di atas.
-              </p>
             </div>
           )}
 
           {/* Options & Stats Preview */}
           {parsedRows.length > 0 && (
             <div className="space-y-3 pt-2">
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-[#F5F7FA] p-3.5 rounded-xl border border-[#E2E8F0]">
                 <div className="flex items-center gap-4 text-xs">
                   <div>
                     <span className="text-slate-500">Terdeteksi: </span>
-                    <strong className="text-slate-900 font-bold">{parsedRows.length} baris</strong>
+                    <strong className="text-[#1A1A2E] font-bold">{parsedRows.length} baris</strong>
                   </div>
                   <div>
                     <span className="text-slate-500">Valid: </span>
-                    <strong className="text-emerald-600 font-bold">{validRows.length} data</strong>
+                    <strong className="text-[#10B981] font-bold">{validRows.length} data</strong>
                   </div>
                   {existingCount > 0 && (
                     <div>
                       <span className="text-slate-500">Sudah Terdaftar: </span>
-                      <strong className="text-amber-600 font-bold">{existingCount} anggota</strong>
+                      <strong className="text-[#F59E0B] font-bold">{existingCount} anggota</strong>
                     </div>
                   )}
                 </div>
 
-                <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer select-none">
+                <label className="flex items-center gap-2 text-xs font-semibold text-[#1A1A2E] cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={updateExisting}
                     onChange={(e) => setUpdateExisting(e.target.checked)}
-                    className="rounded text-indigo-600 focus:ring-indigo-500"
+                    className="rounded text-[#1E3A5F] focus:ring-[#1E3A5F]"
                   />
                   <span>Perbarui data jika NISN/ID sudah ada</span>
                 </label>
               </div>
 
               {/* Preview Table */}
-              <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-2xs max-h-56 overflow-y-auto">
+              <div className="border border-[#E2E8F0] rounded-xl overflow-hidden shadow-2xs max-h-56 overflow-y-auto">
                 <table className="w-full text-left text-xs border-collapse">
-                  <thead className="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] sticky top-0 border-b border-slate-200">
+                  <thead className="bg-[#F5F7FA] text-slate-600 font-bold uppercase text-[10px] sticky top-0 border-b border-[#E2E8F0]">
                     <tr>
                       <th className="px-3 py-2">No</th>
                       <th className="px-3 py-2">NISN / NIP</th>
@@ -332,11 +321,11 @@ export const ImportAnggotaModal: React.FC<ImportAnggotaModalProps> = ({
                       <th className="px-3 py-2 text-right">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-[#E2E8F0]">
                     {parsedRows.map((row) => (
                       <tr
                         key={row.index}
-                        className={`hover:bg-slate-50/80 transition-colors ${
+                        className={`hover:bg-[#F5F7FA]/80 transition-colors ${
                           !row.isValid
                             ? 'bg-rose-50/50'
                             : row.isExisting
@@ -345,18 +334,18 @@ export const ImportAnggotaModal: React.FC<ImportAnggotaModalProps> = ({
                         }`}
                       >
                         <td className="px-3 py-2 text-slate-400">{row.index}</td>
-                        <td className="px-3 py-2 font-mono font-semibold text-slate-800">
+                        <td className="px-3 py-2 font-mono font-semibold text-[#1A1A2E]">
                           {row.nisn}
                         </td>
-                        <td className="px-3 py-2 font-medium text-slate-900">{row.name}</td>
+                        <td className="px-3 py-2 font-medium text-[#1A1A2E]">{row.name}</td>
                         <td className="px-3 py-2">
                           <span
                             className={`px-2 py-0.5 text-[10px] font-bold rounded-md ${
                               row.memberType === 'Guru'
-                                ? 'bg-indigo-50 text-indigo-700'
+                                ? 'bg-[#F5F7FA] text-[#1E3A5F] border border-[#E2E8F0]'
                                 : row.memberType === 'Staf'
-                                ? 'bg-amber-50 text-amber-700'
-                                : 'bg-emerald-50 text-emerald-700'
+                                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                             }`}
                           >
                             {row.memberType}
@@ -378,7 +367,7 @@ export const ImportAnggotaModal: React.FC<ImportAnggotaModalProps> = ({
                               <span>Perbarui</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-bold">
+                            <span className="inline-flex items-center gap-1 text-[10px] text-[#10B981] font-bold">
                               <CheckCircle2 className="w-3 h-3" />
                               <span>Baru</span>
                             </span>
@@ -394,11 +383,11 @@ export const ImportAnggotaModal: React.FC<ImportAnggotaModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/70 shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-[#E2E8F0] bg-[#F5F7FA] shrink-0">
           <div className="text-xs text-slate-500">
             {validRows.length > 0 && (
               <span>
-                Siap mengimpor <strong>{validRows.length}</strong> anggota ({newCount} baru, {existingCount} pembaruan)
+                <strong>{validRows.length}</strong> anggota ({newCount} baru, {existingCount} perbarui)
               </span>
             )}
           </div>
@@ -407,7 +396,7 @@ export const ImportAnggotaModal: React.FC<ImportAnggotaModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+              className="min-h-[44px] px-4 py-2 bg-white hover:bg-[#F5F7FA] text-[#1A1A2E] border border-[#E2E8F0] rounded-xl text-xs font-semibold transition-all cursor-pointer"
             >
               Batal
             </button>
@@ -415,10 +404,10 @@ export const ImportAnggotaModal: React.FC<ImportAnggotaModalProps> = ({
               type="button"
               onClick={handleExecuteImport}
               disabled={validRows.length === 0}
-              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
+              className="min-h-[44px] px-5 py-2 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] disabled:bg-[#E2E8F0] disabled:text-slate-400 text-[#1A1A2E] rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed select-none"
             >
               <Check className="w-4 h-4" />
-              <span>Simpan & Sinkronkan {validRows.length} Anggota</span>
+              <span>Simpan {validRows.length} Anggota</span>
             </button>
           </div>
         </div>

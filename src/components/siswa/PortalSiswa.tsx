@@ -61,21 +61,21 @@ export const PortalSiswa: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-md w-full p-6 sm:p-8"
+          className="bg-white rounded-xl border border-[#E2E8F0] shadow-xl max-w-md w-full p-6 sm:p-8"
         >
           {/* Header */}
           <div className="text-center mb-6">
-            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-indigo-100 shadow-xs">
+            <div className="w-12 h-12 bg-[#F5F7FA] text-[#1E3A5F] rounded-xl flex items-center justify-center mx-auto mb-3 border border-[#E2E8F0] shadow-xs">
               <IdCard className="w-6 h-6" />
             </div>
-            <h2 className="text-xl font-bold text-slate-900 font-heading">Portal Siswa</h2>
+            <h2 className="text-xl font-bold text-[#1A1A2E] font-heading">Portal Siswa</h2>
             <p className="text-xs text-slate-500 mt-1">Perpustakaan Bunga Tanjung — SMPN 1 Bengkalis</p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-[#1A1A2E] mb-1">
                 ID Kartu Perpustakaan / NISN
               </label>
               <div className="relative">
@@ -84,15 +84,15 @@ export const PortalSiswa: React.FC = () => {
                   type="text"
                   value={cardId}
                   onChange={(e) => setCardId(e.target.value)}
-                  placeholder="Contoh: BT-SMP1-2024-001"
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800"
+                  placeholder="cth: BT-SMP1-2024-001"
+                  className="w-full min-h-[44px] pl-9 pr-3 py-2.5 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-sm focus:outline-none focus:border-[#1E3A5F] focus:bg-white text-[#1A1A2E]"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-[#1A1A2E] mb-1">
                 Password (NISN)
               </label>
               <div className="relative">
@@ -101,8 +101,8 @@ export const PortalSiswa: React.FC = () => {
                   type="password"
                   value={nisnPass}
                   onChange={(e) => setNisnPass(e.target.value)}
-                  placeholder="Masukkan NISN Anda"
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800"
+                  placeholder="cth: 0098765431"
+                  className="w-full min-h-[44px] pl-9 pr-3 py-2.5 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-sm focus:outline-none focus:border-[#1E3A5F] focus:bg-white text-[#1A1A2E]"
                   required
                 />
               </div>
@@ -117,7 +117,7 @@ export const PortalSiswa: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-md shadow-indigo-500/20"
+              className="w-full min-h-[44px] py-2.5 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] disabled:bg-[#E2E8F0] disabled:text-slate-400 text-[#1A1A2E] text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer"
             >
               <span>Masuk Portal</span>
               <ArrowRight className="w-4 h-4" />
@@ -125,23 +125,23 @@ export const PortalSiswa: React.FC = () => {
           </form>
 
           {/* Quick Demo Selector */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
+          <div className="mt-6 pt-5 border-t border-[#E2E8F0]">
             <p className="text-[11px] font-semibold text-slate-400 mb-2">Akun Contoh Siswa:</p>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => fillQuickDemo('BT-SMP1-2024-001', '0098765431')}
-                className="p-2 text-left bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-200 rounded-xl transition-colors"
+                className="p-2.5 min-h-[44px] text-left bg-[#F5F7FA] hover:bg-white hover:border-[#1E3A5F] border border-[#E2E8F0] rounded-xl transition-all cursor-pointer"
               >
-                <div className="text-xs font-semibold text-slate-800">Ahmad Fadhil</div>
+                <div className="text-xs font-semibold text-[#1A1A2E]">Ahmad Fadhil</div>
                 <div className="text-[10px] text-slate-500">Kelas VIII-A (1 Buku)</div>
               </button>
               <button
                 type="button"
                 onClick={() => fillQuickDemo('BT-SMP1-2024-004', '0098765434')}
-                className="p-2 text-left bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-200 rounded-xl transition-colors"
+                className="p-2.5 min-h-[44px] text-left bg-[#F5F7FA] hover:bg-white hover:border-[#1E3A5F] border border-[#E2E8F0] rounded-xl transition-all cursor-pointer"
               >
-                <div className="text-xs font-semibold text-slate-800">Zahra Putri</div>
+                <div className="text-xs font-semibold text-[#1A1A2E]">Zahra Putri</div>
                 <div className="text-[10px] text-slate-500">Kelas IX-C (2 Buku)</div>
               </button>
             </div>
@@ -163,44 +163,44 @@ export const PortalSiswa: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Student Profile Card Banner */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6">
+      <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-5 sm:p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <img
               src={student.photoUrl}
               alt={student.name}
-              className="w-16 h-16 rounded-2xl object-cover border-2 border-indigo-100 shadow-xs"
+              className="w-16 h-16 rounded-xl object-cover border-2 border-[#E2E8F0] shadow-xs"
             />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-lg sm:text-xl font-bold text-slate-900 font-heading">
+                <h1 className="text-lg sm:text-xl font-bold text-[#1A1A2E] font-heading">
                   {student.name}
                 </h1>
-                <span className="px-2.5 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-lg border border-indigo-100">
+                <span className="px-2.5 py-0.5 bg-[#F5F7FA] text-[#1E3A5F] text-xs font-bold rounded-lg border border-[#E2E8F0]">
                   {student.classGrade}
                 </span>
               </div>
               <div className="text-xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                <span>ID: <strong className="text-slate-700">{student.id}</strong></span>
+                <span>ID: <strong className="text-[#1A1A2E]">{student.id}</strong></span>
                 <span>•</span>
-                <span>NISN: <strong className="text-slate-700">{student.nisn}</strong></span>
+                <span>NISN: <strong className="text-[#1A1A2E]">{student.nisn}</strong></span>
               </div>
             </div>
           </div>
 
           {/* Action buttons & Stats Pill */}
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-            <div className="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200">
-              <Award className="w-4 h-4 text-amber-500 shrink-0" />
+            <div className="flex items-center gap-2 bg-[#F5F7FA] px-3 py-2 min-h-[44px] rounded-xl border border-[#E2E8F0]">
+              <Award className="w-4 h-4 text-[#F5A623] shrink-0" />
               <div className="text-left">
                 <div className="text-[10px] text-slate-400 font-medium">Peringkat</div>
-                <div className="text-xs font-bold text-slate-800">#{studentRank} ({student.visitCount}x)</div>
+                <div className="text-xs font-bold text-[#1A1A2E]">#{studentRank} ({student.visitCount}x)</div>
               </div>
             </div>
 
             <button
               onClick={() => setShowFormulirModal(true)}
-              className="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3.5 py-2 min-h-[44px] bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
               title="Lengkapi data Tempat Tanggal Lahir dan Pasfoto 3x4"
             >
               <UserCheck className="w-4 h-4 text-emerald-600" />
@@ -209,7 +209,7 @@ export const PortalSiswa: React.FC = () => {
 
             <button
               onClick={() => setShowCardModal(true)}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+              className="px-4 py-2 min-h-[44px] bg-[#1E3A5F] hover:bg-[#162C47] active:bg-[#0F1F33] text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
             >
               <IdCard className="w-4 h-4" />
               <span>Kartu Anggota</span>
@@ -217,7 +217,7 @@ export const PortalSiswa: React.FC = () => {
 
             <button
               onClick={logout}
-              className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3 py-2 min-h-[44px] bg-rose-50 hover:bg-rose-100 active:bg-rose-200 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
               title="Keluar dari Portal Siswa"
             >
               <LogOut className="w-4 h-4" />
@@ -237,7 +237,7 @@ export const PortalSiswa: React.FC = () => {
             </div>
             <button
               onClick={() => setShowFormulirModal(true)}
-              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs shrink-0 cursor-pointer"
+              className="px-3.5 py-2 min-h-[44px] bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] text-[#1A1A2E] font-bold rounded-xl text-xs shrink-0 cursor-pointer transition-all"
             >
               Lengkapi Sekarang
             </button>
@@ -249,19 +249,19 @@ export const PortalSiswa: React.FC = () => {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-indigo-600" />
-            <h2 className="text-base font-bold text-slate-800 font-heading">Buku Sedang Dipinjam</h2>
-            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-700">
+            <BookOpen className="w-4 h-4 text-[#1E3A5F]" />
+            <h2 className="text-base font-bold text-[#1A1A2E] font-heading">Buku Sedang Dipinjam</h2>
+            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-[#F5F7FA] text-[#1E3A5F] border border-[#E2E8F0]">
               {activeLoans.length}
             </span>
           </div>
         </div>
 
         {activeLoans.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-8 text-center">
-            <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-            <p className="text-sm font-semibold text-slate-700">Tidak ada pinjaman buku aktif</p>
-            <p className="text-xs text-slate-400 mt-0.5">Kunjungi perpustakaan untuk meminjam koleksi buku terbaru.</p>
+          <div className="bg-white rounded-xl border border-dashed border-[#E2E8F0] p-8 text-center">
+            <CheckCircle2 className="w-8 h-8 text-[#10B981] mx-auto mb-2" />
+            <p className="text-sm font-semibold text-[#1A1A2E]">Tidak ada pinjaman buku aktif</p>
+            <p className="text-xs text-slate-400 mt-0.5">Kunjungi perpustakaan untuk meminjam koleksi buku.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -274,16 +274,16 @@ export const PortalSiswa: React.FC = () => {
               return (
                 <div
                   key={loan.id}
-                  className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 flex gap-4 items-start"
+                  className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-4 flex gap-4 items-start"
                 >
                   <BookCover
                     coverUrl={loan.bookCoverUrl}
                     title={loan.bookTitle}
-                    className="w-16 h-22 rounded-xl border border-slate-100 shrink-0 shadow-xs"
+                    className="w-16 h-22 rounded-xl border border-[#E2E8F0] shrink-0 shadow-xs"
                   />
                   <div className="flex-1 min-w-0 space-y-2">
                     <div>
-                      <h3 className="font-bold text-sm text-slate-900 leading-snug line-clamp-2">
+                      <h3 className="font-bold text-sm text-[#1A1A2E] leading-snug line-clamp-2">
                         {loan.bookTitle}
                       </h3>
                       <p className="text-[11px] text-slate-500 font-mono mt-0.5">
@@ -292,7 +292,7 @@ export const PortalSiswa: React.FC = () => {
                     </div>
 
                     <div className="flex flex-wrap gap-2 text-xs">
-                      <div className="flex items-center gap-1 text-slate-600 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+                      <div className="flex items-center gap-1 text-slate-600 bg-[#F5F7FA] px-2.5 py-1 rounded-lg border border-[#E2E8F0]">
                         <Calendar className="w-3.5 h-3.5 text-slate-400" />
                         <span>Pinjam: {loan.borrowDate}</span>
                       </div>
@@ -315,7 +315,7 @@ export const PortalSiswa: React.FC = () => {
                     </div>
 
                     <div className="text-[11px] text-slate-400">
-                      Petugas Peminjaman: <span className="text-slate-600 font-medium">{loan.borrowAdminName}</span>
+                      Petugas: <span className="text-[#1A1A2E] font-medium">{loan.borrowAdminName}</span>
                     </div>
                   </div>
                 </div>
@@ -326,22 +326,22 @@ export const PortalSiswa: React.FC = () => {
       </div>
 
       {/* Loan History Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <History className="w-4 h-4 text-slate-500" />
-            <h3 className="text-sm font-bold text-slate-800 font-heading">Riwayat Peminjaman & Pengembalian</h3>
+            <History className="w-4 h-4 text-[#1E3A5F]" />
+            <h3 className="text-sm font-bold text-[#1A1A2E] font-heading">Riwayat Peminjaman & Pengembalian</h3>
           </div>
           <span className="text-xs text-slate-400">{pastLoans.length} Transaksi Selesai</span>
         </div>
 
         {pastLoans.length === 0 ? (
-          <div className="p-6 text-center text-xs text-slate-400">Belum ada riwayat buku yang dikembalikan</div>
+          <div className="p-8 text-center text-xs text-slate-400">Belum ada riwayat buku yang dikembalikan</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-100 text-slate-500 font-semibold">
+                <tr className="bg-[#F5F7FA] border-b border-[#E2E8F0] text-slate-500 font-semibold">
                   <th className="py-3 px-4">Judul Buku</th>
                   <th className="py-3 px-4">Tgl Pinjam</th>
                   <th className="py-3 px-4">Tgl Kembali</th>
@@ -350,10 +350,10 @@ export const PortalSiswa: React.FC = () => {
                   <th className="py-3 px-4">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[#E2E8F0]">
                 {pastLoans.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/50">
-                    <td className="py-3 px-4 font-semibold text-slate-800">
+                  <tr key={item.id} className="hover:bg-[#F5F7FA]/70">
+                    <td className="py-3 px-4 font-semibold text-[#1A1A2E]">
                       <div>{item.bookTitle}</div>
                       <div className="text-[10px] text-slate-400 font-mono">{item.bookBarcode}</div>
                     </td>
@@ -377,9 +377,9 @@ export const PortalSiswa: React.FC = () => {
       {/* Digital Member Card Modal */}
       {showCardModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden p-6 space-y-5">
+          <div className="bg-white rounded-xl shadow-2xl border border-[#E2E8F0] max-w-md w-full overflow-hidden p-6 space-y-5">
             {/* Card Preview Container */}
-            <div className="bg-gradient-to-br from-indigo-700 via-indigo-800 to-slate-900 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
+            <div className="bg-[#1E3A5F] rounded-xl p-5 text-white shadow-xl relative overflow-hidden border border-[#142842]">
               {/* Card Header */}
               <div className="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
                 <div className="flex items-center gap-2.5">
@@ -391,15 +391,15 @@ export const PortalSiswa: React.FC = () => {
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center backdrop-blur-xs shrink-0">
-                      <BookOpen className="w-4 h-4 text-emerald-300" />
+                      <BookOpen className="w-4 h-4 text-[#F5A623]" />
                     </div>
                   )}
                   <div>
                     <div className="text-xs font-bold tracking-tight">SMP NEGERI 1 BENGKALIS</div>
-                    <div className="text-[9px] text-indigo-200 uppercase tracking-wider">Perpustakaan Bunga Tanjung</div>
+                    <div className="text-[9px] text-blue-200 uppercase tracking-wider">Perpustakaan Bunga Tanjung</div>
                   </div>
                 </div>
-                <div className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded text-[9px] font-bold">
+                <div className="px-2 py-0.5 bg-[#F5A623]/20 text-[#F5A623] border border-[#F5A623]/30 rounded text-[9px] font-bold">
                   ANGGOTA
                 </div>
               </div>
@@ -413,9 +413,9 @@ export const PortalSiswa: React.FC = () => {
                 />
                 <div className="space-y-1 min-w-0">
                   <div className="text-sm font-bold truncate">{student.name}</div>
-                  <div className="text-[11px] text-indigo-200">Kelas: <span className="font-semibold text-white">{student.classGrade}</span></div>
-                  <div className="text-[11px] text-indigo-200">NISN: <span className="font-semibold text-white font-mono">{student.nisn}</span></div>
-                  <div className="text-[10px] text-indigo-300 font-mono">{student.id}</div>
+                  <div className="text-[11px] text-blue-200">Kelas: <span className="font-semibold text-white">{student.classGrade}</span></div>
+                  <div className="text-[11px] text-blue-200">NISN: <span className="font-semibold text-white font-mono">{student.nisn}</span></div>
+                  <div className="text-[10px] text-blue-300 font-mono">{student.id}</div>
                 </div>
               </div>
 
@@ -429,14 +429,14 @@ export const PortalSiswa: React.FC = () => {
             <div className="flex gap-2">
               <button
                 onClick={() => window.print()}
-                className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition-colors"
+                className="flex-1 min-h-[44px] py-2.5 bg-[#1E3A5F] hover:bg-[#162C47] active:bg-[#0F1F33] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>Cetak / Simpan Kartu</span>
               </button>
               <button
                 onClick={() => setShowCardModal(false)}
-                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors"
+                className="min-h-[44px] px-4 py-2.5 bg-[#F5F7FA] hover:bg-[#E2E8F0] active:bg-slate-200 text-[#1A1A2E] rounded-xl text-xs font-semibold transition-all cursor-pointer border border-[#E2E8F0]"
               >
                 Tutup
               </button>

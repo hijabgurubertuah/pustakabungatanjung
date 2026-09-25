@@ -8,9 +8,11 @@ import { compressImageFile } from '../../lib/imageUtils';
 import { uploadImageToDrive } from '../../lib/driveAppsScript';
 import {
   downloadBookTemplateCSV,
+  downloadBookTemplateXLSX,
   exportBooksToCSVFile,
+  exportBooksToXLSXFile,
   parseBookCSV,
-  fetchGoogleSheetsCSV,
+  parseBookExcelBuffer,
   ParsedBookRow,
 } from '../../lib/csvHelper';
 import {
@@ -37,13 +39,10 @@ import {
   Table,
   Download,
   Upload,
-  RefreshCw,
-  ExternalLink,
   Copy,
   Save,
   CheckCircle2,
   AlertTriangle,
-  Link,
   Layers,
   ArrowRight,
   FileText,
@@ -90,15 +89,10 @@ export const KelolaBuku: React.FC = () => {
   // View Mode: 'table' or 'spreadsheet'
   const [viewMode, setViewMode] = useState<'table' | 'spreadsheet'>('spreadsheet');
 
-  // Import Modal & Google Sheets Modal state
+  // Import Modal state
   const [showImportModal, setShowImportModal] = useState(false);
-  const [showGoogleSheetsModal, setShowGoogleSheetsModal] = useState(false);
   const [rawImportText, setRawImportText] = useState('');
   const [importSource, setImportSource] = useState<'file' | 'text'>('file');
-  const [googleSheetsUrl, setGoogleSheetsUrl] = useState(() => {
-    return localStorage.getItem('google_sheets_csv_url_buku') || '';
-  });
-  const [isSyncingSheets, setIsSyncingSheets] = useState(false);
   const [parsedImportRows, setParsedImportRows] = useState<ParsedBookRow[]>([]);
 
   // Parse CSV text on change
@@ -112,9 +106,25 @@ export const KelolaBuku: React.FC = () => {
     setParsedImportRows(parsed);
   };
 
-  const handleFileUploadCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Upload file handler: supports .xlsx, .xls, .csv, .txt
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
+
+    if (isExcel) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const buffer = event.target?.result as ArrayBuffer;
+        if (buffer) {
+          const parsed = parseBookExcelBuffer(buffer, books);
+          setParsedImportRows(parsed);
+          setRawImportText(`[File Excel: ${file.name} - ${parsed.length} baris dibaca]`);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
       const reader = new FileReader();
       reader.onload = (event) => {
         const content = event.target?.result as string;
@@ -129,7 +139,7 @@ export const KelolaBuku: React.FC = () => {
   const handleExecuteImport = () => {
     const validRows = parsedImportRows.filter((r) => r.isValid);
     if (validRows.length === 0) {
-      showToast('error', 'Tidak Ada Data Valid', 'Pastikan data CSV memiliki judul buku yang valid.');
+      showToast('error', 'Tidak Ada Data Valid', 'Pastikan data memiliki judul buku yang valid.');
       return;
     }
 
@@ -184,86 +194,6 @@ export const KelolaBuku: React.FC = () => {
     setShowImportModal(false);
     setRawImportText('');
     setParsedImportRows([]);
-  };
-
-  const handleSyncGoogleSheetsCSV = async (urlToSync?: string) => {
-    const targetUrl = (urlToSync || googleSheetsUrl).trim();
-    if (!targetUrl) {
-      showToast('error', 'Link Kosong', 'Masukkan Tautan CSV Google Sheets terlebih dahulu');
-      return;
-    }
-
-    setIsSyncingSheets(true);
-    try {
-      localStorage.setItem('google_sheets_csv_url_buku', targetUrl);
-      setGoogleSheetsUrl(targetUrl);
-
-      const csvContent = await fetchGoogleSheetsCSV(targetUrl);
-      const parsed = parseBookCSV(csvContent, books);
-      const validRows = parsed.filter((r) => r.isValid);
-
-      if (validRows.length === 0) {
-        showToast('warning', 'Data Tidak Ditemukan', 'Link CSV tidak mengembalikan baris buku yang valid.');
-        return;
-      }
-
-      let addedCount = 0;
-      let updatedCount = 0;
-
-      validRows.forEach((row) => {
-        const existing = books.find(
-          (b) => b.barcode.toLowerCase().trim() === row.barcode.toLowerCase().trim()
-        );
-
-        if (existing) {
-          updateBook(existing.id, {
-            title: row.title,
-            author: row.author,
-            publisher: row.publisher,
-            category: row.category,
-            publishYear: row.publishYear,
-            entryYear: row.entryYear,
-            totalCopies: row.totalCopies,
-            condition: row.condition,
-            shelfLocation: row.shelfLocation,
-            synopsis: row.synopsis,
-            coverUrl: row.coverUrl || existing.coverUrl,
-          });
-          updatedCount++;
-        } else {
-          addBook({
-            barcode: row.barcode,
-            title: row.title,
-            author: row.author,
-            publisher: row.publisher,
-            category: row.category,
-            publishYear: row.publishYear,
-            entryYear: row.entryYear,
-            totalCopies: row.totalCopies,
-            condition: row.condition,
-            shelfLocation: row.shelfLocation,
-            synopsis: row.synopsis,
-            coverUrl: row.coverUrl,
-          });
-          addedCount++;
-        }
-      });
-
-      showToast(
-        'success',
-        'Sinkronisasi Google Sheets Berhasil',
-        `Memproses ${parsed.length} baris CSV. ${updatedCount} buku diperbarui & ${addedCount} buku baru ditambahkan.`
-      );
-      setShowGoogleSheetsModal(false);
-    } catch (err: any) {
-      showToast(
-        'error',
-        'Gagal Sinkronasi',
-        err.message || 'Gagal mengambil data dari Google Sheets CSV. Pastikan link dipublikasikan sebagai CSV.'
-      );
-    } finally {
-      setIsSyncingSheets(false);
-    }
   };
 
   // Add a new empty row directly in Spreadsheet view (empty fields, placed at the very top)
@@ -443,7 +373,7 @@ export const KelolaBuku: React.FC = () => {
       case 'Sangat Baik':
         return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'Baik':
-        return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+        return 'bg-[#F5F7FA] text-[#1E3A5F] border-[#E2E8F0]';
       case 'Rusak Sedang':
         return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'Rusak Parah':
@@ -453,9 +383,9 @@ export const KelolaBuku: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* Top Bar: Search, Filters & Add Button (Fully responsive, no overflow on mobile) */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-        {/* Row 1: Search & Add Book Button */}
+      {/* Top Bar: Search, Filters & Add Button */}
+      <div className="bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-xs space-y-3">
+        {/* Row 1: Search & Action Buttons */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
           {/* Search Box */}
           <div className="relative flex-1 min-w-0">
@@ -464,52 +394,78 @@ export const KelolaBuku: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari judul, pengarang, barcode..."
-              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800"
+              placeholder="cth: 978-602... atau Laskar Pelangi"
+              className="w-full pl-9 pr-3 py-2.5 min-h-[44px] bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] placeholder:text-slate-400 focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors"
             />
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleSyncBooks}
+              disabled={isSavingToFirebase}
+              className="min-h-[44px] px-3.5 py-2 bg-[#1E3A5F] hover:bg-[#162C47] active:bg-[#0F1F33] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+              title="Sinkronkan data buku ke Firebase Cloud"
+            >
+              {isSavingToFirebase ? (
+                <Loader2 className="w-4 h-4 animate-spin text-[#F5A623]" />
+              ) : (
+                <UploadCloud className="w-4 h-4 text-[#F5A623]" />
+              )}
+              <span>Simpan ke Firebase</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={openAddModal}
+              className="min-h-[44px] px-4 py-2 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] text-[#1A1A2E] text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer select-none"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Tambah Buku</span>
+            </button>
           </div>
         </div>
 
         {/* Row 2: View Switcher (Tabel vs Spreadsheet Grid) & Import/Export/Sheets Actions */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-2 border-t border-slate-100">
-          {/* View Mode Toggle (Pas Kanan Kiri di Tampilan HP) */}
-          <div className="w-full sm:w-auto flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-2 border-t border-[#E2E8F0]">
+          {/* View Mode Toggle */}
+          <div className="w-full sm:w-auto flex items-center bg-[#F5F7FA] p-1 rounded-xl border border-[#E2E8F0] text-xs font-semibold">
             <button
               type="button"
               onClick={() => setViewMode('table')}
-              className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              className={`flex-1 sm:flex-none min-h-[38px] px-3.5 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none ${
                 viewMode === 'table'
-                  ? 'bg-white text-indigo-700 shadow-xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white text-[#1E3A5F] shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-[#1A1A2E]'
               }`}
             >
-              <Table className="w-3.5 h-3.5 shrink-0" />
+              <Table className="w-4 h-4 shrink-0 text-[#1E3A5F]" />
               <span className="truncate">Tampilan Tabel</span>
             </button>
             <button
               type="button"
               onClick={() => setViewMode('spreadsheet')}
-              className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              className={`flex-1 sm:flex-none min-h-[38px] px-3.5 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none ${
                 viewMode === 'spreadsheet'
-                  ? 'bg-emerald-600 text-white shadow-xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-[#1E3A5F] text-white shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-[#1A1A2E]'
               }`}
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 shrink-0" />
+              <FileSpreadsheet className="w-4 h-4 shrink-0 text-[#F5A623]" />
               <span className="truncate">Sel Spreadsheet</span>
             </button>
           </div>
 
-          {/* Quick Import / Export & Google Sheets Actions (Seimbang Kanan Kiri Compact di HP) */}
-          <div className="grid grid-cols-3 w-full sm:flex sm:w-auto items-center gap-1.5">
+          {/* Quick Import & Export Excel Actions */}
+          <div className="grid grid-cols-2 w-full sm:flex sm:w-auto items-center gap-2">
             <button
               type="button"
-              onClick={() => exportBooksToCSVFile(filteredBooks)}
-              className="w-full sm:w-auto px-2 sm:px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 rounded-xl text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 transition cursor-pointer border border-slate-200 shadow-2xs"
-              title="Ekspor Seluruh / Filter Data Buku ke File CSV"
+              onClick={() => exportBooksToXLSXFile(filteredBooks)}
+              className="w-full sm:w-auto min-h-[44px] px-3 py-2 bg-white hover:bg-[#F5F7FA] active:bg-slate-100 text-[#1E3A5F] rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border border-[#E2E8F0] shadow-2xs"
+              title="Ekspor Data Buku ke Excel (.xlsx)"
             >
-              <Download className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-              <span className="truncate">Ekspor CSV</span>
+              <Download className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span className="truncate">Ekspor Excel</span>
             </button>
 
             <button
@@ -519,34 +475,21 @@ export const KelolaBuku: React.FC = () => {
                 setParsedImportRows([]);
                 setShowImportModal(true);
               }}
-              className="w-full sm:w-auto px-2 sm:px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 rounded-xl text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 transition cursor-pointer border border-slate-200 shadow-2xs"
-              title="Impor Data Buku dari File CSV / Excel atau Salinan Teks"
+              className="w-full sm:w-auto min-h-[44px] px-3 py-2 bg-[#F5F7FA] hover:bg-slate-200 active:bg-slate-300 text-[#1A1A2E] rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer border border-[#E2E8F0] shadow-2xs"
+              title="Impor Data Buku dari File Excel atau CSV"
             >
-              <Upload className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-              <span className="truncate">Impor CSV</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setShowGoogleSheetsModal(true)}
-              className="w-full sm:w-auto px-2 sm:px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 rounded-xl text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 transition cursor-pointer border border-emerald-200 shadow-2xs"
-              title="Hubungkan & Sinkronkan Data dari Link CSV Google Spreadsheet"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span className="truncate">Link Sheets</span>
-              {googleSheetsUrl && (
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" title="Tersambung ke Google Sheets CSV" />
-              )}
+              <Upload className="w-4 h-4 text-[#1E3A5F] shrink-0" />
+              <span className="truncate">Impor Excel / CSV</span>
             </button>
           </div>
         </div>
 
         {/* Row 3: Filters Category & Condition */}
-        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 pt-2 border-t border-slate-100">
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 pt-2 border-t border-[#E2E8F0]">
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full sm:w-auto px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:border-indigo-500"
+            className="w-full sm:w-auto min-h-[44px] px-3 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs font-semibold text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] cursor-pointer"
           >
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>
@@ -558,7 +501,7 @@ export const KelolaBuku: React.FC = () => {
           <select
             value={selectedCondition}
             onChange={(e) => setSelectedCondition(e.target.value)}
-            className="w-full sm:w-auto px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:border-indigo-500"
+            className="w-full sm:w-auto min-h-[44px] px-3 py-2 bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs font-semibold text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] cursor-pointer"
           >
             <option value="Semua">Semua Kondisi</option>
             {CONDITIONS.map((c) => (
@@ -568,8 +511,8 @@ export const KelolaBuku: React.FC = () => {
             ))}
           </select>
 
-          <div className="col-span-2 sm:col-span-1 sm:ml-auto text-[11px] text-slate-400 text-right font-medium self-center">
-            Total: <span className="font-bold text-slate-700">{filteredBooks.length}</span> buku
+          <div className="col-span-2 sm:col-span-1 sm:ml-auto text-xs text-slate-500 text-right font-medium self-center">
+            Total: <span className="font-bold text-[#1E3A5F]">{filteredBooks.length}</span> buku
           </div>
         </div>
       </div>
@@ -578,18 +521,18 @@ export const KelolaBuku: React.FC = () => {
       {/* 0. TAMPILAN SPREADSHEET GRID (SEL-SEL EDITABLE SPREADSHEET)               */}
       {/* ========================================================================= */}
       {viewMode === 'spreadsheet' && (
-        <div className="bg-white rounded-2xl border border-slate-300 shadow-sm overflow-hidden animate-in fade-in duration-200">
+        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden animate-in fade-in duration-200">
           {/* Spreadsheet Header Bar */}
-          <div className="bg-slate-900 text-white px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-800">
+          <div className="bg-[#1E3A5F] text-white px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 border-b border-[#152943]">
             <div className="flex items-center gap-2">
-              <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+              <FileSpreadsheet className="w-4 h-4 text-[#F5A623]" />
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleAddNewGridRow}
-                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                className="px-3 py-1.5 bg-[#F5A623] hover:bg-[#d98f1a] text-[#1A1A2E] text-xs font-bold rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-xs min-h-[36px]"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Tambah Baris</span>
@@ -650,7 +593,7 @@ export const KelolaBuku: React.FC = () => {
                   </tr>
                 ) : (
                   filteredBooks.map((book, idx) => (
-                    <tr key={`grid-book-${book.id}`} className="hover:bg-indigo-50/20 transition-colors">
+                    <tr key={`grid-book-${book.id}`} className="hover:bg-[#F5F7FA] transition-colors">
                       {/* Row Index */}
                       <td className="p-1 text-center font-bold text-slate-400 bg-slate-100 border border-slate-300 text-[11px] select-none">
                         {idx + 1}
@@ -788,23 +731,6 @@ export const KelolaBuku: React.FC = () => {
               </tbody>
             </table>
           </div>
-
-          {/* Spreadsheet Footer Bar */}
-          <div className="bg-slate-100 px-4 py-2 border-t border-slate-300 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 font-mono">
-            <div>
-              Total Baris: <span className="font-bold text-slate-800">{filteredBooks.length}</span> | Terhubung: <span className="text-emerald-700 font-bold">Cloud Firestore</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleAddNewGridRow}
-                className="text-indigo-600 hover:underline font-bold flex items-center gap-1 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>+ Baris Baru</span>
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
@@ -815,14 +741,14 @@ export const KelolaBuku: React.FC = () => {
       {viewMode === 'table' && (
         <div className="md:hidden space-y-2.5">
         {filteredBooks.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-xs">
+          <div className="bg-white rounded-xl border border-[#E2E8F0] p-8 text-center text-slate-400 text-xs">
             Tidak ada buku yang sesuai dengan pencarian
           </div>
         ) : (
           filteredBooks.map((book) => (
             <div
               key={`mobile-book-${book.id}`}
-              className="bg-white rounded-2xl border border-slate-200 p-3 shadow-2xs flex items-center gap-3 transition-all"
+              className="bg-white rounded-xl border border-[#E2E8F0] p-3 shadow-2xs flex items-center gap-3 transition-all"
             >
               {/* Gambar Sampul - Klik untuk melihat detail lengkap */}
               <button
@@ -834,7 +760,7 @@ export const KelolaBuku: React.FC = () => {
                 <BookCover
                   coverUrl={book.coverUrl}
                   title={book.title}
-                  className="w-12 h-16 rounded-xl border border-slate-200 shadow-2xs group-hover:opacity-90 group-active:scale-95 transition-all"
+                  className="w-12 h-16 rounded-xl border border-[#E2E8F0] shadow-2xs group-hover:opacity-90 group-active:scale-95 transition-all"
                 />
                 <span className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 rounded-xl flex items-center justify-center text-white transition-opacity">
                   <Eye className="w-3.5 h-3.5" />
@@ -848,13 +774,13 @@ export const KelolaBuku: React.FC = () => {
                   onClick={() => setDetailBook(book)}
                   className="text-left w-full focus:outline-none cursor-pointer"
                 >
-                  <h4 className="font-extrabold text-xs text-slate-900 line-clamp-2 leading-snug hover:text-indigo-600 transition-colors">
+                  <h4 className="font-extrabold text-xs text-[#1A1A2E] line-clamp-2 leading-snug hover:text-[#1E3A5F] transition-colors">
                     {book.title}
                   </h4>
                 </button>
 
                 <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px]">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-semibold border border-indigo-100">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#F5F7FA] text-[#1E3A5F] font-semibold border border-[#E2E8F0]">
                     <MapPin className="w-3 h-3 shrink-0" />
                     <span className="truncate max-w-[120px]">{book.shelfLocation || 'Rak Belum Diset'}</span>
                   </span>
@@ -872,11 +798,11 @@ export const KelolaBuku: React.FC = () => {
               </div>
 
               {/* Aksi */}
-              <div className="flex items-center gap-1 shrink-0 pl-1 border-l border-slate-100">
+              <div className="flex items-center gap-1 shrink-0 pl-1 border-l border-[#E2E8F0]">
                 <button
                   type="button"
                   onClick={() => setBarcodePrintBook(book)}
-                  className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors cursor-pointer"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-500 hover:text-[#1E3A5F] hover:bg-[#F5F7FA] rounded-xl transition-colors cursor-pointer"
                   title="Cetak Barcode"
                 >
                   <Printer className="w-4 h-4" />
@@ -884,7 +810,7 @@ export const KelolaBuku: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => openEditModal(book)}
-                  className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors cursor-pointer"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-500 hover:text-[#1E3A5F] hover:bg-[#F5F7FA] rounded-xl transition-colors cursor-pointer"
                   title="Ubah Buku"
                 >
                   <Edit2 className="w-4 h-4" />
@@ -892,7 +818,7 @@ export const KelolaBuku: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => deleteBook(book.id)}
-                  className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-500 hover:text-[#EF4444] hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
                   title="Hapus Buku"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -908,7 +834,7 @@ export const KelolaBuku: React.FC = () => {
       {/* 2. TAMPILAN TABEL LENGKAP UNTUK DESKTOP (md:block)                        */}
       {/* ========================================================================= */}
       {viewMode === 'table' && (
-        <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="hidden md:block bg-white rounded-xl border border-[#E2E8F0] shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
@@ -922,16 +848,27 @@ export const KelolaBuku: React.FC = () => {
                 <th className="py-3 px-4 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#E2E8F0]">
               {filteredBooks.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400">
-                    Tidak ada buku yang sesuai dengan pencarian
+                  <td colSpan={7} className="py-12 text-center text-slate-500">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <BookOpen className="w-8 h-8 text-slate-300" />
+                      <span className="text-xs font-medium text-slate-600">Tidak ada buku yang sesuai dengan pencarian</span>
+                      <button
+                        type="button"
+                        onClick={openAddModal}
+                        className="mt-1 min-h-[40px] px-3.5 py-1.5 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] text-[#1A1A2E] text-xs font-bold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Tambah Buku</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 filteredBooks.map((book) => (
-                  <tr key={book.id} className="hover:bg-slate-50/50">
+                  <tr key={book.id} className="hover:bg-[#F5F7FA] transition-colors">
                     {/* Cover */}
                     <td className="py-3 px-4">
                       <button
@@ -943,14 +880,14 @@ export const KelolaBuku: React.FC = () => {
                         <BookCover
                           coverUrl={book.coverUrl}
                           title={book.title}
-                          className="w-10 h-14 rounded-lg border border-slate-200 shrink-0 group-hover:opacity-90"
+                          className="w-10 h-14 rounded-lg border border-[#E2E8F0] shrink-0 group-hover:opacity-90"
                         />
                       </button>
                     </td>
 
                     {/* Title, Author, Publisher, Barcode */}
                     <td className="py-3 px-4 max-w-xs">
-                      <div className="font-bold text-slate-900 line-clamp-1">{book.title}</div>
+                      <div className="font-bold text-[#1A1A2E] line-clamp-1 font-heading">{book.title}</div>
                       <div className="text-[11px] text-slate-500 mt-0.5">
                         {book.author} • {book.publisher}
                       </div>
@@ -961,7 +898,7 @@ export const KelolaBuku: React.FC = () => {
 
                     {/* Category */}
                     <td className="py-3 px-4">
-                      <span className="px-2 py-0.5 bg-slate-100 text-slate-700 font-medium rounded-md text-[11px]">
+                      <span className="px-2 py-0.5 bg-[#1E3A5F]/10 text-[#1E3A5F] font-semibold rounded-md text-[11px]">
                         {book.category}
                       </span>
                       {book.shelfLocation && (
@@ -1004,24 +941,24 @@ export const KelolaBuku: React.FC = () => {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => setBarcodePrintBook(book)}
-                          className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
+                          className="min-w-[36px] min-h-[36px] p-2 text-slate-500 hover:text-[#1E3A5F] hover:bg-[#F5F7FA] rounded-lg transition-colors cursor-pointer flex items-center justify-center"
                           title="Cetak Barcode"
                         >
-                          <Printer className="w-3.5 h-3.5" />
+                          <Printer className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => openEditModal(book)}
-                          className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
+                          className="min-w-[36px] min-h-[36px] p-2 text-slate-500 hover:text-[#1E3A5F] hover:bg-[#F5F7FA] rounded-lg transition-colors cursor-pointer flex items-center justify-center"
                           title="Ubah"
                         >
-                          <Edit2 className="w-3.5 h-3.5" />
+                          <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => deleteBook(book.id)}
-                          className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          className="min-w-[36px] min-h-[36px] p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
                           title="Hapus"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -1034,37 +971,19 @@ export const KelolaBuku: React.FC = () => {
       </div>
       )}
 
-      {/* Tombol Simpan di Paling Bawah */}
-      <div className="pt-3 pb-6 flex items-center justify-end">
-        <button
-          type="button"
-          onClick={handleSyncBooks}
-          disabled={isSavingToFirebase}
-          className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer disabled:opacity-50"
-          title="Simpan seluruh data buku ke Firebase"
-        >
-          {isSavingToFirebase ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <UploadCloud className="w-4 h-4" />
-          )}
-          <span>Simpan</span>
-        </button>
-      </div>
-
       {/* Add / Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-900 text-base font-heading">
+          <div className="bg-white rounded-xl shadow-2xl border border-[#E2E8F0] max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+              <h3 className="font-bold text-[#1A1A2E] text-base font-heading">
                 {editingBook ? 'Ubah Data Buku' : 'Tambah Buku Baru'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+                className="text-slate-400 hover:text-slate-600 p-1 min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -1072,24 +991,24 @@ export const KelolaBuku: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Barcode */}
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Barcode / ISBN</label>
+                  <label className="block font-semibold text-[#1A1A2E] mb-1">Barcode / ISBN</label>
                   <input
                     type="text"
                     value={formData.barcode}
                     onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-                    placeholder="Contoh: 9786022443011"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
+                    placeholder="cth: 978-602-244-301-1"
+                    className="w-full px-3 py-2.5 min-h-[44px] bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] placeholder:text-slate-400 focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors"
                     required
                   />
                 </div>
 
                 {/* Kategori */}
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Kategori</label>
+                  <label className="block font-semibold text-[#1A1A2E] mb-1">Kategori</label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2.5 min-h-[44px] bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors cursor-pointer"
                   >
                     {CATEGORIES.filter((c) => c !== 'Semua Kategori').map((c) => (
                       <option key={c} value={c}>
@@ -1102,13 +1021,13 @@ export const KelolaBuku: React.FC = () => {
 
               {/* Judul Buku */}
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Judul Buku</label>
+                <label className="block font-semibold text-[#1A1A2E] mb-1">Judul Buku</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Masukkan judul buku lengkap"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
+                  placeholder="cth: Laskar Pelangi"
+                  className="w-full px-3 py-2.5 min-h-[44px] bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] placeholder:text-slate-400 focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors"
                   required
                 />
               </div>
@@ -1116,26 +1035,26 @@ export const KelolaBuku: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Pengarang */}
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Pengarang</label>
+                  <label className="block font-semibold text-[#1A1A2E] mb-1">Pengarang</label>
                   <input
                     type="text"
                     value={formData.author}
                     onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                    placeholder="Nama penulis/penyusun"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
+                    placeholder="cth: Andrea Hirata"
+                    className="w-full px-3 py-2.5 min-h-[44px] bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] placeholder:text-slate-400 focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors"
                     required
                   />
                 </div>
 
                 {/* Penerbit */}
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Penerbit</label>
+                  <label className="block font-semibold text-[#1A1A2E] mb-1">Penerbit</label>
                   <input
                     type="text"
                     value={formData.publisher}
                     onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
-                    placeholder="Nama penerbit"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
+                    placeholder="cth: Bentang Pustaka"
+                    className="w-full px-3 py-2.5 min-h-[44px] bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] placeholder:text-slate-400 focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors"
                     required
                   />
                 </div>
@@ -1144,35 +1063,35 @@ export const KelolaBuku: React.FC = () => {
               <div className="grid grid-cols-3 gap-3">
                 {/* Tahun Terbit */}
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Tahun Terbit</label>
+                  <label className="block font-semibold text-[#1A1A2E] mb-1">Tahun Terbit</label>
                   <input
                     type="number"
                     value={formData.publishYear}
                     onChange={(e) => setFormData({ ...formData, publishYear: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2.5 min-h-[44px] bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors"
                   />
                 </div>
 
                 {/* Tahun Masuk */}
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Tahun Masuk</label>
+                  <label className="block font-semibold text-[#1A1A2E] mb-1">Tahun Masuk</label>
                   <input
                     type="number"
                     value={formData.entryYear}
                     onChange={(e) => setFormData({ ...formData, entryYear: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2.5 min-h-[44px] bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors"
                   />
                 </div>
 
                 {/* Total Eksemplar */}
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Total Eksemplar</label>
+                  <label className="block font-semibold text-[#1A1A2E] mb-1">Total Eksemplar</label>
                   <input
                     type="number"
                     min={1}
                     value={formData.totalCopies}
                     onChange={(e) => setFormData({ ...formData, totalCopies: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2.5 min-h-[44px] bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors"
                   />
                 </div>
               </div>
@@ -1180,11 +1099,11 @@ export const KelolaBuku: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Kondisi Fisik */}
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Kondisi Fisik</label>
+                  <label className="block font-semibold text-[#1A1A2E] mb-1">Kondisi Fisik</label>
                   <select
                     value={formData.condition}
                     onChange={(e) => setFormData({ ...formData, condition: e.target.value as BookCondition })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2.5 min-h-[44px] bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors cursor-pointer"
                   >
                     {CONDITIONS.map((c) => (
                       <option key={c} value={c}>
@@ -1196,21 +1115,21 @@ export const KelolaBuku: React.FC = () => {
 
                 {/* Lokasi Rak */}
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Lokasi Rak</label>
+                  <label className="block font-semibold text-[#1A1A2E] mb-1">Lokasi Rak</label>
                   <input
                     type="text"
                     value={formData.shelfLocation}
                     onChange={(e) => setFormData({ ...formData, shelfLocation: e.target.value })}
-                    placeholder="Contoh: Rak B2 - Sastra"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
+                    placeholder="cth: Rak B2 - Sastra"
+                    className="w-full px-3 py-2.5 min-h-[44px] bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1A1A2E] placeholder:text-slate-400 focus:outline-none focus:border-[#1E3A5F] focus:bg-white transition-colors"
                   />
                 </div>
               </div>
 
               {/* Sampul Buku (Foto Langsung / Unggah / URL) */}
-              <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200 space-y-3">
+              <div className="bg-[#F5F7FA] p-4 rounded-xl border border-[#E2E8F0] space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="block font-bold text-xs text-slate-800">
+                  <label className="block font-bold text-xs text-[#1A1A2E]">
                     Sampul Buku (Foto Langsung / Unggah)
                   </label>
                   {formData.coverUrl && (
@@ -1231,16 +1150,16 @@ export const KelolaBuku: React.FC = () => {
                       <img
                         src={formData.coverUrl}
                         alt="Sampul Buku"
-                        className="w-16 h-22 object-cover rounded-xl border border-indigo-200 shadow-xs bg-white"
+                        className="w-16 h-22 object-cover rounded-lg border border-[#E2E8F0] shadow-xs bg-white"
                       />
                     ) : (
                       <BookCover
                         title={formData.title || 'Buku Baru'}
-                        className="w-16 h-22 rounded-xl border border-slate-200 shadow-xs"
+                        className="w-16 h-22 rounded-lg border border-[#E2E8F0] shadow-xs"
                       />
                     )}
                     {isUploadingImage && (
-                      <div className="absolute inset-0 bg-black/50 backdrop-blur-xs rounded-xl flex flex-col items-center justify-center text-white">
+                      <div className="absolute inset-0 bg-black/50 backdrop-blur-xs rounded-lg flex flex-col items-center justify-center text-white">
                         <Loader2 className="w-5 h-5 animate-spin" />
                         <span className="text-[8px] font-bold mt-1">Drive...</span>
                       </div>
@@ -1249,21 +1168,21 @@ export const KelolaBuku: React.FC = () => {
 
                   {/* Actions: Foto Langsung, Kamera HP, Unggah Berkas */}
                   <div className="flex-1 min-w-0 space-y-2">
-                    <div className="flex flex-wrap items-center gap-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
                       {/* Tombol Foto Langsung (Buka Viewfinder Kamera) */}
                       <button
                         type="button"
                         disabled={isUploadingImage}
                         onClick={() => setIsCameraModalOpen(true)}
-                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+                        className="min-h-[40px] px-3 py-1.5 bg-[#1E3A5F] hover:bg-[#162C47] disabled:opacity-50 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
                         title="Buka kamera untuk foto sampul buku langsung"
                       >
-                        <Camera className="w-3.5 h-3.5" />
+                        <Camera className="w-3.5 h-3.5 text-[#F5A623]" />
                         <span>Foto Langsung</span>
                       </button>
 
-                      {/* Tombol Kamera Bawaan HP (capture="environment") */}
-                      <label className={`inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl transition-colors text-xs font-bold shadow-2xs ${isUploadingImage ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                      {/* Tombol Kamera Bawaan HP */}
+                      <label className={`min-h-[40px] inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg transition-colors text-xs font-bold shadow-2xs ${isUploadingImage ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
                         <Camera className="w-3.5 h-3.5 text-emerald-400" />
                         <span>Kamera HP</span>
                         <input
@@ -1277,8 +1196,8 @@ export const KelolaBuku: React.FC = () => {
                       </label>
 
                       {/* Tombol Pilih dari Galeri / Berkas */}
-                      <label className={`inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl transition-colors text-xs font-semibold shadow-2xs ${isUploadingImage ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
-                        <UploadCloud className="w-3.5 h-3.5 text-indigo-500" />
+                      <label className={`min-h-[40px] inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#F5F7FA] text-[#1A1A2E] border border-[#E2E8F0] rounded-lg transition-colors text-xs font-semibold shadow-2xs ${isUploadingImage ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                        <UploadCloud className="w-3.5 h-3.5 text-[#1E3A5F]" />
                         <span>Galeri / Berkas</span>
                         <input
                           type="file"
@@ -1295,9 +1214,9 @@ export const KelolaBuku: React.FC = () => {
                       <div className="flex items-center justify-between text-[10px]">
                         <span className="text-slate-400">Tautan Gambar / Google Drive</span>
                         {formData.coverUrl && (formData.coverUrl.includes('googleusercontent.com') || formData.coverUrl.includes('drive.google.com')) && (
-                          <span className="inline-flex items-center gap-1 text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
+                          <span className="inline-flex items-center gap-1 text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
                             <HardDrive className="w-3 h-3" />
-                            Tersimpan di Google Drive
+                            Google Drive
                           </span>
                         )}
                       </div>
@@ -1305,8 +1224,8 @@ export const KelolaBuku: React.FC = () => {
                         type="text"
                         value={formData.coverUrl}
                         onChange={(e) => setFormData({ ...formData, coverUrl: e.target.value })}
-                        placeholder="Atau tempel URL gambar / Google Drive..."
-                        className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500 text-slate-800 placeholder:text-slate-400"
+                        placeholder="cth: https://..."
+                        className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-xs focus:outline-none focus:border-[#1E3A5F] text-[#1A1A2E] placeholder:text-slate-400"
                       />
                     </div>
                   </div>
@@ -1314,17 +1233,17 @@ export const KelolaBuku: React.FC = () => {
               </div>
 
               {/* Actions */}
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+              <div className="flex justify-end gap-2 pt-3 border-t border-[#E2E8F0]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium"
+                  className="min-h-[44px] px-4 py-2 bg-[#F5F7FA] hover:bg-slate-200 active:bg-slate-300 text-[#1A1A2E] border border-[#E2E8F0] rounded-xl font-semibold cursor-pointer transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold shadow-xs"
+                  className="min-h-[44px] px-5 py-2 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] text-[#1A1A2E] rounded-xl font-bold shadow-xs cursor-pointer transition-colors"
                 >
                   Simpan
                 </button>
@@ -1337,10 +1256,10 @@ export const KelolaBuku: React.FC = () => {
       {/* Barcode Print Modal */}
       {barcodePrintBook && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-sm w-full p-6 text-center space-y-4">
-            <h3 className="font-bold text-slate-900 text-base font-heading">Label Barcode Buku</h3>
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col items-center">
-              <div className="text-[11px] font-bold text-slate-800 line-clamp-1 mb-1">{barcodePrintBook.title}</div>
+          <div className="bg-white rounded-xl shadow-2xl border border-[#E2E8F0] max-w-sm w-full p-6 text-center space-y-4">
+            <h3 className="font-bold text-[#1A1A2E] text-base font-heading">Label Barcode Buku</h3>
+            <div className="p-4 bg-[#F5F7FA] rounded-xl border border-[#E2E8F0] flex flex-col items-center">
+              <div className="text-[11px] font-bold text-[#1A1A2E] line-clamp-1 mb-1 font-heading">{barcodePrintBook.title}</div>
               <div className="text-[10px] text-slate-500 mb-2">{barcodePrintBook.shelfLocation || 'Perpustakaan Bunga Tanjung'}</div>
               <BarcodeDisplay value={barcodePrintBook.barcode} height={40} width={1.5} />
             </div>
@@ -1348,14 +1267,14 @@ export const KelolaBuku: React.FC = () => {
             <div className="flex gap-2">
               <button
                 onClick={() => window.print()}
-                className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 shadow-xs"
+                className="flex-1 min-h-[44px] py-2.5 bg-[#1E3A5F] hover:bg-[#162C47] active:bg-[#0F1F33] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-colors"
               >
-                <Printer className="w-4 h-4" />
+                <Printer className="w-4 h-4 text-[#F5A623]" />
                 <span>Cetak Label</span>
               </button>
               <button
                 onClick={() => setBarcodePrintBook(null)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl"
+                className="min-h-[44px] px-4 py-2.5 bg-[#F5F7FA] hover:bg-slate-200 active:bg-slate-300 text-[#1A1A2E] text-xs font-semibold rounded-xl border border-[#E2E8F0] cursor-pointer transition-colors"
               >
                 Tutup
               </button>
@@ -1366,26 +1285,26 @@ export const KelolaBuku: React.FC = () => {
       {/* Detail Buku Modal (Muncul saat menekan gambar sampul) */}
       {detailBook && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-3 sm:p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full max-h-[90vh] overflow-y-auto p-5 sm:p-6 space-y-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-[#E2E8F0] max-w-lg w-full max-h-[90vh] overflow-y-auto p-5 sm:p-6 space-y-4">
             {/* Header Modal */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-[#1E3A5F]/10 text-[#1E3A5F] flex items-center justify-center">
                   <BookOpen className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-sm sm:text-base font-heading">
+                  <h3 className="font-extrabold text-[#1A1A2E] text-sm sm:text-base font-heading">
                     Detail Informasi Buku
                   </h3>
-                  <p className="text-[11px] text-slate-400">Barcode: {detailBook.barcode}</p>
+                  <p className="text-[11px] text-slate-400 font-mono">Barcode: {detailBook.barcode}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setDetailBook(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                className="min-h-[40px] min-w-[40px] flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-[#F5F7FA] rounded-lg transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -1394,32 +1313,32 @@ export const KelolaBuku: React.FC = () => {
               <BookCover
                 coverUrl={detailBook.coverUrl}
                 title={detailBook.title}
-                className="w-28 h-40 sm:w-32 sm:h-44 rounded-xl border border-slate-200 shadow-md shrink-0"
+                className="w-28 h-40 sm:w-32 sm:h-44 rounded-lg border border-[#E2E8F0] shadow-sm shrink-0"
               />
 
               <div className="flex-1 space-y-2 w-full text-xs">
                 <div>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#1E3A5F] bg-[#1E3A5F]/10 px-2 py-0.5 rounded-md border border-[#1E3A5F]/20">
                     {detailBook.category}
                   </span>
-                  <h4 className="text-base font-bold text-slate-900 mt-1 leading-snug">
+                  <h4 className="text-base font-bold text-[#1A1A2E] mt-1 leading-snug font-heading">
                     {detailBook.title}
                   </h4>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-left bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <div className="grid grid-cols-2 gap-2 text-left bg-[#F5F7FA] p-3 rounded-lg border border-[#E2E8F0]">
                   <div>
                     <span className="text-[10px] text-slate-400 block">Penulis</span>
-                    <span className="font-semibold text-slate-800">{detailBook.author || '-'}</span>
+                    <span className="font-semibold text-[#1A1A2E]">{detailBook.author || '-'}</span>
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-400 block">Penerbit</span>
-                    <span className="font-semibold text-slate-800">{detailBook.publisher || '-'}</span>
+                    <span className="font-semibold text-[#1A1A2E]">{detailBook.publisher || '-'}</span>
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-400 block">Lokasi Rak</span>
-                    <span className="font-semibold text-indigo-600 flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
+                    <span className="font-semibold text-[#1E3A5F] flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-[#F5A623]" />
                       {detailBook.shelfLocation || 'Belum diatur'}
                     </span>
                   </div>
@@ -1450,7 +1369,7 @@ export const KelolaBuku: React.FC = () => {
                 {/* Barcode display */}
                 <div className="pt-2 flex flex-col items-center sm:items-start">
                   <span className="text-[10px] text-slate-400 mb-1">Pratinjau Barcode:</span>
-                  <div className="bg-white p-2 rounded-lg border border-slate-200">
+                  <div className="bg-white p-2 rounded-lg border border-[#E2E8F0]">
                     <BarcodeDisplay value={detailBook.barcode} height={32} width={1.2} />
                   </div>
                 </div>
@@ -1459,16 +1378,16 @@ export const KelolaBuku: React.FC = () => {
 
             {/* Sinopsis jika ada */}
             {detailBook.synopsis && (
-              <div className="pt-2 border-t border-slate-100">
-                <span className="text-xs font-bold text-slate-700 block mb-1">Sinopsis / Ringkasan</span>
-                <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <div className="pt-2 border-t border-[#E2E8F0]">
+                <span className="text-xs font-bold text-[#1A1A2E] block mb-1">Sinopsis / Ringkasan</span>
+                <p className="text-xs text-slate-600 leading-relaxed bg-[#F5F7FA] p-3 rounded-lg border border-[#E2E8F0]">
                   {detailBook.synopsis}
                 </p>
               </div>
             )}
 
             {/* Footer Buttons */}
-            <div className="flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-slate-100">
+            <div className="flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-[#E2E8F0]">
               <button
                 type="button"
                 onClick={() => {
@@ -1476,9 +1395,9 @@ export const KelolaBuku: React.FC = () => {
                   setDetailBook(null);
                   setBarcodePrintBook(b);
                 }}
-                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="min-h-[44px] px-3.5 py-2 bg-[#F5F7FA] hover:bg-slate-200 active:bg-slate-300 text-[#1A1A2E] text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer border border-[#E2E8F0]"
               >
-                <Printer className="w-3.5 h-3.5" />
+                <Printer className="w-4 h-4 text-slate-600" />
                 <span>Cetak Barcode</span>
               </button>
               <button
@@ -1488,15 +1407,15 @@ export const KelolaBuku: React.FC = () => {
                   setDetailBook(null);
                   openEditModal(b);
                 }}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+                className="min-h-[44px] px-4 py-2 bg-[#F5A623] hover:bg-[#E09618] active:bg-[#C88410] text-[#1A1A2E] text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer select-none"
               >
-                <Edit2 className="w-3.5 h-3.5" />
+                <Edit2 className="w-4 h-4" />
                 <span>Ubah Data</span>
               </button>
               <button
                 type="button"
                 onClick={() => setDetailBook(null)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-xl cursor-pointer"
+                className="min-h-[44px] px-4 py-2 bg-white hover:bg-[#F5F7FA] text-slate-600 text-xs font-semibold rounded-xl cursor-pointer border border-[#E2E8F0]"
               >
                 Tutup
               </button>
@@ -1520,55 +1439,55 @@ export const KelolaBuku: React.FC = () => {
       {/* ========================================================================= */}
       {showImportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-2xl border border-[#E2E8F0] max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 animate-in fade-in duration-200">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-                  <Upload className="w-5 h-5" />
+                <div className="p-2 bg-[#F5F7FA] text-[#1E3A5F] rounded-xl border border-[#E2E8F0]">
+                  <Upload className="w-5 h-5 text-[#F5A623]" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm">Impor Arsip Buku (CSV / Excel)</h3>
+                  <h3 className="font-bold text-[#1A1A2E] text-sm">Impor Arsip Buku (CSV / Excel)</h3>
                   <p className="text-[11px] text-slate-500">Unggah file CSV atau salin sel dari Excel/Google Sheets.</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowImportModal(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Template Download Prompt */}
-            <div className="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3.5 flex items-center justify-between gap-3 text-xs">
+            <div className="bg-[#F5F7FA] border border-[#E2E8F0] rounded-xl p-3.5 flex items-center justify-between gap-3 text-xs">
               <div className="flex items-start gap-2.5">
-                <FileText className="w-4 h-4 text-indigo-600 mt-0.5 shrink-0" />
+                <FileText className="w-4 h-4 text-[#1E3A5F] mt-0.5 shrink-0" />
                 <div>
-                  <span className="font-bold text-indigo-900 block">Belum Punya Format CSV?</span>
-                  <span className="text-indigo-700 text-[11px]">Unduh template standar katalog buku yang sudah terformat rapi.</span>
+                  <span className="font-bold text-[#1A1A2E] block">Format Kolom CSV Standar</span>
+                  <span className="text-slate-500 text-[11px]">Unduh template katalog buku dengan format baku.</span>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={downloadBookTemplateCSV}
-                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shrink-0 flex items-center gap-1 cursor-pointer transition shadow-xs text-[11px]"
+                className="px-3 py-1.5 bg-[#1E3A5F] hover:bg-[#152943] text-white font-bold rounded-xl shrink-0 flex items-center gap-1 cursor-pointer transition shadow-xs text-[11px] min-h-[36px]"
               >
-                <Download className="w-3.5 h-3.5" />
+                <Download className="w-3.5 h-3.5 text-[#F5A623]" />
                 <span>Unduh Template</span>
               </button>
             </div>
 
             {/* Source Selector Tabs */}
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-semibold">
+            <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2 text-xs font-semibold">
               <button
                 type="button"
                 onClick={() => setImportSource('file')}
-                className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer transition ${
+                className={`min-h-[36px] px-3 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer transition ${
                   importSource === 'file'
-                    ? 'bg-slate-900 text-white'
-                    : 'text-slate-600 hover:bg-slate-100'
+                    ? 'bg-[#1E3A5F] text-white'
+                    : 'text-slate-600 hover:bg-[#F5F7FA]'
                 }`}
               >
                 <Upload className="w-3.5 h-3.5" />
@@ -1577,10 +1496,10 @@ export const KelolaBuku: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setImportSource('text')}
-                className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer transition ${
+                className={`min-h-[36px] px-3 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer transition ${
                   importSource === 'text'
-                    ? 'bg-slate-900 text-white'
-                    : 'text-slate-600 hover:bg-slate-100'
+                    ? 'bg-[#1E3A5F] text-white'
+                    : 'text-slate-600 hover:bg-[#F5F7FA]'
                 }`}
               >
                 <Copy className="w-3.5 h-3.5" />
@@ -1590,15 +1509,15 @@ export const KelolaBuku: React.FC = () => {
 
             {/* File Upload Input */}
             {importSource === 'file' ? (
-              <div className="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-indigo-500 transition bg-slate-50/50">
-                <UploadCloud className="w-10 h-10 text-indigo-500 mx-auto mb-2" />
-                <p className="text-xs font-bold text-slate-800">Pilih file .CSV atau .TXT dari perangkat</p>
-                <p className="text-[11px] text-slate-400 mt-1 mb-3">Format kolom disarankan: Barcode, Judul Buku, Pengarang, Penerbit, Kategori, Tahun Terbit, Tahun Masuk, Eksemplar, Kondisi, Rak</p>
+              <div className="border-2 border-dashed border-[#E2E8F0] rounded-xl p-6 text-center hover:border-[#1E3A5F] transition bg-[#F5F7FA]">
+                <UploadCloud className="w-10 h-10 text-[#1E3A5F] mx-auto mb-2" />
+                <p className="text-xs font-bold text-[#1A1A2E]">Pilih file Excel (.xlsx, .xls) atau .CSV dari perangkat</p>
+                <p className="text-[11px] text-slate-400 mt-1 mb-3">Kolom: Barcode, Judul, Pengarang, Penerbit, Kategori, Tahun, Eksemplar, Kondisi, Rak</p>
                 <input
                   type="file"
-                  accept=".csv,.txt,.tsv"
-                  onChange={handleFileUploadCSV}
-                  className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+                  accept=".xlsx,.xls,.csv,.txt,.tsv"
+                  onChange={handleFileUpload}
+                  className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-white file:text-[#1E3A5F] hover:file:bg-[#E2E8F0] cursor-pointer"
                 />
               </div>
             ) : (
@@ -1684,114 +1603,44 @@ export const KelolaBuku: React.FC = () => {
             )}
 
             {/* Footer Buttons */}
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setShowImportModal(false)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-xl cursor-pointer"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={handleExecuteImport}
-                disabled={parsedImportRows.filter((r) => r.isValid).length === 0}
-                className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-xs"
-              >
-                <Check className="w-4 h-4" />
-                <span>Impor {parsedImportRows.filter((r) => r.isValid).length} Buku Valid</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL LINK SINKRONISASI GOOGLE SPREADSHEET                                */}
-      {/* ========================================================================= */}
-      {showGoogleSheetsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-xl w-full p-6 space-y-4 animate-in fade-in duration-200">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
-                  <FileSpreadsheet className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-sm">Hubungkan Spreadsheet</h3>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowGoogleSheetsModal(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* URL Input */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-800 block flex items-center justify-between">
-                <span>Tautan CSV Publikasi Google Sheets:</span>
-                <button
-                  type="button"
-                  onClick={() => window.open('https://docs.google.com/spreadsheets/u/0/create', '_blank')}
-                  className="text-emerald-600 hover:underline text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
-                >
-                  <ExternalLink className="w-3 h-3" />
-                  <span>Buka Google Sheets Baru</span>
-                </button>
-              </label>
-              <div className="relative">
-                <Link className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={googleSheetsUrl}
-                  onChange={(e) => setGoogleSheetsUrl(e.target.value)}
-                  placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv"
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono text-slate-800"
-                />
-              </div>
-            </div>
-
-            {/* Actions */}
             <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={downloadBookTemplateCSV}
-                className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-xl flex items-center gap-1.5 cursor-pointer transition"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Unduh Template Buku (.csv)</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={downloadBookTemplateXLSX}
+                  className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl flex items-center gap-1 border border-emerald-200 cursor-pointer transition"
+                  title="Unduh template katalog buku berformat Excel (.xlsx)"
+                >
+                  <Download className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Template Excel (.xlsx)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={downloadBookTemplateCSV}
+                  className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-xl flex items-center gap-1 cursor-pointer transition"
+                  title="Unduh template berformat CSV"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Template CSV</span>
+                </button>
+              </div>
 
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setShowGoogleSheetsModal(false)}
+                  onClick={() => setShowImportModal(false)}
                   className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-xl cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSyncGoogleSheetsCSV()}
-                  disabled={isSyncingSheets || !googleSheetsUrl.trim()}
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                  onClick={handleExecuteImport}
+                  disabled={parsedImportRows.filter((r) => r.isValid).length === 0}
+                  className="min-h-[44px] px-5 py-2 bg-[#F5A623] hover:bg-[#d98f1a] disabled:opacity-50 text-[#1A1A2E] text-xs font-bold rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-xs active:scale-[0.98]"
                 >
-                  {isSyncingSheets ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Menyinkronkan...</span>
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="w-4 h-4" />
-                      <span>Sinkronkan Sekarang</span>
-                    </>
-                  )}
+                  <Check className="w-4 h-4" />
+                  <span>Impor {parsedImportRows.filter((r) => r.isValid).length} Buku Valid</span>
                 </button>
               </div>
             </div>
