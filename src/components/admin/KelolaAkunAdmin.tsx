@@ -26,6 +26,7 @@ import {
   FileSpreadsheet,
   Plus,
   Info,
+  Cloud,
 } from 'lucide-react';
 
 export const KelolaAkunAdmin: React.FC = () => {
@@ -37,11 +38,14 @@ export const KelolaAkunAdmin: React.FC = () => {
     updateAdmin,
     deleteAdmin,
     resetAdminPassword,
+    saveAdminToFirebase,
+    deleteAdminFromFirebase,
     currentUser,
     logoUrl,
     syncAllToFirebase,
     syncCollectionToFirebase,
     showToast,
+    unsyncedStatus,
   } = useLibrary();
 
   const [isSavingToFirebase, setIsSavingToFirebase] = useState(false);
@@ -50,6 +54,16 @@ export const KelolaAkunAdmin: React.FC = () => {
     setIsSavingToFirebase(true);
     await syncCollectionToFirebase('admins');
     setIsSavingToFirebase(false);
+  };
+
+  const handleDeleteAdmin = async (id: string) => {
+    if (window.confirm('Yakin ingin menghapus akun admin ini?')) {
+      const ok = deleteAdmin(id);
+      if (ok) {
+        await deleteAdminFromFirebase(id);
+        showToast('success', 'Akun Dihapus', 'Akun berhasil dihapus dari sistem & Firebase');
+      }
+    }
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -107,7 +121,7 @@ export const KelolaAkunAdmin: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.username) {
       showToast('error', 'Validasi Gagal', 'Lengkapi nama dan username');
@@ -115,25 +129,32 @@ export const KelolaAkunAdmin: React.FC = () => {
     }
 
     if (editingAdmin) {
-      updateAdmin(editingAdmin.id, formData);
-      showToast('success', 'Akun Diperbarui', `Data ${formData.name} berhasil disimpan`);
+      const updatedAdmin = { ...editingAdmin, ...formData };
+      updateAdmin(editingAdmin.id, updatedAdmin);
+      // Single write to Firebase triggered ONLY upon clicking "Simpan"
+      await saveAdminToFirebase(updatedAdmin);
+      showToast('success', 'Akun Diperbarui', `Data ${formData.name} berhasil disimpan ke Firebase`);
     } else {
-      addAdmin(formData);
-      showToast('success', 'Akun Ditambahkan', `Akun petugas ${formData.name} siap digunakan`);
+      const newAdmin = addAdmin(formData);
+      // Single write to Firebase triggered ONLY upon clicking "Simpan"
+      await saveAdminToFirebase(newAdmin);
+      showToast('success', 'Akun Ditambahkan', `Akun petugas ${formData.name} berhasil disimpan ke Firebase`);
     }
     setIsModalOpen(false);
   };
 
-  const handleResetPassword = (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resetModalAdmin || !newPassword.trim()) {
       showToast('error', 'Gagal', 'Masukkan password baru');
       return;
     }
     resetAdminPassword(resetModalAdmin.id, newPassword.trim());
+    const updated = { ...resetModalAdmin, passwordHash: newPassword.trim() };
+    await saveAdminToFirebase(updated);
     setResetModalAdmin(null);
     setNewPassword('');
-    showToast('success', 'Password Direset', `Password untuk ${resetModalAdmin.name} berhasil diubah`);
+    showToast('success', 'Password Direset', `Password untuk ${resetModalAdmin.name} berhasil diubah di Firebase`);
   };
 
   if (!isSuperadmin) {
@@ -241,10 +262,30 @@ export const KelolaAkunAdmin: React.FC = () => {
               </span>
             </div>
             <div className="flex items-center gap-2">
+              {unsyncedStatus.admins && (
+                <span className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md font-semibold hidden sm:inline-block animate-pulse">
+                  Ada editan belum disimpan
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={handleSyncAdmins}
+                disabled={isSavingToFirebase}
+                className={`min-h-[34px] px-3 py-1 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition shadow-2xs ${
+                  unsyncedStatus.admins
+                    ? 'bg-[#1E3A5F] hover:bg-[#162C47] text-white shadow-xs'
+                    : 'bg-white hover:bg-slate-100 text-slate-700 border border-[#E2E8F0]'
+                }`}
+                title="Tulis semua perubahan ke Firebase Cloud (1x simpan, hemat kuota)"
+              >
+                <Cloud className="w-3.5 h-3.5 text-[#F5A623]" />
+                <span>{isSavingToFirebase ? 'Menyimpan...' : 'Simpan ke Firebase'}</span>
+              </button>
+
               <button
                 type="button"
                 onClick={openAddModal}
-                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg flex items-center gap-1 cursor-pointer transition shadow-2xs"
+                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg flex items-center gap-1 cursor-pointer transition shadow-2xs min-h-[34px]"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>+ Tambah Baris</span>
@@ -358,7 +399,7 @@ export const KelolaAkunAdmin: React.FC = () => {
                         {adm.id !== currentUser?.adminData?.id && (
                           <button
                             type="button"
-                            onClick={() => deleteAdmin(adm.id)}
+                            onClick={() => handleDeleteAdmin(adm.id)}
                             className="p-1 text-rose-500 hover:bg-rose-100 rounded cursor-pointer"
                             title="Hapus Account"
                           >
@@ -450,15 +491,7 @@ export const KelolaAkunAdmin: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    if (admins.length <= 1) {
-                      showToast('error', 'Gagal', 'Tidak dapat menghapus akun admin terakhir');
-                      return;
-                    }
-                    if (window.confirm(`Hapus akun admin ${admin.name}?`)) {
-                      deleteAdmin(admin.id);
-                    }
-                  }}
+                  onClick={() => handleDeleteAdmin(admin.id)}
                   className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
                   title="Hapus Akun"
                 >

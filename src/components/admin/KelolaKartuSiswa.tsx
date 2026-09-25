@@ -30,12 +30,26 @@ import {
   AlertCircle,
   Info,
   Users,
+  Cloud,
 } from 'lucide-react';
 
 const CLASSES = ['Semua Kelas', 'VII-A', 'VII-B', 'VIII-A', 'VIII-B', 'IX-A', 'IX-B', 'IX-C'];
 
 export const KelolaKartuSiswa: React.FC = () => {
-  const { students, addStudent, updateStudent, deleteStudent, showToast, logoUrl, appsScriptUrl, driveFolderId, syncCollectionToFirebase } = useLibrary();
+  const {
+    students,
+    addStudent,
+    updateStudent,
+    deleteStudent,
+    saveStudentToFirebase,
+    deleteStudentFromFirebase,
+    showToast,
+    logoUrl,
+    appsScriptUrl,
+    driveFolderId,
+    syncCollectionToFirebase,
+    unsyncedStatus,
+  } = useLibrary();
 
   const [isSavingToFirebase, setIsSavingToFirebase] = useState(false);
 
@@ -43,6 +57,16 @@ export const KelolaKartuSiswa: React.FC = () => {
     setIsSavingToFirebase(true);
     await syncCollectionToFirebase('students');
     setIsSavingToFirebase(false);
+  };
+
+  const handleDeleteStudent = async (id: string) => {
+    if (window.confirm('Yakin ingin menghapus siswa ini?')) {
+      const ok = deleteStudent(id);
+      if (ok) {
+        await deleteStudentFromFirebase(id);
+        showToast('success', 'Siswa Dihapus', 'Data dihapus dari sistem & Firebase');
+      }
+    }
   };
 
   // View Mode: 'cards' | 'spreadsheet' | 'studio'
@@ -166,7 +190,7 @@ export const KelolaKartuSiswa: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.nisn) {
       showToast('error', 'Validasi Gagal', 'Lengkapi nama dan NISN');
@@ -174,24 +198,31 @@ export const KelolaKartuSiswa: React.FC = () => {
     }
 
     if (editingStudent) {
-      updateStudent(editingStudent.id, {
+      const updatedStudent: Student = {
+        ...editingStudent,
         ...formData,
         cardDataCompleted: !!(formData.pob && formData.dob && formData.photoUrl),
-      });
+      };
+      updateStudent(editingStudent.id, updatedStudent);
+      // Single write to Firebase triggered ONLY upon clicking "Simpan"
+      await saveStudentToFirebase(updatedStudent);
+      showToast('success', 'Data Siswa Disimpan', 'Tersimpan ke sistem & Firebase');
     } else {
-      const newStud = addStudent({
+      const newStudent = addStudent({
         nisn: formData.nisn,
         name: formData.name,
         classGrade: formData.classGrade,
         gender: formData.gender,
         photoUrl: formData.photoUrl,
         phone: formData.phone,
-      });
-      updateStudent(newStud.id, {
+        email: formData.email,
         pob: formData.pob,
         dob: formData.dob,
         cardDataCompleted: !!(formData.pob && formData.dob && formData.photoUrl),
       });
+      // Single write to Firebase triggered ONLY upon clicking "Simpan"
+      await saveStudentToFirebase(newStudent);
+      showToast('success', 'Siswa Ditambahkan', 'Tersimpan ke sistem & Firebase');
     }
     setIsModalOpen(false);
   };
@@ -341,6 +372,26 @@ export const KelolaKartuSiswa: React.FC = () => {
               </span>
             </div>
             <div className="flex items-center gap-2">
+              {unsyncedStatus.students && (
+                <span className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md font-semibold hidden sm:inline-block animate-pulse">
+                  Ada editan belum disimpan
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={handleSyncStudents}
+                disabled={isSavingToFirebase}
+                className={`min-h-[36px] px-3.5 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition shadow-2xs ${
+                  unsyncedStatus.students
+                    ? 'bg-[#1E3A5F] hover:bg-[#162C47] text-white shadow-xs'
+                    : 'bg-white hover:bg-slate-100 text-slate-700 border border-[#E2E8F0]'
+                }`}
+                title="Tulis semua perubahan ke Firebase Cloud (1x simpan, hemat kuota)"
+              >
+                <Cloud className="w-3.5 h-3.5 text-[#F5A623]" />
+                <span>{isSavingToFirebase ? 'Menyimpan...' : 'Simpan ke Firebase'}</span>
+              </button>
+
               <button
                 type="button"
                 onClick={openAddModal}
@@ -507,7 +558,7 @@ export const KelolaKartuSiswa: React.FC = () => {
                           </button>
                           <button
                             type="button"
-                            onClick={() => deleteStudent(s.id)}
+                            onClick={() => handleDeleteStudent(s.id)}
                             className="p-1 text-rose-500 hover:bg-rose-100 rounded cursor-pointer"
                             title="Hapus Row"
                           >

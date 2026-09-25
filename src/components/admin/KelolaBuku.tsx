@@ -46,6 +46,7 @@ import {
   Layers,
   ArrowRight,
   FileText,
+  Cloud,
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -63,7 +64,19 @@ const CATEGORIES = [
 const CONDITIONS: BookCondition[] = ['Sangat Baik', 'Baik', 'Rusak Sedang', 'Rusak Parah'];
 
 export const KelolaBuku: React.FC = () => {
-  const { books, addBook, updateBook, deleteBook, showToast, appsScriptUrl, driveFolderId, syncCollectionToFirebase } = useLibrary();
+  const {
+    books,
+    addBook,
+    updateBook,
+    deleteBook,
+    saveBookToFirebase,
+    deleteBookFromFirebase,
+    showToast,
+    appsScriptUrl,
+    driveFolderId,
+    syncCollectionToFirebase,
+    unsyncedStatus,
+  } = useLibrary();
 
   const [isSavingToFirebase, setIsSavingToFirebase] = useState(false);
 
@@ -71,6 +84,16 @@ export const KelolaBuku: React.FC = () => {
     setIsSavingToFirebase(true);
     await syncCollectionToFirebase('books');
     setIsSavingToFirebase(false);
+  };
+
+  const handleDeleteBook = async (id: string) => {
+    if (window.confirm('Yakin ingin menghapus buku ini?')) {
+      const ok = deleteBook(id);
+      if (ok) {
+        await deleteBookFromFirebase(id);
+        showToast('success', 'Buku Dihapus', 'Data buku berhasil dihapus dari sistem & Firebase');
+      }
+    }
   };
 
   // Search & Filter State
@@ -342,7 +365,7 @@ export const KelolaBuku: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.barcode) {
       showToast('error', 'Validasi Gagal', 'Lengkapi judul dan barcode');
@@ -350,19 +373,27 @@ export const KelolaBuku: React.FC = () => {
     }
 
     if (editingBook) {
-      updateBook(editingBook.id, {
+      const updated: Book = {
+        ...editingBook,
         ...formData,
         publishYear: Number(formData.publishYear),
         entryYear: Number(formData.entryYear),
         totalCopies: Number(formData.totalCopies),
-      });
+      };
+      updateBook(editingBook.id, updated);
+      // Single write to Firebase triggered ONLY upon clicking "Simpan"
+      await saveBookToFirebase(updated);
+      showToast('success', 'Buku Diperbarui', 'Data buku berhasil disimpan ke Firebase');
     } else {
-      addBook({
+      const newBook = addBook({
         ...formData,
         publishYear: Number(formData.publishYear),
         entryYear: Number(formData.entryYear),
         totalCopies: Number(formData.totalCopies),
       });
+      // Single write to Firebase triggered ONLY upon clicking "Simpan"
+      await saveBookToFirebase(newBook);
+      showToast('success', 'Buku Ditambahkan', 'Buku baru berhasil disimpan ke Firebase');
     }
 
     setIsModalOpen(false);
@@ -529,6 +560,26 @@ export const KelolaBuku: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2">
+              {unsyncedStatus.books && (
+                <span className="text-[11px] text-amber-200 bg-amber-900/60 border border-amber-500/40 px-2 py-1 rounded-md font-semibold hidden sm:inline-block animate-pulse">
+                  Ada editan belum disimpan
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={handleSyncBooks}
+                disabled={isSavingToFirebase}
+                className={`px-3.5 py-1.5 text-xs font-bold rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-xs min-h-[36px] ${
+                  unsyncedStatus.books
+                    ? 'bg-[#F5A623] hover:bg-[#d98f1a] text-[#1A1A2E]'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+                }`}
+                title="Tulis semua perubahan ke Firebase Cloud (1x simpan, hemat kuota)"
+              >
+                <Cloud className="w-3.5 h-3.5 text-[#F5A623]" />
+                <span>{isSavingToFirebase ? 'Menyimpan...' : 'Simpan ke Firebase'}</span>
+              </button>
+
               <button
                 type="button"
                 onClick={handleAddNewGridRow}
@@ -541,7 +592,7 @@ export const KelolaBuku: React.FC = () => {
               <button
                 type="button"
                 onClick={() => exportBooksToCSVFile(filteredBooks)}
-                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl flex items-center gap-1.5 transition cursor-pointer border border-slate-700"
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl flex items-center gap-1.5 transition cursor-pointer border border-slate-700 min-h-[36px]"
               >
                 <Download className="w-3.5 h-3.5 text-slate-400" />
                 <span>Unduh CSV</span>
@@ -718,7 +769,7 @@ export const KelolaBuku: React.FC = () => {
                       <td className="p-1 border border-slate-300 text-center bg-slate-50">
                         <button
                           type="button"
-                          onClick={() => deleteBook(book.id)}
+                          onClick={() => handleDeleteBook(book.id)}
                           className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-100 rounded-lg transition cursor-pointer"
                           title="Hapus Baris Ini"
                         >
@@ -817,7 +868,7 @@ export const KelolaBuku: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => deleteBook(book.id)}
+                  onClick={() => handleDeleteBook(book.id)}
                   className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-500 hover:text-[#EF4444] hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
                   title="Hapus Buku"
                 >
@@ -954,7 +1005,7 @@ export const KelolaBuku: React.FC = () => {
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => deleteBook(book.id)}
+                          onClick={() => handleDeleteBook(book.id)}
                           className="min-w-[36px] min-h-[36px] p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
                           title="Hapus"
                         >

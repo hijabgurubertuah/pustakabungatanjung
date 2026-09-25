@@ -140,17 +140,23 @@ interface LibraryContextType {
   addBook: (bookData: Omit<Book, 'id' | 'createdAt' | 'availableCopies'>) => Book;
   updateBook: (id: string, bookData: Partial<Book>) => void;
   deleteBook: (id: string) => boolean;
+  saveBookToFirebase: (book: Book) => Promise<boolean>;
+  deleteBookFromFirebase: (id: string) => Promise<boolean>;
 
   // Student operations
   addStudent: (studentData: Omit<Student, 'id' | 'joinedAt' | 'visitCount' | 'activeLoanCount'>) => Student;
   updateStudent: (id: string, studentData: Partial<Student>) => void;
   deleteStudent: (id: string) => boolean;
+  saveStudentToFirebase: (student: Student) => Promise<boolean>;
+  deleteStudentFromFirebase: (id: string) => Promise<boolean>;
 
   // Admin operations (Superadmin)
   addAdmin: (adminData: Omit<AdminUser, 'id' | 'isActive' | 'lastLogin'>) => AdminUser;
   updateAdmin: (id: string, adminData: Partial<AdminUser>) => void;
   deleteAdmin: (id: string) => boolean;
   resetAdminPassword: (id: string, newPass: string) => void;
+  saveAdminToFirebase: (admin: AdminUser) => Promise<boolean>;
+  deleteAdminFromFirebase: (id: string) => Promise<boolean>;
 
   // Transactions
   borrowBook: (studentIdentifier: string, bookIdentifier: string, dueDaysOrDate?: number | string, notes?: string) => { success: boolean; message: string; transaction?: LoanTransaction };
@@ -557,7 +563,16 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         await deleteDoc(docRef);
         recordFirestoreOp('delete', 1);
       } else {
-        await setDoc(docRef, docData, { merge: true });
+        // Enforce: only text data and URL references are stored in Firebase.
+        // Strip out any raw base64 data URLs to prevent Firebase document bloat.
+        const cleanData = { ...docData };
+        if (typeof cleanData.photoUrl === 'string' && cleanData.photoUrl.startsWith('data:')) {
+          delete cleanData.photoUrl; // Do not store raw file base64 in Firestore, only Drive URLs
+        }
+        if (typeof cleanData.coverUrl === 'string' && cleanData.coverUrl.startsWith('data:')) {
+          delete cleanData.coverUrl;
+        }
+        await setDoc(docRef, cleanData, { merge: true });
         recordFirestoreOp('write', 1);
       }
       const now = new Date().toISOString();
@@ -575,6 +590,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return next;
       });
       setIsFirebaseConnected(true);
+      setUnsyncedStatus((prev) => ({ ...prev, [collectionName]: false }));
     } catch (err) {
       console.warn(`Background sync for ${collectionName}/${docId} queued in offline cache:`, err);
     }
@@ -876,6 +892,140 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
   }, []);
 
+  // Realtime Firestore Listeners on Data Collections (Students, Books, Transactions, Visits, Admins)
+  // Changes saved by any user or device immediately reflect in real-time across all active sessions.
+  // Firestore acts as the authoritative source of truth; local storage acts as fast display cache.
+  useEffect(() => {
+    const unsubs: (() => void)[] = [];
+
+    try {
+      // 1. Students Realtime Listener
+      const unsubStudents = onSnapshot(
+        collection(db, 'students'),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const remoteStudents: Student[] = [];
+            snapshot.forEach((d) => {
+              remoteStudents.push(d.data() as Student);
+            });
+            remoteStudents.sort(
+              (a, b) =>
+                (a.classGrade || '').localeCompare(b.classGrade || '') ||
+                (a.name || '').localeCompare(b.name || '')
+            );
+            setStudents(remoteStudents);
+            try {
+              localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(remoteStudents));
+            } catch {}
+            setUnsyncedStatus((prev) => ({ ...prev, students: false }));
+          }
+        },
+        (error) => {
+          console.warn('Realtime students listener offline/fallback:', error);
+        }
+      );
+      unsubs.push(unsubStudents);
+
+      // 2. Books Realtime Listener
+      const unsubBooks = onSnapshot(
+        collection(db, 'books'),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const remoteBooks: Book[] = [];
+            snapshot.forEach((d) => {
+              remoteBooks.push(d.data() as Book);
+            });
+            setBooks(remoteBooks);
+            try {
+              localStorage.setItem(STORAGE_KEYS.BOOKS, JSON.stringify(remoteBooks));
+            } catch {}
+            setUnsyncedStatus((prev) => ({ ...prev, books: false }));
+          }
+        },
+        (error) => {
+          console.warn('Realtime books listener offline/fallback:', error);
+        }
+      );
+      unsubs.push(unsubBooks);
+
+      // 3. Transactions Realtime Listener
+      const unsubTrx = onSnapshot(
+        collection(db, 'transactions'),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const remoteTrx: LoanTransaction[] = [];
+            snapshot.forEach((d) => {
+              remoteTrx.push(d.data() as LoanTransaction);
+            });
+            setTransactions(remoteTrx);
+            try {
+              localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(remoteTrx));
+            } catch {}
+            setUnsyncedStatus((prev) => ({ ...prev, transactions: false }));
+          }
+        },
+        (error) => {
+          console.warn('Realtime transactions listener offline/fallback:', error);
+        }
+      );
+      unsubs.push(unsubTrx);
+
+      // 4. Visits Realtime Listener
+      const unsubVisits = onSnapshot(
+        collection(db, 'visits'),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const remoteVisits: VisitorLog[] = [];
+            snapshot.forEach((d) => {
+              remoteVisits.push(d.data() as VisitorLog);
+            });
+            setVisits(remoteVisits);
+            try {
+              localStorage.setItem(STORAGE_KEYS.VISITS, JSON.stringify(remoteVisits));
+            } catch {}
+            setUnsyncedStatus((prev) => ({ ...prev, visits: false }));
+          }
+        },
+        (error) => {
+          console.warn('Realtime visits listener offline/fallback:', error);
+        }
+      );
+      unsubs.push(unsubVisits);
+
+      // 5. Admins Realtime Listener
+      const unsubAdmins = onSnapshot(
+        collection(db, 'admins'),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const remoteAdmins: AdminUser[] = [];
+            snapshot.forEach((d) => {
+              remoteAdmins.push(d.data() as AdminUser);
+            });
+            setAdmins(remoteAdmins);
+            try {
+              localStorage.setItem(STORAGE_KEYS.ADMINS, JSON.stringify(remoteAdmins));
+            } catch {}
+            setUnsyncedStatus((prev) => ({ ...prev, admins: false }));
+          }
+        },
+        (error) => {
+          console.warn('Realtime admins listener offline/fallback:', error);
+        }
+      );
+      unsubs.push(unsubAdmins);
+    } catch (err) {
+      console.warn('Realtime collection subscriptions offline fallback:', err);
+    }
+
+    return () => {
+      unsubs.forEach((unsub) => {
+        try {
+          unsub();
+        } catch {}
+      });
+    };
+  }, []);
+
   // Save Settings to LocalStorage whenever updated
   useEffect(() => {
     try {
@@ -1116,7 +1266,12 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     showToast('info', 'Keluar', 'Sesi Anda telah berakhir');
   };
 
-  // Book operations
+  // =========================================================================
+  // LOCAL STATE OPERATIONS (Fast, Offline-first, ZERO Firestore Writes during edit/typing)
+  // Changes are stored in React state & localStorage. Never writes per keystroke.
+  // =========================================================================
+
+  // Book operations (Local state only)
   const addBook = (bookData: Omit<Book, 'id' | 'createdAt' | 'availableCopies'>): Book => {
     const newId = `BK-${String(books.length + 1).padStart(3, '0')}`;
     const newBook: Book = {
@@ -1127,7 +1282,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
     setBooks((prev) => [newBook, ...prev]);
     setUnsyncedStatus((prev) => ({ ...prev, books: true }));
-    showToast('success', 'Berhasil', undefined, 400);
+    showToast('success', 'Berhasil Ditambahkan', undefined, 400);
     return newBook;
   };
 
@@ -1144,7 +1299,6 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       })
     );
     setUnsyncedStatus((prev) => ({ ...prev, books: true }));
-    showToast('success', 'Tersimpan', undefined, 400);
   };
 
   const deleteBook = (id: string): boolean => {
@@ -1155,11 +1309,11 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
     setBooks((prev) => prev.filter((b) => b.id !== id));
     setUnsyncedStatus((prev) => ({ ...prev, books: true }));
-    showToast('success', 'Dihapus', undefined, 400);
+    showToast('success', 'Dihapus dari Daftar', undefined, 400);
     return true;
   };
 
-  // Student operations
+  // Student operations (Local state only)
   const addStudent = (studentData: Omit<Student, 'id' | 'joinedAt' | 'visitCount' | 'activeLoanCount'>): Student => {
     const nextNum = students.length + 1;
     const year = new Date().getFullYear();
@@ -1173,7 +1327,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
     setStudents((prev) => [newStudent, ...prev]);
     setUnsyncedStatus((prev) => ({ ...prev, students: true }));
-    showToast('success', 'Berhasil', undefined, 400);
+    showToast('success', 'Berhasil Ditambahkan', undefined, 400);
     return newStudent;
   };
 
@@ -1182,7 +1336,6 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       prev.map((s) => (s.id === id ? { ...s, ...studentData } : s))
     );
     setUnsyncedStatus((prev) => ({ ...prev, students: true }));
-    showToast('success', 'Tersimpan', undefined, 400);
   };
 
   const deleteStudent = (id: string): boolean => {
@@ -1193,11 +1346,11 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
     setStudents((prev) => prev.filter((s) => s.id !== id));
     setUnsyncedStatus((prev) => ({ ...prev, students: true }));
-    showToast('success', 'Dihapus', undefined, 400);
+    showToast('success', 'Dihapus dari Daftar', undefined, 400);
     return true;
   };
 
-  // Admin operations
+  // Admin operations (Local state only)
   const addAdmin = (adminData: Omit<AdminUser, 'id' | 'isActive' | 'lastLogin'>): AdminUser => {
     const newId = `ADM-${String(admins.length + 1).padStart(3, '0')}`;
     const newAdmin: AdminUser = {
@@ -1208,7 +1361,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
     setAdmins((prev) => [...prev, newAdmin]);
     setUnsyncedStatus((prev) => ({ ...prev, admins: true }));
-    showToast('success', 'Berhasil', undefined, 400);
+    showToast('success', 'Berhasil Ditambahkan', undefined, 400);
     return newAdmin;
   };
 
@@ -1236,7 +1389,6 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       );
     }
     setUnsyncedStatus((prev) => ({ ...prev, admins: true }));
-    showToast('success', 'Tersimpan', undefined, 400);
   };
 
   const deleteAdmin = (id: string): boolean => {
@@ -1250,7 +1402,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
     setAdmins((prev) => prev.filter((a) => a.id !== id));
     setUnsyncedStatus((prev) => ({ ...prev, admins: true }));
-    showToast('success', 'Dihapus', undefined, 400);
+    showToast('success', 'Dihapus dari Daftar', undefined, 400);
     return true;
   };
 
@@ -1269,7 +1421,131 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setCurrentUser((prev) => (prev ? { ...prev, adminData: updatedAdmin as AdminUser } : null));
     }
     setUnsyncedStatus((prev) => ({ ...prev, admins: true }));
-    showToast('success', 'Tersimpan', undefined, 400);
+  };
+
+  // =========================================================================
+  // EXPLICIT FIRESTORE WRITE OPERATIONS (Executed EXACTLY ONCE on button "Simpan")
+  // Zero writes during editing or typing. Only writes when user clicks Simpan.
+  // =========================================================================
+
+  const saveStudentToFirebase = async (student: Student): Promise<boolean> => {
+    try {
+      const cleanData = { ...student };
+      // Strip raw base64 data URLs to prevent Firebase document bloat; only Drive URLs are stored
+      if (typeof cleanData.photoUrl === 'string' && cleanData.photoUrl.startsWith('data:')) {
+        cleanData.photoUrl = '';
+      }
+      await setDoc(doc(db, 'students', student.id), cleanData, { merge: true });
+      recordFirestoreOp('write', 1);
+
+      const now = new Date().toISOString();
+      await setDoc(doc(db, 'meta', 'sync_state'), { studentsUpdated: now }, { merge: true });
+      recordFirestoreOp('write', 1);
+
+      setSyncMeta((prev) => ({ ...prev, studentsUpdated: now, lastCheckedAt: now }));
+      setUnsyncedStatus((prev) => ({ ...prev, students: false }));
+      setIsFirebaseConnected(true);
+      return true;
+    } catch (err) {
+      console.warn('saveStudentToFirebase error/offline:', err);
+      return false;
+    }
+  };
+
+  const deleteStudentFromFirebase = async (id: string): Promise<boolean> => {
+    try {
+      await deleteDoc(doc(db, 'students', id));
+      recordFirestoreOp('delete', 1);
+
+      const now = new Date().toISOString();
+      await setDoc(doc(db, 'meta', 'sync_state'), { studentsUpdated: now }, { merge: true });
+      recordFirestoreOp('write', 1);
+
+      setSyncMeta((prev) => ({ ...prev, studentsUpdated: now, lastCheckedAt: now }));
+      setUnsyncedStatus((prev) => ({ ...prev, students: false }));
+      return true;
+    } catch (err) {
+      console.warn('deleteStudentFromFirebase error/offline:', err);
+      return false;
+    }
+  };
+
+  const saveBookToFirebase = async (book: Book): Promise<boolean> => {
+    try {
+      const cleanData = { ...book };
+      if (typeof cleanData.coverUrl === 'string' && cleanData.coverUrl.startsWith('data:')) {
+        cleanData.coverUrl = '';
+      }
+      await setDoc(doc(db, 'books', book.id), cleanData, { merge: true });
+      recordFirestoreOp('write', 1);
+
+      const now = new Date().toISOString();
+      await setDoc(doc(db, 'meta', 'sync_state'), { booksUpdated: now }, { merge: true });
+      recordFirestoreOp('write', 1);
+
+      setSyncMeta((prev) => ({ ...prev, booksUpdated: now, lastCheckedAt: now }));
+      setUnsyncedStatus((prev) => ({ ...prev, books: false }));
+      setIsFirebaseConnected(true);
+      return true;
+    } catch (err) {
+      console.warn('saveBookToFirebase error/offline:', err);
+      return false;
+    }
+  };
+
+  const deleteBookFromFirebase = async (id: string): Promise<boolean> => {
+    try {
+      await deleteDoc(doc(db, 'books', id));
+      recordFirestoreOp('delete', 1);
+
+      const now = new Date().toISOString();
+      await setDoc(doc(db, 'meta', 'sync_state'), { booksUpdated: now }, { merge: true });
+      recordFirestoreOp('write', 1);
+
+      setSyncMeta((prev) => ({ ...prev, booksUpdated: now, lastCheckedAt: now }));
+      setUnsyncedStatus((prev) => ({ ...prev, books: false }));
+      return true;
+    } catch (err) {
+      console.warn('deleteBookFromFirebase error/offline:', err);
+      return false;
+    }
+  };
+
+  const saveAdminToFirebase = async (admin: AdminUser): Promise<boolean> => {
+    try {
+      await setDoc(doc(db, 'admins', admin.id), admin, { merge: true });
+      recordFirestoreOp('write', 1);
+
+      const now = new Date().toISOString();
+      await setDoc(doc(db, 'meta', 'sync_state'), { adminsUpdated: now }, { merge: true });
+      recordFirestoreOp('write', 1);
+
+      setSyncMeta((prev) => ({ ...prev, adminsUpdated: now, lastCheckedAt: now }));
+      setUnsyncedStatus((prev) => ({ ...prev, admins: false }));
+      setIsFirebaseConnected(true);
+      return true;
+    } catch (err) {
+      console.warn('saveAdminToFirebase error/offline:', err);
+      return false;
+    }
+  };
+
+  const deleteAdminFromFirebase = async (id: string): Promise<boolean> => {
+    try {
+      await deleteDoc(doc(db, 'admins', id));
+      recordFirestoreOp('delete', 1);
+
+      const now = new Date().toISOString();
+      await setDoc(doc(db, 'meta', 'sync_state'), { adminsUpdated: now }, { merge: true });
+      recordFirestoreOp('write', 1);
+
+      setSyncMeta((prev) => ({ ...prev, adminsUpdated: now, lastCheckedAt: now }));
+      setUnsyncedStatus((prev) => ({ ...prev, admins: false }));
+      return true;
+    } catch (err) {
+      console.warn('deleteAdminFromFirebase error/offline:', err);
+      return false;
+    }
   };
 
   // Borrow Book workflow
@@ -1353,18 +1629,24 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     // Update book stock
+    const updatedBook = { ...book, availableCopies: Math.max(0, book.availableCopies - 1) };
     setBooks((prev) =>
-      prev.map((b) => (b.id === book.id ? { ...b, availableCopies: Math.max(0, b.availableCopies - 1) } : b))
+      prev.map((b) => (b.id === book.id ? updatedBook : b))
     );
 
     // Update student loan count
+    const updatedStudent = { ...student, activeLoanCount: student.activeLoanCount + 1 };
     setStudents((prev) =>
-      prev.map((s) => (s.id === student.id ? { ...s, activeLoanCount: s.activeLoanCount + 1 } : s))
+      prev.map((s) => (s.id === student.id ? updatedStudent : s))
     );
 
     // Append transaction
     setTransactions((prev) => [newTrx, ...prev]);
-    setUnsyncedStatus((prev) => ({ ...prev, transactions: true, books: true, students: true }));
+
+    // Sync to Firestore
+    triggerBackgroundSync('transactions', newTrx.id, newTrx);
+    triggerBackgroundSync('books', book.id, updatedBook);
+    triggerBackgroundSync('students', student.id, updatedStudent);
 
     showToast('success', 'Berhasil', undefined, 400);
     return { success: true, message: 'Peminjaman berhasil dicatat', transaction: newTrx };
@@ -1407,24 +1689,28 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setTransactions((prev) => prev.map((t) => (t.id === activeTrx.id ? updatedTrx : t)));
 
     // Return stock
-    setBooks((prev) =>
-      prev.map((b) =>
-        b.id === activeTrx.bookId
-          ? { ...b, availableCopies: Math.min(b.totalCopies, b.availableCopies + 1) }
-          : b
-      )
-    );
+    const bookMatch = books.find((b) => b.id === activeTrx.bookId);
+    const updatedBook = bookMatch
+      ? { ...bookMatch, availableCopies: Math.min(bookMatch.totalCopies, bookMatch.availableCopies + 1) }
+      : null;
+    if (updatedBook) {
+      setBooks((prev) => prev.map((b) => (b.id === activeTrx.bookId ? updatedBook : b)));
+    }
 
     // Reduce student active loan count
-    setStudents((prev) =>
-      prev.map((s) =>
-        s.id === activeTrx.studentId
-          ? { ...s, activeLoanCount: Math.max(0, s.activeLoanCount - 1) }
-          : s
-      )
-    );
+    const studentMatch = students.find((s) => s.id === activeTrx.studentId);
+    const updatedStudent = studentMatch
+      ? { ...studentMatch, activeLoanCount: Math.max(0, studentMatch.activeLoanCount - 1) }
+      : null;
+    if (updatedStudent) {
+      setStudents((prev) => prev.map((s) => (s.id === activeTrx.studentId ? updatedStudent : s)));
+    }
 
-    setUnsyncedStatus((prev) => ({ ...prev, transactions: true, books: true, students: true }));
+    // Sync to Firestore
+    triggerBackgroundSync('transactions', updatedTrx.id, updatedTrx);
+    if (updatedBook) triggerBackgroundSync('books', updatedBook.id, updatedBook);
+    if (updatedStudent) triggerBackgroundSync('students', updatedStudent.id, updatedStudent);
+
     showToast('success', 'Berhasil', undefined, 400);
     return { success: true, message: 'Pengembalian buku berhasil diproses', transaction: updatedTrx };
   };
@@ -1460,7 +1746,10 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const updatedStudent = { ...student, visitCount: student.visitCount + 1 };
     setStudents((prev) => prev.map((s) => (s.id === student.id ? updatedStudent : s)));
     setVisits((prev) => [newVisit, ...prev]);
-    setUnsyncedStatus((prev) => ({ ...prev, visits: true, students: true }));
+
+    // Sync to Firestore
+    triggerBackgroundSync('visits', newVisit.id, newVisit);
+    triggerBackgroundSync('students', student.id, updatedStudent);
 
     showToast('success', 'Berhasil', undefined, 400);
     return { success: true, message: 'Kunjungan berhasil dicatat', student: updatedStudent };
@@ -2091,13 +2380,19 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         addBook,
         updateBook,
         deleteBook,
+        saveBookToFirebase,
+        deleteBookFromFirebase,
         addStudent,
         updateStudent,
         deleteStudent,
+        saveStudentToFirebase,
+        deleteStudentFromFirebase,
         addAdmin,
         updateAdmin,
         deleteAdmin,
         resetAdminPassword,
+        saveAdminToFirebase,
+        deleteAdminFromFirebase,
         borrowBook,
         returnBook,
         recordVisit,

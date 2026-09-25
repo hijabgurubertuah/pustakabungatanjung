@@ -36,7 +36,16 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
   initialNisn = '',
   isEmbedInPortal = false,
 }) => {
-  const { students, updateStudent, addStudent, showToast, appsScriptUrl, driveFolderId, logoUrl } = useLibrary();
+  const {
+    students,
+    updateStudent,
+    addStudent,
+    saveStudentToFirebase,
+    showToast,
+    appsScriptUrl,
+    driveFolderId,
+    logoUrl,
+  } = useLibrary();
 
   // Step 1: Input NISN / Lookup
   const [nisnQuery, setNisnQuery] = useState(initialNisn);
@@ -172,21 +181,10 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
 
       const submissionDate = new Date().toISOString();
 
+      let finalStudent: Student;
+
       if (verifiedStudent) {
         // Update existing student record
-        updateStudent(verifiedStudent.id, {
-          name: formData.name,
-          classGrade: formData.classGrade,
-          gender: formData.gender,
-          pob: formData.pob,
-          dob: formData.dob,
-          phone: formData.phone,
-          photoUrl: finalDrivePhotoUrl,
-          drivePhotoUrl: finalDrivePhotoUrl,
-          cardDataCompleted: true,
-          cardDataSubmittedAt: submissionDate,
-        });
-
         const updated = {
           ...verifiedStudent,
           ...formData,
@@ -195,6 +193,8 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
           cardDataCompleted: true,
           cardDataSubmittedAt: submissionDate,
         };
+        updateStudent(verifiedStudent.id, updated);
+        finalStudent = updated;
         setSubmittedStudent(updated);
       } else {
         // Register new student record if not found
@@ -205,29 +205,27 @@ export const FormulirPendataanSiswa: React.FC<FormulirPendataanSiswaProps> = ({
           gender: formData.gender,
           photoUrl: finalDrivePhotoUrl,
           phone: formData.phone,
-        });
-
-        // Add additional details
-        updateStudent(newStud.id, {
           pob: formData.pob,
           dob: formData.dob,
-          drivePhotoUrl: finalDrivePhotoUrl,
           cardDataCompleted: true,
-          cardDataSubmittedAt: submissionDate,
         });
 
-        setSubmittedStudent({
+        finalStudent = {
           ...newStud,
           pob: formData.pob,
           dob: formData.dob,
           drivePhotoUrl: finalDrivePhotoUrl,
           cardDataCompleted: true,
           cardDataSubmittedAt: submissionDate,
-        });
+        };
+        setSubmittedStudent(finalStudent);
       }
 
+      // Single write to Firebase triggered ONLY upon clicking "Simpan"
+      await saveStudentToFirebase(finalStudent);
+
       setIsSubmittedSuccess(true);
-      showToast('success', 'Pendataan Kartu Berhasil!', 'Data kartu pustaka berhasil disimpan');
+      showToast('success', 'Pendataan Kartu Berhasil!', 'Data kartu pustaka berhasil disimpan ke Firebase');
     } catch (err: any) {
       showToast('error', 'Gagal Memproses', err.message || 'Terjadi kesalahan saat menyimpan data');
     } finally {
